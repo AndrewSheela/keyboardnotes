@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ✅ REQUIRED FIRST -->
+  <meta charset="UTF-8">
+
+  <!-- ✅ BASIC SEO -->
+  <title>PPT Lyrics - Christian Worship Song Slides</title>
+  <meta name="description" content="Download Christian worship song PPT lyrics for church, prayer meetings, and worship services. Easy-to-use PowerPoint slides for praise and worship.">
+  <meta name="keywords" content="Christian PPT lyrics, worship song ppt, church song slides, praise lyrics ppt, Christian songs presentation">
+  <meta name="author" content="Christian Songs Keyboard Notes">
+
+  <!-- ✅ MOBILE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#ff416c">
+
+  <!-- ✅ OPEN GRAPH -->
+  <meta property="og:title" content="PPT Lyrics - Christian Worship Song Slides">
+  <meta property="og:description" content="Free Christian worship song PPT lyrics for church services and prayer meetings.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yourdomain.com/ppt-lyrics/">
+  <meta property="og:image" content="https://yourdomain.com/assets/ppt-preview.jpg">
+
+  <!-- ✅ TWITTER -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PPT Lyrics - Christian Worship Song Slides">
+  <meta name="twitter:description" content="Download Christian worship song PPT lyrics easily for church use.">
+  <meta name="twitter:image" content="https://yourdomain.com/assets/ppt-preview.jpg">
+
+  <!-- ✅ Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f4f4f4;
+    }
+
+    .ppt-wrapper{
+      max-width:900px;
+      margin:40px auto;
+      background:#fff;
+      padding:30px;
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+      text-align:center;
+    }
+
+    .back-btn{
+      display:inline-block;
+      margin-top:25px;
+      padding:12px 26px;
+      background:linear-gradient(135deg,#36d1dc,#5b86e5);
+      color:white;
+      text-decoration:none;
+      border-radius:999px;
+      font-weight:700;
+    }
+
+    .back-btn:hover{
+      transform:scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ✅ GLOBAL HEADER -->
+  <div id="globalHeader"></div>
+
+  <div class="ppt-wrapper">
+    <h1>Christian Worship Song PPT Lyrics</h1>
+    <p>This is your PPT Lyrics page.</p>
+    <p>You can add song PPT downloads here.</p>
+
+    <a class="back-btn" href="/index.html">
+      <i class="fa-solid fa-house"></i> Back to Home
+    </a>
+  </div>
+
+  <!-- ✅ LOAD GLOBAL HEADER -->
+  <script>
+    fetch("/header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      });
+  </script>
+
+</body>
+</html>

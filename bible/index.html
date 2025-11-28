@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bible Study</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- ✅ SAME FONT & STYLE SYSTEM -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body{
+      min-height:100vh;
+      background:linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%);
+      display:flex;
+      justify-content:center;
+      padding:24px;
+      margin:0;
+      font-family:'Segoe UI',system-ui,sans-serif;
+    }
+
+    .wrapper{
+      width:100%;
+      max-width:1100px;
+      background:rgba(255,255,255,0.92);
+      border-radius:22px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.18);
+      padding:20px 20px 26px;
+      backdrop-filter:blur(10px);
+    }
+
+    .bible-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:18px;
+      margin-top:24px;
+    }
+
+    .bible-card{
+      background:linear-gradient(135deg,#ffffff,#f3f7ff);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.12);
+      text-align:center;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.25s;
+      text-decoration:none;
+      color:#111;
+    }
+
+    .bible-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 14px 28px rgba(0,0,0,0.18);
+    }
+
+    h1{
+      text-align:center;
+      margin-top:16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrapper">
+
+    <!-- ✅ GLOBAL HEADER (SAME AS MAIN SITE) -->
+    <div id="globalHeader"></div>
+
+    <h1>📖 Bible Study</h1>
+
+    <div class="bible-grid">
+      <a class="bible-card" href="old-testament.html">Old Testament</a>
+      <a class="bible-card" href="new-testament.html">New Testament</a>
+      <a class="bible-card" href="topics.html">Bible Topics</a>
+    </div>
+
+  </div>
+
+  <!-- ✅ LOAD SAME HEADER FILE -->
+  <script>
+    fetch("../header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      });
+  </script>
+
+</body>
+</html>
