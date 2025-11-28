@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Terms & Conditions - Christian Songs Keyboard Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body{
+      margin:0;
+      font-family:'Segoe UI',system-ui,sans-serif;
+      min-height:100vh;
+      background:linear-gradient(135deg,#4e54c8,#8f94fb,#ff758c);
+      background-size:400% 400%;
+      animation:bgMove 12s ease infinite;
+      display:flex;
+      justify-content:center;
+      padding:24px;
+    }
+
+    @keyframes bgMove{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    .wrapper{
+      width:100%;
+      max-width:950px;
+      background:rgba(255,255,255,0.96);
+      border-radius:24px;
+      box-shadow:0 15px 40px rgba(0,0,0,0.25);
+      padding:28px;
+    }
+
+    h1{
+      text-align:center;
+      font-size:34px;
+      font-weight:900;
+      background:linear-gradient(90deg,#ff512f,#dd2476,#36d1dc,#5b86e5);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:20px;
+    }
+
+    h2{
+      margin-top:22px;
+      font-size:22px;
+      color:#333;
+    }
+
+    p, li{
+      font-size:18px;
+      line-height:1.7;
+      color:#444;
+    }
+
+    ul{
+      padding-left:20px;
+    }
+
+    .highlight{
+      background:linear-gradient(135deg,#ff512f,#dd2476);
+      color:white;
+      padding:14px;
+      border-radius:14px;
+      margin:16px 0;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .contact-box{
+      margin-top:30px;
+      padding:22px;
+      border-radius:20px;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:white;
+      text-align:center;
+      box-shadow:0 10px 24px rgba(0,0,0,0.25);
+      font-size:18px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrapper">
+
+    <!-- ✅ GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+
+    <h1>Terms & Conditions</h1>
+
+    <p>
+      Welcome to <b>Christian Songs Keyboard Notes</b>. By accessing this website,
+      you agree to be bound by these Terms and Conditions. If you do not agree with
+      any part of these terms, please do not use our website.
+    </p>
+
+    <div class="highlight">
+      These Terms apply to all users, viewers, and visitors of this website.
+    </div>
+
+    <h2>1. Use of Content</h2>
+    <p>
+      All content provided on this website including songs, keyboard notes,
+      chords, lyrics, and layouts are for educational and worship purposes only.
+      You may not copy or redistribute content for commercial use without permission.
+    </p>
+
+    <h2>2. Website Availability</h2>
+    <p>
+      We try to keep the website running smoothly. However, we are not responsible
+      if the website becomes temporarily unavailable due to technical issues beyond
+      our control.
+    </p>
+
+    <h2>3. External Links</h2>
+    <p>
+      Our website may contain links to external websites such as YouTube or other
+      services. We do not control the content or policies of those websites and are
+      not responsible for them.
+    </p>
+
+    <h2>4. Advertising</h2>
+    <p>
+      This website may display advertisements through Google AdSense or other
+      advertising networks. Advertisements help us keep this service free of cost.
+    </p>
+
+    <h2>5. Limitation of Liability</h2>
+    <p>
+      We are not liable for any loss or damage including indirect or consequential
+      loss arising from the use of our website.
+    </p>
+
+    <h2>6. Changes to Terms</h2>
+    <p>
+      We may update these Terms & Conditions at any time without prior notice.
+      Continued use of the website means you accept the updated terms.
+    </p>
+
+    <div class="contact-box">
+      <b>Website Name:</b> Christian Songs Keyboard Notes<br><br>
+      <b>Country:</b> India<br><br>
+      <b>Contact Email:</b> josepath.andrew@gmail.com
+    </div>
+
+  </div>
+
+  <!-- ✅ LOAD GLOBAL HEADER -->
+  <script>
+    fetch("/header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      });
+  </script>
+
+</body>
+</html>

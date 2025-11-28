@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About Us - Christian Songs Keyboard Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body{
+      margin:0;
+      font-family:'Poppins', sans-serif;
+      min-height:100vh;
+      background:linear-gradient(135deg,#43cea2,#185a9d,#ff758c);
+      background-size:400% 400%;
+      animation:bgMove 12s ease infinite;
+      display:flex;
+      justify-content:center;
+      padding:24px;
+    }
+
+    @keyframes bgMove{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    .wrapper{
+      width:100%;
+      max-width:950px;
+      background:rgba(255,255,255,0.97);
+      border-radius:24px;
+      box-shadow:0 15px 40px rgba(0,0,0,0.25);
+      padding:28px;
+    }
+
+    h1{
+      text-align:center;
+      font-size:34px;
+      font-weight:900;
+      background:linear-gradient(90deg,#ff512f,#dd2476,#36d1dc,#5b86e5);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:10px;
+    }
+
+    .tagline{
+      text-align:center;
+      font-size:14px;
+      color:#666;
+      margin-bottom:30px;
+    }
+
+    .card{
+      background:#f9fbff;
+      padding:20px;
+      border-radius:14px;
+      margin-bottom:20px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    h2{
+      font-size:20px;
+      margin-bottom:10px;
+      color:#185a9d;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    p{
+      font-size:16px;
+      line-height:1.8;
+      color:#333;
+    }
+
+    ul{
+      padding-left:20px;
+      font-size:16px;
+      line-height:1.8;
+    }
+
+    .verse-box{
+      background:linear-gradient(135deg,#ffe259,#ffa751);
+      padding:18px;
+      border-radius:12px;
+      font-style:italic;
+      font-size:16px;
+      text-align:center;
+      color:#222;
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .contact-box{
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      color:#fff;
+      padding:20px;
+      border-radius:14px;
+      font-size:16px;
+      line-height:2;
+      box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .contact-box i{
+      margin-right:8px;
+      color:#ffeb3b;
+    }
+
+    .contact-box a{
+      color:#fff;
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    .contact-box a:hover{
+      text-decoration:underline;
+    }
+
+    .back-btn{
+      display:inline-block;
+      margin-top:25px;
+      padding:12px 26px;
+      background:linear-gradient(135deg,#ff6a00,#ee0979);
+      color:#fff;
+      text-decoration:none;
+      border-radius:40px;
+      font-size:14px;
+      font-weight:700;
+      letter-spacing:0.5px;
+      box-shadow:0 6px 16px rgba(0,0,0,0.3);
+      transition:0.2s;
+    }
+
+    .back-btn:hover{
+      transform:scale(1.04);
+    }
+
+    .footer-text{
+      text-align:center;
+      font-size:13px;
+      color:#777;
+      margin-top:30px;
+    }
+
+    @media(max-width:600px){
+      h1{font-size:26px;}
+      h2{font-size:18px;}
+      p, ul, .contact-box{font-size:14px;}
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrapper">
+
+    <!-- ✅ GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+
+    <h1>About Us</h1>
+    <div class="tagline">Christian Keyboard Notes, Chords & Song Lyrics</div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-cross"></i> Our Purpose</h2>
+      <p>
+        This website is created to help believers, worship leaders, and musicians easily access 
+        Christian song lyrics along with keyboard notes and chords.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-music"></i> What You Will Find Here</h2>
+      <ul>
+        <li>Christian song lyrics</li>
+        <li>Keyboard notes and chords</li>
+        <li>Easy transpose and view options</li>
+        <li>Mobile-friendly clean design</li>
+        <li>Downloadable and printable song sheets</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-eye"></i> Our Vision</h2>
+      <p>
+        To build a complete digital Christian song library that supports worship ministries.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-book-bible"></i> Bible Verse</h2>
+      <div class="verse-box">
+        "Sing to the LORD a new song; sing to the LORD, all the earth."
+        <br><strong>– Psalm 96:1</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-phone"></i> Contact Us</h2>
+      <div class="contact-box">
+        <i class="fa-solid fa-envelope"></i> Email:
+        <a href="mailto:josepath.andrew@gmail.com">josepath.andrew@gmail.com</a><br>
+
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp:
+        <a href="https://wa.me/919790183938" target="_blank">
+          +91 9790183938
+        </a>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <a class="back-btn" href="/index.html">
+        <i class="fa-solid fa-house"></i> Back to Home
+      </a>
+    </div>
+
+    <div class="footer-text">
+      © 2025 Christian Songs Keyboard Notes. All Rights Reserved.
+    </div>
+
+  </div>
+
+  <!-- ✅ LOAD GLOBAL HEADER -->
+  <script>
+    fetch("/header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      });
+  </script>
+
+</body>
+</html>
