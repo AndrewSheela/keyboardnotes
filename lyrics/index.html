@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Christian Song Lyrics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Christian Tamil Song Lyrics for Worship">
+  <meta name="keywords" content="Christian song lyrics, Tamil worship lyrics">
+  <meta name="author" content="Christian Music Ministry">
+
+  <!-- ✅ FONT AWESOME -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+
+    body{
+      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
+      min-height:100vh;
+      padding:20px;
+    }
+
+    .wrapper{
+      max-width:1100px;
+      margin:auto;
+      background:#fff;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .hero{
+      text-align:center;
+      padding:10px 0 20px;
+    }
+
+    .hero h1{
+      font-size:32px;
+      font-weight:900;
+    }
+
+    .hero p{
+      margin-top:8px;
+      font-size:16px;
+      color:#444;
+    }
+
+    .search-wrap{
+      width:100%;
+      max-width:420px;
+      margin:20px auto;
+    }
+
+    .search-input{
+      width:100%;
+      padding:12px 44px 12px 14px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.2);
+      font-size:14px;
+      outline:none;
+    }
+
+    .song-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .song-card{
+  background:linear-gradient(135deg,#ffffff,#f3f7ff);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+  transition:0.25s ease;
+    }
+
+    .song-card:hover{
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.25),
+    0 0 18px rgba(221,36,118,0.25);
+}
+/* ✅ Button glow on hover */
+.open-btn{
+  transition:0.2s ease;
+}
+.open-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 16px rgba(0,0,0,0.35);
+  filter:brightness(1.08);
+}
+    .song-top-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .song-name{
+      font-weight:800;
+      font-size:15px;
+    }
+
+    .open-btn{
+      padding:6px 14px;
+      border-radius:999px;
+      border:none;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg,#ff512f,#dd2476);
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <!-- ✅ GLOBAL HEADER -->
+  <div id="globalHeader"></div>
+
+  <!-- ✅ HERO -->
+  <div class="hero">
+    <h1>📖 Christian Song Lyrics</h1>
+    <p>Search and read worship song lyrics easily</p>
+  </div>
+
+
+  <!-- ✅ GRID -->
+  <div class="song-grid" id="lyricsGrid"></div>
+  <div id="pagination" style="margin-top:20px;text-align:center;"></div>
+
+</div>
+
+<!-- ✅ LOAD HEADER -->
+<script>
+fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Load Global Search ONLY AFTER header is injected
+    const script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("❌ Header load failed:", err));
+</script>
+
+
+<!-- ✅ ✅ ✅ LYRICS SEARCH SYSTEM -->
+<script>
+  const LYRICS_PER_PAGE = 100;
+  let currentPage = 1;
+  let lyrics = [];
+  let filteredLyrics = [];
+
+  // ✅ LOAD JSON FROM SAME FOLDER
+  fetch("./lyrics-list.json?v=" + Date.now())
+    .then(res => {
+      if(!res.ok) throw new Error("JSON not found");
+      return res.json();
+    })
+    .then(data => {
+      lyrics = data;
+      lyrics.sort((a,b)=>a.title.localeCompare(b.title));
+      renderLyrics(lyrics, currentPage);
+    })
+    .catch(err=>{
+      console.error(err);
+      document.getElementById("lyricsGrid").innerHTML =
+        "<p style='padding:10px;color:red;'>❌ lyrics-list.json not found</p>";
+    });
+
+  function renderLyrics(list, page = 1){
+    const grid = document.getElementById("lyricsGrid");
+    grid.innerHTML = "";
+
+    const start = (page - 1) * LYRICS_PER_PAGE;
+    const end = start + LYRICS_PER_PAGE;
+    const pageLyrics = list.slice(start, end);
+
+    pageLyrics.forEach(song=>{
+      const card = document.createElement("div");
+      card.className = "song-card";
+
+      card.innerHTML = `
+        <div class="song-top-row">
+          <div class="song-name">${song.title}</div>
+          <button class="open-btn" onclick="window.location.href='/${song.url}'">
+            Read Lyrics
+          </button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    renderPagination(list.length);
+  }
+
+  function filterLyrics(){
+    const input = document.getElementById("lyricSearch").value.toLowerCase().trim();
+
+    if(!input){
+      filteredLyrics = [];
+      currentPage = 1;
+      renderLyrics(lyrics, currentPage);
+      return;
+    }
+
+    filteredLyrics = lyrics.filter(song =>
+      song.title.toLowerCase().includes(input) ||
+      song.album.toLowerCase().includes(input) ||
+      song.artist.toLowerCase().includes(input) ||
+      song.language.toLowerCase().includes(input)
+    );
+
+    currentPage = 1;
+    renderLyrics(filteredLyrics, currentPage);
+  }
+
+  function renderPagination(total){
+    const totalPages = Math.ceil(total / LYRICS_PER_PAGE);
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+
+    if(currentPage>1)
+      pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage-1})">◀ Prev</button>`;
+
+    for(let i=1;i<=totalPages;i++){
+      pagination.innerHTML += `<button class="open-btn" onclick="changePage(${i})">${i}</button>`;
+    }
+
+    if(currentPage<totalPages)
+      pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage+1})">Next ▶</button>`;
+  }
+
+  function changePage(page){
+    currentPage = page;
+    renderLyrics(filteredLyrics.length ? filteredLyrics : lyrics, currentPage);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+</script>
+
+</body>
+</html>

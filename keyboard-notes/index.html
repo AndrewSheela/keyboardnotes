@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Christian Keyboard Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Christian Tamil Keyboard Notes for Worship Songs">
+  <meta name="keywords" content="Christian keyboard notes, Tamil worship notes">
+  <meta name="author" content="Christian Music Ministry">
+
+  <!-- ✅ FONT AWESOME -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Segoe UI',system-ui,sans-serif;
+    }
+
+    body{
+      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
+      min-height:100vh;
+      padding:20px;
+    }
+
+    .wrapper{
+      max-width:1100px;
+      margin:auto;
+      background:#fff;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .hero{
+      text-align:center;
+      padding:10px 0 20px;
+    }
+
+    .hero h1{
+      font-size:32px;
+      font-weight:900;
+    }
+
+    .hero p{
+      margin-top:8px;
+      font-size:16px;
+      color:#444;
+    }
+
+    .search-wrap{
+      width:100%;
+      max-width:420px;
+      margin:20px auto;
+    }
+
+    .search-input{
+      width:100%;
+      padding:12px 44px 12px 14px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.2);
+      font-size:14px;
+      outline:none;
+    }
+
+    .search-input:focus{
+      border-color:#4a00e0;
+      box-shadow:0 0 0 2px rgba(74,0,224,0.15);
+    }
+
+    .song-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .song-card{
+      background:linear-gradient(135deg,#fff,#f3f7ff);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      transition:0.25s;
+    }
+
+    .song-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 12px 22px rgba(0,0,0,0.25);
+    }
+
+    .song-top-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .song-name{
+      font-weight:800;
+      font-size:15px;
+    }
+
+    /* ✅ ✅ ✅ BUTTON STYLES WITH COLORS */
+    .open-btn{
+      padding:6px 15px;
+      border-radius:999px;
+      border:none;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(135deg,#43cea2,#185a9d);
+      box-shadow:0 4px 10px rgba(0,0,0,0.25);
+      transition:0.25s ease;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .open-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 16px rgba(0,0,0,0.35);
+      filter:brightness(1.08);
+    }
+
+    .open-btn.pdf { background:linear-gradient(135deg,#ff9800,#ff5722); }
+    .open-btn.score { background:linear-gradient(135deg,#8e2de2,#4a00e0); }
+    .open-btn.youtube { background:linear-gradient(135deg,#ff0000,#c50000); }
+    .open-btn.ppt { background:linear-gradient(135deg,#ffb300,#f57c00); }
+
+  </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <!-- ✅ GLOBAL HEADER -->
+  <div id="globalHeader"></div>
+
+  <!-- ✅ HERO -->
+  <div class="hero">
+    <h1>🎹 Christian Keyboard Notes</h1>
+    <p>Search and play keyboard notes easily</p>
+  </div>
+
+
+
+  <!-- ✅ GRID -->
+  <div class="song-grid" id="songGrid"></div>
+  <div id="pagination" style="margin-top:20px;text-align:center;"></div>
+
+</div>
+
+<!-- ✅ LOAD HEADER -->
+<script>
+fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Load Global Search ONLY AFTER header is injected
+    const script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("❌ Header load failed:", err));
+</script>
+
+
+<!-- ✅ ✅ ✅ NOTES SEARCH + PAGINATION SYSTEM -->
+<script>
+const SONGS_PER_PAGE = 100;
+let currentPage = 1;
+let songs = [];
+let filteredSongs = [];
+
+const jsonPath =
+  location.hostname === "127.0.0.1" || location.hostname === "localhost"
+    ? "notes-list.json"
+    : "/keyboard-notes/notes-list.json";
+
+fetch(jsonPath + "?v=" + Date.now())
+  .then(res => {
+    if (!res.ok) throw new Error("JSON not found");
+    return res.json();
+  })
+  .then(data => {
+    songs = data;
+    songs.sort((a, b) => a.title.localeCompare(b.title));
+    renderSongs(songs, currentPage);
+  })
+  .catch(err => {
+    console.error("Notes JSON Load Error:", err);
+    document.getElementById("songGrid").innerHTML =
+      "<p style='padding:12px;color:red;'>❌ Notes list not loading</p>";
+  });
+
+function renderSongs(list, page = 1){
+  const songGrid = document.getElementById("songGrid");
+  songGrid.innerHTML = "";
+
+  const start = (page - 1) * SONGS_PER_PAGE;
+  const end   = start + SONGS_PER_PAGE;
+
+  list.slice(start, end).forEach(song => {
+    const card = document.createElement("div");
+    card.className = "song-card";
+
+    card.innerHTML = `
+      <div class="song-top-row">
+        <div class="song-name">${song.title}</div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="open-btn" onclick="location.href='${song.url}'">
+            <i class="fa-solid fa-file-lines"></i> Open
+          </button>
+
+          ${song.sheetPdf ? `<button class="open-btn pdf" onclick="window.open('${song.sheetPdf}')">
+            <i class="fa-solid fa-file-pdf"></i> PDF
+          </button>` : ``}
+
+          ${song.score ? `<button class="open-btn score" onclick="window.open('${song.score}')">
+            <i class="fa-solid fa-music"></i> Score
+          </button>` : ``}
+
+          ${song.youtube ? `<button class="open-btn youtube" onclick="window.open('${song.youtube}')">
+            <i class="fa-brands fa-youtube"></i> Play
+          </button>` : ``}
+
+          ${song.ppt ? `<button class="open-btn ppt" onclick="window.open('${song.ppt}')">
+            <i class="fa-solid fa-file-powerpoint"></i> PPT
+          </button>` : ``}
+        </div>
+      </div>
+    `;
+
+    songGrid.appendChild(card);
+  });
+
+  renderPagination(list.length);
+}
+
+
+
+function renderPagination(total){
+  const totalPages = Math.ceil(total / SONGS_PER_PAGE);
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
+
+  if (currentPage > 1)
+    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage - 1})">◀ Prev</button>`;
+
+  for (let i = 1; i <= totalPages; i++){
+    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${i})">${i}</button>`;
+  }
+
+  if (currentPage < totalPages)
+    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage + 1})">Next ▶</button>`;
+}
+
+function changePage(page){
+  currentPage = page;
+  renderSongs(filteredSongs.length ? filteredSongs : songs, currentPage);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+</script>
+
+</body>
+</html>
