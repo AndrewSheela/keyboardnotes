@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Christian Keyboard Chords</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Christian Tamil Keyboard Chords for Worship Songs">
+  <meta name="keywords" content="Christian keyboard chords, Tamil worship chords">
+  <meta name="author" content="Christian Music Ministry">
+
+  <!-- ✅ FONT AWESOME -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Segoe UI',system-ui,sans-serif;
+    }
+
+    body{
+      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
+      min-height:100vh;
+      padding:20px;
+    }
+
+    .wrapper{
+      max-width:1100px;
+      margin:auto;
+      background:#fff;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .song-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .song-card{
+      background:linear-gradient(135deg,#fff,#f3f7ff);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      transition:0.25s;
+    }
+
+    .song-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 12px 22px rgba(0,0,0,0.25);
+    }
+
+    .song-top-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .song-name{
+      font-weight:800;
+      font-size:15px;
+    }
+
+    .open-btn{
+      padding:6px 14px;
+      border-radius:999px;
+      border:none;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg,#43cea2,#185a9d);
+      color:#fff;
+    }
+
+    .hero{
+      text-align:center;
+      padding:10px 0 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <!-- ✅ GLOBAL HEADER -->
+  <div id="globalHeader"></div>
+
+  <!-- ✅ HERO -->
+  <div class="hero">
+    <h1>🎹 Christian Keyboard Chords</h1>
+    <p>Search and play worship chords easily</p>
+  </div>
+
+  <!-- ✅ GRID -->
+  <div class="song-grid" id="chordGrid"></div>
+  <div id="pagination" style="margin-top:20px;text-align:center;"></div>
+
+</div>
+
+<!-- ✅ LOAD HEADER (FIXED — NO HTML COMMENTS INSIDE JS) -->
+<script>
+fetch("/header.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Load Global Search AFTER header is injected
+    const script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("❌ Header load failed:", err));
+</script>
+
+<!-- ✅ ✅ ✅ CHORD LIST SYSTEM (NO LOCAL SEARCH) -->
+<script>
+  const CHORDS_PER_PAGE = 100;
+  let currentPage = 1;
+  let chords = [];
+
+  // ✅ Load chords JSON
+  fetch("./chords-list.json?v=" + Date.now())
+    .then(res => {
+      if (!res.ok) throw new Error("JSON File Missing");
+      return res.json();
+    })
+    .then(data => {
+      chords = data;
+      chords.sort((a, b) => a.title.localeCompare(b.title));
+      renderChords(chords, currentPage);
+    })
+    .catch(err => {
+      console.error("❌ JSON LOAD FAILED:", err);
+      document.getElementById("chordGrid").innerHTML =
+        "<p style='padding:10px;color:red;font-weight:700;'>❌ chords-list.json NOT FOUND inside /chords folder</p>";
+    });
+
+  function renderChords(list, page = 1){
+    const grid = document.getElementById("chordGrid");
+    grid.innerHTML = "";
+
+    if (!list.length){
+      grid.innerHTML = "<p style='padding:10px;'>❌ No chords found</p>";
+      return;
+    }
+
+    const start = (page - 1) * CHORDS_PER_PAGE;
+    const end   = start + CHORDS_PER_PAGE;
+    const pageChords = list.slice(start, end);
+
+    pageChords.forEach(song => {
+      const card = document.createElement("div");
+      card.className = "song-card";
+
+      card.innerHTML = `
+        <div class="song-top-row">
+          <div class="song-name">${song.title}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:12px;font-weight:700;">Key: ${song.key || "-"}</span>
+            <button class="open-btn" onclick="window.location.href='${song.url}'">
+              <i class="fa-solid fa-guitar"></i> Open
+            </button>
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    renderChordPagination(list.length);
+  }
+
+  function renderChordPagination(total){
+    const totalPages = Math.ceil(total / CHORDS_PER_PAGE);
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+
+    if (currentPage > 1){
+      pagination.innerHTML += `<button class="open-btn" onclick="changeChordPage(${currentPage - 1})">◀ Prev</button>`;
+    }
+
+    for (let i = 1; i <= totalPages; i++){
+      pagination.innerHTML += `
+        <button class="open-btn"
+          style="margin:4px;${i === currentPage ? 'background:#000' : ''}"
+          onclick="changeChordPage(${i})">${i}</button>`;
+    }
+
+    if (currentPage < totalPages){
+      pagination.innerHTML += `<button class="open-btn" onclick="changeChordPage(${currentPage + 1})">Next ▶</button>`;
+    }
+  }
+
+  function changeChordPage(page){
+    currentPage = page;
+    renderChords(chords, currentPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+</script>
+
+</body>
+</html>
