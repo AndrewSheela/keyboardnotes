@@ -1,4 +1,34 @@
 <style>
+/* ✅ GLOBAL SEARCH RESULTS */
+#globalResults{
+  margin-top:14px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.15);
+  max-height:350px;
+  overflow-y:auto;
+}
+
+.global-item{
+  padding:12px;
+  border-bottom:1px solid #eee;
+}
+
+.global-item:hover{ background:#f9fafb; }
+
+.global-item a{
+  font-weight:800;
+  color:#4a00e0;
+  text-decoration:none;
+}
+
+.global-meta{
+  font-size:12px;
+  color:#555;
+  margin-top:4px;
+}
+
+/* ✅ HEADER DESIGN */
 .top-header{
   display:flex;
   flex-direction:column;
@@ -9,27 +39,37 @@
   background:#fff;
 }
 
-.brand-row{
-  text-align:center;
+.brand-row{ text-align:center; }
+.site-title{ font-size:26px; font-weight:800; }
+.site-subtitle{ font-size:14px; color:#555; margin-top:4px; }
+
+/* ✅ GLOBAL SEARCH BAR */
+.search-wrap{
+  width:100%;
+  max-width:420px;
+  margin:10px auto;
 }
 
-.site-title{
-  font-size:26px;
-  font-weight:800;
-}
-
-.site-subtitle{
+.search-input{
+  width:100%;
+  padding:12px 44px 12px 14px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.2);
   font-size:14px;
-  color:#555;
-  margin-top:4px;
+  outline:none;
 }
 
+.search-input:focus{
+  border-color:#4a00e0;
+  box-shadow:0 0 0 2px rgba(74,0,224,0.15);
+}
+
+/* ✅ NAV BUTTONS */
 .nav-buttons{
   display:grid;
-  grid-template-columns: repeat(5, auto);  
+  grid-template-columns: repeat(5, auto);
   justify-content:center;
   gap:12px 14px;
-  margin-top:6px;
 }
 
 .nav-row-2{
@@ -37,7 +77,6 @@
   display:flex;
   justify-content:center;
   gap:14px;
-  margin-top:6px;
   flex-wrap:wrap;
 }
 
@@ -49,10 +88,8 @@
   cursor:pointer;
   color:#fff;
   box-shadow:0 4px 10px rgba(0,0,0,0.22);
-  white-space:nowrap;
   text-decoration:none;
   transition:0.2s;
-  display:inline-block;
   opacity:0.88;
 }
 
@@ -63,16 +100,10 @@
   opacity:1;
 }
 
-/* ✅ ✅ ✅ GLOW (GLOBAL & GUARANTEED) */
 .nav-btn.active{
   opacity:1 !important;
   transform:scale(1.1);
   animation:glowPulse 1.5s infinite alternate;
-  box-shadow:
-    0 0 10px rgba(255,255,255,0.9),
-    0 0 25px rgba(255,255,255,0.8),
-    0 0 45px rgba(255,255,255,0.6);
-  z-index:10;
 }
 
 @keyframes glowPulse{
@@ -80,6 +111,7 @@
   to{ filter:brightness(1.35); }
 }
 
+/* ✅ COLORS */
 .btn-home{ background:linear-gradient(135deg,#36d1dc,#5b86e5); }
 .btn-notes{ background:linear-gradient(135deg,#ff9a9e,#fad0c4); color:#333; }
 .btn-chords{ background:linear-gradient(135deg,#f7971e,#ffd200); color:#333; }
@@ -91,58 +123,109 @@
 </style>
 
 <div class="top-header">
+
+  <!-- ✅ BRAND -->
   <div class="brand-row">
     <div class="site-title">Christian Songs Keyboard Notes</div>
     <div class="site-subtitle">Play With Peace</div>
   </div>
 
+  <!-- ✅ NAVIGATION -->
   <div class="nav-buttons">
 
-    <!-- ROW 1 -->
     <a class="nav-btn btn-home" href="/index.html">Home</a>
-    <a class="nav-btn btn-notes" href="/index.html#notes">Keyboard Notes & Chords</a>
-    <a class="nav-btn btn-chords" href="/index.html#chords">Keyboard Chords</a>
-    <a class="nav-btn btn-lyrics" href="/lyrics.html">Song Lyrics</a>
+    <a class="nav-btn btn-notes" href="/keyboard-notes/index.html">Keyboard Notes</a>
+    <a class="nav-btn btn-chords" href="/chords/index.html">Keyboard Chords</a>
+    <a class="nav-btn btn-lyrics" href="/lyrics/index.html">Song Lyrics</a>
     <a class="nav-btn btn-about" href="/about.html">About Us</a>
 
-    <!-- ROW 2 -->
     <div class="nav-row-2">
       <a class="nav-btn btn-bible" href="/bible/index.html">Bible Study</a>
-      <a class="nav-btn btn-courses" href="/courses/index.html">All Music Courses</a>
+      <a class="nav-btn btn-courses" href="/courses/index.html">Music Courses</a>
       <a class="nav-btn btn-ppt" href="/ppt-lyrics/index.html">PPT Lyrics</a>
-      <a class="nav-btn" style="background:linear-gradient(135deg,#11998e,#38ef7d);" href="/privacy.html">Privacy Policy</a>
-      <a class="nav-btn" style="background:linear-gradient(135deg,#7f00ff,#3f2b96);" href="/terms.html">Terms & Conditions</a>
+      <a class="nav-btn" style="background:#11998e;" href="/privacy.html">Privacy</a>
+      <a class="nav-btn" style="background:#7f00ff;" href="/terms.html">Terms</a>
     </div>
-
   </div>
+
+  <!-- ✅ GLOBAL SEARCH BELOW BUTTONS -->
+  <div class="search-wrap">
+    <input
+      type="text"
+      id="globalSearchInput"
+      placeholder="🔍 Search Notes • Chords • Lyrics • PPT"
+      onkeyup="runGlobalSearch()"
+      class="search-input"
+    >
+  </div>
+
+  <div id="globalResults"></div>
+
 </div>
 
-<!-- ✅ ✅ ✅ GLOBAL ACTIVE DETECTOR (THIS FIXES EVERYTHING) -->
+<!-- ✅ ACTIVE PAGE HIGHLIGHT -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const navLinks = document.querySelectorAll(".nav-btn");
   const currentFile = location.pathname.split("/").pop() || "index.html";
-  const currentHash = location.hash;
 
   navLinks.forEach(link => {
     const linkFile = link.getAttribute("href").split("/").pop();
-
-    // ✅ Page match
-    if (linkFile === currentFile) {
-      link.classList.add("active");
-    }
-
-    // ✅ Home fix
-    if (currentFile === "index.html" && linkFile === "index.html") {
-      link.classList.add("active");
-    }
-
-    // ✅ Hash match
-    if (currentHash && link.getAttribute("href").includes(currentHash)) {
-      link.classList.add("active");
-    }
+    if (linkFile === currentFile) link.classList.add("active");
   });
-
 });
 </script>
+
+<!-- ✅ ✅ ✅ GLOBAL SEARCH ENGINE (FULLY FIXED) -->
+<script>
+let globalData = [];
+
+/* ✅ ABSOLUTE PATH (WORKS ON ALL PAGES EVEN WHEN HEADER IS LOADED BY fetch) */
+const globalPath = "/data/global-search.json";
+
+fetch(globalPath + "?v=" + Date.now())
+  .then(res => {
+    if (!res.ok) throw new Error("Global JSON not found");
+    return res.json();
+  })
+  .then(data => {
+    console.log("✅ GLOBAL SEARCH LOADED:", data);
+    globalData = data;
+  })
+  .catch(err => console.error("❌ Global Search JSON error:", err));
+
+function runGlobalSearch(){
+  const input = document.getElementById("globalSearchInput").value.toLowerCase().trim();
+  const resultBox = document.getElementById("globalResults");
+  resultBox.innerHTML = "";
+
+  if (!input) return;
+
+  const results = globalData.filter(item =>
+    (item.title || "").toLowerCase().includes(input) ||
+    (item.album || "").toLowerCase().includes(input) ||
+    (item.artist || "").toLowerCase().includes(input) ||
+    (item.language || "").toLowerCase().includes(input)
+  );
+
+  if (!results.length){
+    resultBox.innerHTML = "<div class='global-item'>❌ No results found</div>";
+    return;
+  }
+
+  results.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "global-item";
+
+    div.innerHTML = `
+      <a href="${item.url}">${item.title}</a>
+      <div class="global-meta">
+        ${item.type.toUpperCase()} • ${item.album} • ${item.artist} • ${item.language}
+      </div>
+    `;
+
+    resultBox.appendChild(div);
+  });
+}
+</script>
+
