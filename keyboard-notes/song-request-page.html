@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Song Request - Christian Songs Keyboard Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .request-box {
+      background: #fff;
+      max-width: 700px;
+      width: 100%;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3c72;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .rules {
+      background: #f5f7ff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+
+    .rules h2 {
+      color: #2a5298;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .rules ul {
+      padding-left: 20px;
+      color: #333;
+    }
+
+    .rules li {
+      margin-bottom: 8px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 30px;
+      color: #fff;
+      font-weight: 500;
+      transition: 0.3s;
+      text-align: center;
+      min-width: 220px;
+    }
+
+    .btn-form {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+    }
+
+    .btn-sheet {
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      color: #045d44;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    .note {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    @media (max-width: 500px) {
+      .btn {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="request-box">
+
+    <h1>🎵 Song Request Page</h1>
+    <p class="subtitle">Please read the instructions before submitting your request</p>
+
+    <!-- ✅ READ BEFORE REQUEST -->
+    <div class="rules">
+      <h2>📌 Read This Before You Request a Song</h2>
+      <ul>
+        <li>• (You will add your instruction text here)</li>
+        <li>• (Add more points later)</li>
+        <li>• (Example: Only Christian songs allowed)</li>
+        <li>• (Example: Processing may take several days)</li>
+      </ul>
+    </div>
+
+    <!-- ✅ BUTTONS -->
+    <div class="buttons">
+      <a href="https://forms.gle/gxdu89AQuoVb3RBQ7" target="_blank" class="btn btn-form">
+        🎤 Submit Song Request
+      </a>
+
+      <a href="https://docs.google.com/spreadsheets/d/1kuLcA-mAC4keldpRj7Zr2Hfqq4bssg1nRTeQn2m9X1M/edit?usp=sharing" target="_blank" class="btn btn-sheet">
+        📊 Check Request Status
+      </a>
+    </div>
+
+    <div class="note">
+      ✅ Use the Google Form to submit your request.  
+      ✅ Use the Sheet to track its status.
+    </div>
+
+  </div>
+
+</body>
+</html>
