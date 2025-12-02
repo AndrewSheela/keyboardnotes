@@ -26,7 +26,7 @@
 
     .request-box {
       background: #fff;
-      max-width: 700px;
+      max-width: 800px;
       width: 100%;
       padding: 35px;
       border-radius: 20px;
@@ -42,7 +42,7 @@
     .subtitle {
       text-align: center;
       color: #555;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .rules {
@@ -50,21 +50,24 @@
       padding: 20px;
       border-radius: 12px;
       margin-bottom: 30px;
+      line-height: 1.6;
+      color: #333;
     }
 
     .rules h2 {
       color: #2a5298;
       font-size: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    .rules ul {
-      padding-left: 20px;
-      color: #333;
+    .rules a {
+      color: #0072ff;
+      font-weight: 600;
+      text-decoration: none;
     }
 
-    .rules li {
-      margin-bottom: 8px;
+    .rules a:hover {
+      text-decoration: underline;
     }
 
     .buttons {
@@ -72,6 +75,7 @@
       flex-wrap: wrap;
       gap: 15px;
       justify-content: center;
+      margin-top: 20px;
     }
 
     .btn {
@@ -82,7 +86,7 @@
       font-weight: 500;
       transition: 0.3s;
       text-align: center;
-      min-width: 220px;
+      min-width: 240px;
     }
 
     .btn-form {
@@ -104,6 +108,7 @@
       text-align: center;
       font-size: 14px;
       color: #666;
+      line-height: 1.6;
     }
 
     @media (max-width: 500px) {
@@ -118,19 +123,83 @@
 
   <div class="request-box">
 
-    <h1>🎵 Song Request Page</h1>
-    <p class="subtitle">Please read the instructions before submitting your request</p>
+    <h1>🎵 Song Notes Request</h1>
+    <p class="subtitle">Please read this carefully before submitting your request</p>
 
-    <!-- ✅ READ BEFORE REQUEST -->
+    <!-- ✅ FULL MESSAGE INSERTED -->
     <div class="rules">
-      <h2>📌 Read This Before You Request a Song</h2>
+      <h2>📌 Important Instructions</h2>
+     <div class="rules">
       <ul>
-        <li>• Songs can be in any language</li>
-        <li>• I do songs only sungs by born again Chrstians</li>
-        <li>• Some times I can'n do not due to many reasons</li>
-        <li>• Your songs will be uploaded in Indian Christian Music Youtube Channel</li>
-        <li>• Link will be shared on JGeneration Whatsapp channel</li>
+        <li>Songs can be in any language.</li>
+        <li>I prepare notes only for songs written and sung by born-again Christians.</li>
+        <li>Sometimes, I may be unable to make notes due to being busy or unwell.</li>
+        <li>Thank you for your understanding.</li>
       </ul>
+    </div>
+      <p><strong>Dear J Generation Family,</strong><br>
+      Before requesting any song notes, kindly check our YouTube channels to see if the song has already been uploaded:</p>
+
+      <p>
+        ▶ <strong>JGeneration</strong><br>
+        <a href="https://www.youtube.com/channel/UCLnZljFJxd33kW_fmFB2QcQ" target="_blank">
+          https://www.youtube.com/channel/UCLnZljFJxd33kW_fmFB2QcQ
+        </a>
+      </p>
+
+      <p>
+        ▶ <strong>ICM - Indian Christian Music</strong><br>
+        <a href="https://www.youtube.com/channel/UC_f_eALNTPK8Mc4BiHrjEGw" target="_blank">
+          https://www.youtube.com/channel/UC_f_eALNTPK8Mc4BiHrjEGw
+        </a>
+      </p>
+
+      <hr>
+
+      <p><strong>If the song has not been uploaded, you may submit a request through the Google Form provided at the bottom of this page.</strong></p>
+
+
+      <p><strong>✅ Important:</strong> After submitting the form, please double-check that you entered the YouTube link correctly.</p>
+
+      <p>
+        📊 <strong>You can verify your submission and track the status of your request using the link provided at the bottom of this page.</strong><br>
+     
+      </p>
+
+      <hr>
+
+      <p>
+        📌 <strong>All completed requests will be uploaded on the ICM - Indian Christian Music channel.</strong>
+      </p>
+
+      <p>
+        🔔 The link will also be shared on the <strong>JGeneration WhatsApp Channel</strong>.  
+        Please check the channel or YouTube on the date you've requested.
+      </p>
+<a href="https://whatsapp.com/channel/0029Vb6oGXeG8l5F61uVfP2g" 
+   target="_blank" 
+   style="
+     display: inline-block;
+     padding: 12px 20px;
+     background: #25D366;
+     color: white;
+     text-decoration: none;
+     border-radius: 8px;
+     font-weight: bold;
+     font-family: Poppins, Arial, sans-serif;
+     margin-top: 10px;
+   ">
+   ✅ Join JGeneration WhatsApp Channel
+</a>
+
+      <hr>
+
+      <p>
+        ⚠ <strong>Note:</strong> Some song requests may not be possible to fulfill due to various reasons.  
+        In such cases, the status will be updated in the response sheet linked above.
+      </p>
+
+      <p><strong>🙏 Thank you for your understanding and continued support. God bless you!</strong></p>
     </div>
 
     <!-- ✅ BUTTONS -->
@@ -139,14 +208,14 @@
         🎤 Submit Song Request
       </a>
 
-      <a href="https://docs.google.com/spreadsheets/d/1kuLcA-mAC4keldpRj7Zr2Hfqq4bssg1nRTeQn2m9X1M/edit?usp=sharing" target="_blank" class="btn btn-sheet">
+      <a href="https://docs.google.com/spreadsheets/d/14mpzYMiCZBBbmJU181fK5ALL3GKCiVqVdyR45bPJQ9c/edit?usp=sharing" target="_blank" class="btn btn-sheet">
         📊 Check Request Status
       </a>
     </div>
 
     <div class="note">
-      ✅ Use the Google Form to submit your request.  
-      ✅ Use the Sheet to track its status.
+      ✅ Always verify if your requested song is already available.<br>
+      ✅ Track your request using the status sheet after submission.
     </div>
 
   </div>
