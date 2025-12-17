@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Keyboard Class</title>
+  <title>All Music Courses</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -34,21 +34,14 @@
       font-size:28px;
     }
 
-    .course-desc{
-      text-align:center;
-      font-size:15px;
-      color:#444;
-      margin-top:8px;
-    }
-
-    .lesson-grid{
+    .course-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
       gap:20px;
       margin-top:28px;
     }
 
-    .lesson-card{
+    .course-card{
       background:linear-gradient(135deg,#ffffff,#f3f7ff);
       border-radius:20px;
       padding:22px;
@@ -58,41 +51,33 @@
       transition:0.25s;
       text-decoration:none;
       color:#111;
-      border-left:6px solid #5b86e5;
     }
 
-    .lesson-card:hover{
+    .course-card:hover{
       transform:translateY(-4px);
       box-shadow:0 14px 28px rgba(0,0,0,0.18);
     }
 
-    .lesson-icon{
-      font-size:34px;
-      margin-bottom:10px;
+    .course-icon{
+      font-size:36px;
+      margin-bottom:12px;
     }
 
-    .lesson-title{
-      font-size:17px;
+    .course-title{
+      font-size:18px;
       font-weight:800;
       margin-bottom:6px;
     }
 
-    .lesson-desc{
+    .course-desc{
       font-size:14px;
       color:#555;
       line-height:1.5;
     }
 
-    .level-tag{
-      margin-top:10px;
-      display:inline-block;
-      font-size:12px;
-      font-weight:700;
-      padding:4px 10px;
-      border-radius:999px;
-      background:#e3f2fd;
-      color:#0d47a1;
-    }
+    .keyboard{ background:linear-gradient(135deg,#fff3e0,#ffe0b2); }
+    .theory{ background:linear-gradient(135deg,#e3f2fd,#bbdefb); }
+    .production{ background:linear-gradient(135deg,#f3e5f5,#e1bee7); }
   </style>
 </head>
 
@@ -103,51 +88,35 @@
     <!-- ✅ GLOBAL HEADER -->
     <div id="globalHeader"></div>
 
-    <h1>🎹 Keyboard Class</h1>
-    <div class="course-desc">
-      Learn keyboard from absolute basics to worship playing, chords, and accompaniment.
-    </div>
+    <h1>🎼 Music Courses</h1>
 
-    <div class="lesson-grid">
+    <div class="course-grid">
 
-      <!-- ✅ LESSON 1 -->
-      <a href="lesson-1-musical-alphabet/lesson-1.html" class="lesson-card">
-        <div class="lesson-icon">🎼</div>
-        <div class="lesson-title">Lesson 1: Keyboard Introduction</div>
-        <div class="lesson-desc">
-          Learn the layout of the keyboard, black & white keys, and finger numbering.
+      <!-- ✅ KEYBOARD CLASS -->
+      <a href="keyboard/index.html" class="course-card keyboard">
+        <div class="course-icon">🎹</div>
+        <div class="course-title">Keyboard Class</div>
+        <div class="course-desc">
+          Learn keyboard step by step from basics to worship playing, chords, scales, and advanced accompaniment.
         </div>
-        <div class="level-tag">Beginner</div>
       </a>
 
-      <!-- ✅ LESSON 2 -->
-      <a href="lesson-2.html" class="lesson-card">
-        <div class="lesson-icon">🎵</div>
-        <div class="lesson-title">Lesson 2: Basics of Music Notes</div>
-        <div class="lesson-desc">
-          Understand Do-Re-Mi, C-D-E notes, and how they work on the keyboard.
+      <!-- ✅ MUSIC THEORY -->
+      <a href="theory/index.html" class="course-card theory">
+        <div class="course-icon">📘</div>
+        <div class="course-title">Music Theory</div>
+        <div class="course-desc">
+          Understand scales, intervals, chords, harmony, rhythm, and everything you need to become a strong musician.
         </div>
-        <div class="level-tag">Beginner</div>
       </a>
 
-      <!-- ✅ LESSON 3 -->
-      <a href="lesson-3.html" class="lesson-card">
-        <div class="lesson-icon">🎹</div>
-        <div class="lesson-title">Lesson 3: Major Scale Practice</div>
-        <div class="lesson-desc">
-          Learn C Major scale, finger movement, and scale practice techniques.
+      <!-- ✅ MUSIC PRODUCTION -->
+      <a href="production/index.html" class="course-card production">
+        <div class="course-icon">🎧</div>
+        <div class="course-title">Music Production</div>
+        <div class="course-desc">
+          Learn recording, mixing, editing, beat making, DAW usage, and how to produce professional music tracks.
         </div>
-        <div class="level-tag">Beginner</div>
-      </a>
-
-      <!-- ✅ LESSON 4 -->
-      <a href="lesson-4.html" class="lesson-card">
-        <div class="lesson-icon">🎶</div>
-        <div class="lesson-title">Lesson 4: Basic Chords</div>
-        <div class="lesson-desc">
-          Learn Major & Minor chords and how to use them in worship songs.
-        </div>
-        <div class="level-tag">Beginner</div>
       </a>
 
     </div>
@@ -155,13 +124,20 @@
   </div>
 
   <!-- ✅ LOAD SAME GLOBAL HEADER -->
-  <script>
-    fetch("../../header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+<script>
+fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Load Global Search ONLY AFTER header is injected
+    const script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("❌ Header load failed:", err));
+</script>
+
 
 </body>
 </html>
