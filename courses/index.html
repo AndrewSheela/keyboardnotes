@@ -124,13 +124,20 @@
   </div>
 
   <!-- ✅ LOAD SAME GLOBAL HEADER -->
-  <script>
-    fetch("../header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+<script>
+fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Load Global Search ONLY AFTER header is injected
+    const script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("❌ Header load failed:", err));
+</script>
+
 
 </body>
 </html>
