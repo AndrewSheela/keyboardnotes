@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Major Scales – Click by Click</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Segoe UI, sans-serif;
+  background:#0f172a;
+  color:#e5e7eb;
+  padding:30px;
+}
+
+h1{text-align:center;font-size:36px;}
+.subtitle{text-align:center;color:#9ca3af;margin-bottom:30px;}
+
+.formula-box{
+  background:#1f2937;
+  padding:18px;
+  border-radius:12px;
+  text-align:center;
+  font-size:20px;
+  margin-bottom:40px;
+}
+.formula-box span{
+  background:#020617;
+  padding:6px 12px;
+  border-radius:8px;
+  margin:0 8px;
+}
+
+.scale{
+  background:#020617;
+  padding:24px;
+  border-radius:18px;
+  margin-bottom:30px;
+  display:flex;
+  gap:20px;
+}
+
+.left{flex:2;}
+.right{
+  flex:1;
+  background:#111827;
+  border-radius:14px;
+  padding:16px;
+  font-size:17px;
+}
+
+.scale-title{font-size:28px;margin-bottom:10px;}
+
+.notes{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.note{
+  width:90px;
+  height:115px;
+  background:#1f2937;
+  border-radius:12px;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.note.show{display:flex;}
+
+.note-name{font-size:22px;font-weight:700;color:#facc15;}
+.finger{font-size:14px;color:#34d399;}
+.note-num{font-size:14px;color:#60a5fa;}
+
+.step-box{
+  background:#020617;
+  border-radius:12px;
+  padding:14px;
+  text-align:center;
+}
+
+.step-note{font-size:22px;color:#fde68a;}
+.W{color:#22c55e;font-weight:700;}
+.H{color:#ef4444;font-weight:700;}
+
+.controls{margin-top:15px;}
+button{
+  padding:8px 16px;
+  border:none;
+  border-radius:8px;
+  font-size:15px;
+  cursor:pointer;
+  margin-right:8px;
+}
+.next{background:#22c55e;color:#022c22;}
+.reset{background:#ef4444;color:white;}
+</style>
+</head>
+
+<body>
+
+<h1>🎹 Major Scales</h1>
+<div class="subtitle">One click = one step (Whole / Half)</div>
+
+<div class="formula-box">
+<strong>Major Scale Formula</strong><br><br>
+<span>W</span><span>W</span><span>H</span>
+<span>W</span><span>W</span><span>W</span><span>H</span>
+</div>
+
+<div id="container"></div>
+
+<script>
+const scales = [
+ {name:"C Major",notes:["C","D","E","F","G","A","B","C"]},
+ {name:"D Major",notes:["D","E","F#","G","A","B","C#","D"]},
+ {name:"E Major",notes:["E","F#","G#","A","B","C#","D#","E"]},
+ {name:"F Major",notes:["F","G","A","Bb","C","D","E","F"]},
+ {name:"G Major",notes:["G","A","B","C","D","E","F#","G"]},
+ {name:"A Major",notes:["A","B","C#","D","E","F#","G#","A"]},
+ {name:"B Major",notes:["B","C#","D#","E","F#","G#","A#","B"]}
+];
+
+const steps=["W","W","H","W","W","W","H"];
+const fingers=[1,2,3,1,2,3,4,5];
+const numbers=[1,2,3,4,5,6,7,8];
+
+const container=document.getElementById("container");
+
+scales.forEach((s,i)=>{
+  container.innerHTML+=`
+  <div class="scale">
+    <div class="left">
+      <div class="scale-title">${s.name}</div>
+      <div class="notes" id="notes-${i}">
+        ${s.notes.map((n,j)=>`
+          <div class="note">
+            <div class="note-name">${n}</div>
+            <div class="finger">Finger ${fingers[j]}</div>
+            <div class="note-num">Note ${numbers[j]}</div>
+          </div>`).join("")}
+      </div>
+      <div class="controls">
+        <button class="next" onclick="nextStep(${i})">▶ Next Step</button>
+        <button class="reset" onclick="resetScale(${i})">⟲ Reset</button>
+      </div>
+    </div>
+    <div class="right">
+      <div class="step-box" id="info-${i}">
+        Click “Next Step”
+      </div>
+    </div>
+  </div>`;
+});
+
+const progress={};
+
+function nextStep(i){
+  if(progress[i]===undefined) progress[i]=0;
+  const notes=document.querySelectorAll(`#notes-${i} .note`);
+  const info=document.getElementById(`info-${i}`);
+  const p=progress[i];
+  if(p>=notes.length) return;
+
+  notes[p].classList.add("show");
+
+  if(p===0){
+    info.innerHTML=`<div class="step-note">Start Note: ${scales[i].notes[0]}</div>`;
+  }else{
+    const st=steps[p-1];
+    info.innerHTML=`
+      <div class="step-note">
+        ${scales[i].notes[p-1]} → ${scales[i].notes[p]}
+      </div>
+      <div class="${st}">
+        ${st==="W"?"Whole Step (W)":"Half Step (H)"}
+      </div>`;
+  }
+  progress[i]++;
+}
+
+function resetScale(i){
+  document.querySelectorAll(`#notes-${i} .note`)
+    .forEach(n=>n.classList.remove("show"));
+  document.getElementById(`info-${i}`).innerHTML="Click “Next Step”";
+  progress[i]=0;
+}
+</script>
+
+</body>
+</html>

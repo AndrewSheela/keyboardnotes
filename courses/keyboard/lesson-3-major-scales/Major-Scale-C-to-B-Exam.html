@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Major Scale Construction Quiz</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for Inter font and custom colors --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'dark-bg': '#1f2937',
+                        'card-bg': '#374151',
+                        // Added custom colors for the yellow selection state
+                        'selected-bg': '#fde047',
+                        'selected-text': '#1f2937',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* General styling for a dark, engaging theme */
+        body {
+            background-color: #0d1117;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Styling for the note buttons */
+        .note-button {
+            transition: all 0.1s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* Custom scrollbar for mobile usability if note list is long */
+        .note-options-container {
+            /* Removed overflow-x: auto as the 7-column grid should handle wrapping responsibly */
+            white-space: normal;
+        }
+
+        /* Ensure the main container is centered and uses the full viewport width responsively */
+        #quiz-container {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container" class="max-w-4xl mx-auto p-4 flex flex-col items-center">
+
+        <!-- Header --><header class="w-full text-center py-6 bg-dark-bg rounded-b-xl shadow-lg border-b-4 border-primary">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">The Major Scale Construction Challenge</h1>
+            <!-- Font size increased from text-xl to text-2xl --><p class="mt-2 text-2xl font-medium text-secondary">Major Scale Formulae<br>W W H W W W H</p>
+            <p class="text-sm text-gray-400">(W - Whole Step &nbsp; H - Half Step)</p>
+        </header>
+
+        <!-- Quiz Area --><main class="w-full mt-8 p-4 md:p-8 bg-card-bg rounded-xl shadow-2xl">
+
+            <!-- Current Key & Score Display --><div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-gray-600 pb-4">
+                <div class="text-lg font-semibold text-gray-300">
+                    Question <span id="current-question-index">1</span> of 7
+                </div>
+                <h2 class="text-3xl font-bold text-yellow-300 my-2 md:my-0">
+                    Key: <span id="current-key">C</span> Major
+                </h2>
+                <div class="text-lg font-semibold text-gray-300">
+                    Score: <span id="current-score">0</span> / 56
+                </div>
+            </div>
+
+            <!-- Note Input Slots --><div id="input-slots" class="grid grid-cols-4 md:grid-cols-8 gap-3 md:gap-4 mb-8">
+                <!-- Slots will be injected here --></div>
+
+            <!-- Action Buttons --><div id="action-buttons-container" class="flex justify-center space-x-4 mb-8">
+                <button id="clear-button" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg note-button transition duration-150 ease-in-out disabled:opacity-50" disabled>
+                    Clear Last
+                </button>
+                <button id="submit-button" class="px-8 py-3 bg-primary hover:bg-indigo-600 text-white font-bold rounded-lg note-button transition duration-150 ease-in-out disabled:opacity-50">
+                    Submit Scale
+                </button>
+            </div>
+            
+            <!-- Status/Auto-advance Message --><div id="status-message" class="hidden text-center mt-4 mb-8">
+                <p class="text-xl font-medium text-yellow-300"></p>
+            </div>
+
+
+            <!-- Note Options --><div class="note-options-container p-3 border border-gray-600 rounded-lg">
+                <h3 class="text-md font-semibold mb-3 text-gray-300">Available Notes (Click to select):</h3>
+                <!-- Updated gap from gap-2 to gap-1 for tighter vertical spacing --><div id="note-options" class="flex flex-col gap-1">
+                    <!-- Note buttons will be injected here by JS in 3 rows --></div>
+            </div>
+            
+            <!-- Quiz End Message --><div id="quiz-end-message" class="hidden text-center mt-8 p-6 bg-green-800/50 border border-green-700 rounded-lg">
+                <h3 class="text-3xl font-bold text-green-300">Quiz Complete!</h3>
+                <p class="mt-2 text-xl text-white">Final Score: <span id="final-score">0</span> / 56</p>
+                <p class="mt-4 text-gray-200">Great work applying the W-W-H-W-W-W-H formula. Hit the refresh button to try again!</p>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+        // --- DATA DEFINITIONS ---
+
+        // Canonical Major Scales (Root to Octave, 8 notes) for C major to B major
+        const CANONICAL_SCALES = {
+            "C": ["C", "D", "E", "F", "G", "A", "B", "C"],
+            "D": ["D", "E", "F#", "G", "A", "B", "C#", "D"],
+            "E": ["E", "F#", "G#", "A", "B", "C#", "D#", "E"],
+            "F": ["F", "G", "A", "Bb", "C", "D", "E", "F"],
+            "G": ["G", "A", "B", "C", "D", "E", "F#", "G"],
+            "A": ["A", "B", "C#", "D", "E", "F#", "G#", "A"],
+            "B": ["B", "C#", "D#", "E", "F#", "G#", "A#", "B"],
+        };
+
+        // Full list of available note options for the buttons (21 total) - NOW WILL BE SHUFFLED
+        const ALL_NOTE_OPTIONS = [ // Renamed to distinguish from shuffled version
+            "C", "D", "E", "F", "G", "A", "B",
+            "C#", "D#", "E#", "F#", "G#", "A#", "B#",
+            "Cb", "Db", "Eb", "Fb", "Gb", "Ab", "Bb"
+        ];
+        
+        // --- QUIZ STATE ---
+        let scaleKeys = Object.keys(CANONICAL_SCALES); // ["C", "D", "E", "F", "G", "A", "B"]
+        let shuffledKeys = [];
+        let currentScaleIndex = 0;
+        let currentScaleUser = []; // Array to hold the user's 8 selected notes
+        let totalScore = 0;
+        const totalScales = scaleKeys.length;
+        let isSubmitting = false; // Locks all user input (notes, clear, submit) for 2 seconds (during the transition).
+        let isFeedbackMode = false; // Controls whether to display the red/green feedback colors.
+
+        // --- DOM ELEMENTS ---
+        const currentKeyEl = document.getElementById('current-key');
+        const currentScoreEl = document.getElementById('current-score');
+        const questionIndexEl = document.getElementById('current-question-index');
+        const inputSlotsEl = document.getElementById('input-slots');
+        const noteOptionsEl = document.getElementById('note-options');
+        const submitButton = document.getElementById('submit-button');
+        const clearButton = document.getElementById('clear-button');
+        const actionButtonsContainer = document.getElementById('action-buttons-container');
+        const statusMessageEl = document.getElementById('status-message');
+        const quizEndMessageEl = document.getElementById('quiz-end-message');
+        const finalScoreEl = document.getElementById('final-score');
+
+        // --- UTILITY FUNCTIONS ---
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates (Knuth) algorithm.
+         * @param {Array} array The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * Disables or enables all note option buttons.
+         * @param {boolean} disabled True to disable, false to enable.
+         */
+        function setNoteOptionsDisabled(disabled) {
+            Array.from(noteOptionsEl.querySelectorAll('button')).forEach(btn => btn.disabled = disabled);
+        }
+
+        /**
+         * Renders the 8 note input slots for the current scale.
+         * @param {number} [feedbackIndex=-1] The index of the scale to display feedback for. Only used when isFeedbackMode is true.
+         */
+        function renderInputSlots(feedbackIndex = -1) {
+            inputSlotsEl.innerHTML = '';
+            
+            // The isFeedbackMode flag now explicitly controls feedback visibility
+            const isShowingFeedback = isFeedbackMode && feedbackIndex !== -1;
+            
+            let canonicalScale = null;
+
+            if (isShowingFeedback) {
+                // Use the explicit index passed during submission
+                const currentKey = shuffledKeys[feedbackIndex];
+                canonicalScale = CANONICAL_SCALES[currentKey];
+                
+                if (!canonicalScale) {
+                    console.error("Could not find canonical scale for key:", currentKey);
+                    canonicalScale = [];
+                }
+            }
+
+            for (let i = 0; i < 8; i++) {
+                const note = currentScaleUser[i] || '—';
+                const slotDiv = document.createElement('div');
+                
+                // Base classes for the note slot (large font for notes)
+                let classList = "w-full h-16 md:h-20 flex items-center justify-center border-2 rounded-lg text-xl md:text-2xl font-semibold transition-colors duration-150 ";
+                
+                if (note === '—') {
+                    // Empty slot style
+                    classList += "border-gray-500 bg-gray-700 text-gray-400";
+                } else {
+                    // Filled slot style - Yellow box and black font
+                    classList += "border-selected-bg bg-selected-bg text-selected-text"; 
+                }
+
+                if (isShowingFeedback && canonicalScale && canonicalScale.length === 8) {
+                    // Robust comparison using trim() to handle any accidental whitespace
+                    const userNote = currentScaleUser[i].trim();
+                    const correctNote = canonicalScale[i].trim();
+                    const isCorrect = userNote === correctNote;
+                    
+                    if (i === 0) { // Log the scale being checked for debugging
+                         console.log(`[DEBUG] Canonical Scale for Feedback: ${canonicalScale.join(', ')}`);
+                    }
+                    
+                    // Show correct/incorrect feedback only when in Feedback Mode
+                    classList = classList.replace("border-selected-bg bg-selected-bg text-selected-text", ""); // Remove yellow style for feedback
+                    classList += isCorrect ? " border-secondary bg-secondary/30 text-secondary" : " border-red-500 bg-red-500/30 text-red-400";
+                }
+                
+                slotDiv.className = classList;
+                slotDiv.textContent = note;
+                inputSlotsEl.appendChild(slotDiv);
+            }
+            
+            // Update button states.
+            // Action buttons are disabled if submitting (transitioning) or in Feedback Mode, 
+            // or if criteria aren't met (for clear/submit).
+            const isScaleComplete = currentScaleUser.length === 8;
+            
+            clearButton.disabled = isSubmitting || isFeedbackMode || currentScaleUser.length === 0;
+            submitButton.disabled = isSubmitting || isFeedbackMode || !isScaleComplete;
+
+            // Important: Disable note options only if submitting OR if the scale is complete and NOT in feedback mode
+            if (isSubmitting || isFeedbackMode || isScaleComplete) {
+                setNoteOptionsDisabled(true);
+            } else {
+                setNoteOptionsDisabled(false);
+            }
+        }
+
+        /**
+         * Renders the clickable note option buttons in 3 explicit rows (7 notes each).
+         */
+        function renderNoteOptions() {
+            noteOptionsEl.innerHTML = '';
+            
+            // Create a shuffled copy of ALL_NOTE_OPTIONS for display
+            const shuffledNoteOptions = [...ALL_NOTE_OPTIONS];
+            shuffleArray(shuffledNoteOptions);
+
+            // Split the shuffled notes into three groups of 7
+            const rowsData = [
+                shuffledNoteOptions.slice(0, 7),
+                shuffledNoteOptions.slice(7, 14),
+                shuffledNoteOptions.slice(14, 21)
+            ];
+
+            rowsData.forEach((row, index) => {
+                const rowDiv = document.createElement('div');
+                // Reduced gap from gap-2 to gap-1 and adjusted spacing for the row separator
+                rowDiv.className = `w-full grid grid-cols-7 gap-1 ${index < 2 ? 'mb-1 pb-1 border-b border-gray-700' : ''}`;
+                
+                row.forEach(note => {
+                    const button = document.createElement('button');
+                    button.textContent = note;
+                    // Increased font size from text-base to text-lg
+                    button.className = "note-button w-full px-2 py-2.5 bg-card-bg border border-gray-600 text-white text-lg rounded-lg hover:bg-primary/50 disabled:opacity-50";
+                    button.addEventListener('click', () => selectNote(note));
+                    rowDiv.appendChild(button);
+                });
+                noteOptionsEl.appendChild(rowDiv);
+            });
+        }
+
+        /**
+         * Adds a note to the user's current scale construction.
+         * @param {string} note The note name (e.g., "F#").
+         */
+        function selectNote(note) {
+            // New check to prevent interaction during submission delay
+            if (isSubmitting || isFeedbackMode) return;
+
+            if (currentScaleUser.length < 8) {
+                currentScaleUser.push(note);
+                renderInputSlots();
+            }
+            
+            // Disabling is handled inside renderInputSlots now for centralized control.
+        }
+
+        /**
+         * Removes the last selected note.
+         */
+        function clearLastNote() {
+            // New check to prevent interaction during submission delay
+            if (isSubmitting || isFeedbackMode) return;
+
+            if (currentScaleUser.length > 0) {
+                currentScaleUser.pop();
+                // Re-enable all note options happens in renderInputSlots
+                renderInputSlots();
+            }
+        }
+
+        /**
+         * Calculates the score for the current scale, shows feedback, and initiates the auto-advance.
+         */
+        function submitScale() {
+            if (currentScaleUser.length !== 8 || isSubmitting || isFeedbackMode) return;
+
+            // CAPTURE THE INDEX OF THE SUBMITTED QUESTION BEFORE INCREMENTING
+            const submittedIndex = currentScaleIndex;
+
+            // Set state to enter feedback mode and prevent interaction
+            isSubmitting = true;
+            isFeedbackMode = true; // IMPORTANT: Activate feedback mode
+
+            const submittedKey = shuffledKeys[submittedIndex];
+            console.log(`[QUIZ FLOW] Submitting scale for key: ${submittedKey} at Index ${submittedIndex}`);
+
+            const canonicalScale = CANONICAL_SCALES[submittedKey];
+            let scaleScore = 0;
+
+            // Score calculation: 1 point per correctly placed note
+            for (let i = 0; i < 8; i++) {
+                // Use trim for robust scoring
+                if (currentScaleUser[i].trim() === canonicalScale[i].trim()) {
+                    scaleScore++;
+                }
+            }
+
+            totalScore += scaleScore;
+            currentScoreEl.textContent = totalScore;
+
+            // Hide action buttons (they are disabled via isSubmitting, but hidden for cleaner UI)
+            actionButtonsContainer.classList.add('hidden');
+            
+            // Render the slots to show correctness feedback, passing the submittedIndex
+            renderInputSlots(submittedIndex); 
+
+            // Increment index here to prepare for the next question (or quiz end)
+            currentScaleIndex++;
+
+            // Show status message with score and timer
+            const statusText = currentScaleIndex <= totalScales
+                ? `You scored ${scaleScore}/8 notes correct. Moving to next scale in 2 seconds...`
+                : `You scored ${scaleScore}/8 notes correct. Quiz finished in 2 seconds!`;
+            
+            statusMessageEl.querySelector('p').textContent = statusText;
+            statusMessageEl.classList.remove('hidden');
+
+            // CRITICAL: Disable ALL note buttons (already done via isSubmitting/isFeedbackMode in renderInputSlots)
+
+            // Automatically move to the next scale after 2 seconds
+            setTimeout(loadNextScale, 2000); // 2000 milliseconds = 2 seconds
+        }
+
+        /**
+         * Loads the next scale question or ends the quiz.
+         */
+        function loadNextScale() {
+            // Reset the submitting and feedback flags
+            isSubmitting = false;
+            isFeedbackMode = false;
+            statusMessageEl.classList.add('hidden');
+            
+            if (currentScaleIndex < totalScales) {
+                // Reset state for the new question
+                currentScaleUser = [];
+                const nextKey = shuffledKeys[currentScaleIndex];
+                
+                console.log(`[QUIZ FLOW] Loading next scale: ${nextKey} at Index ${currentScaleIndex}`);
+
+                // Update UI header
+                questionIndexEl.textContent = currentScaleIndex + 1;
+                currentKeyEl.textContent = nextKey;
+                
+                // Show action buttons again
+                actionButtonsContainer.classList.remove('hidden');
+
+                // Render new slots (passing no feedback index, which defaults to -1 and prevents feedback)
+                renderInputSlots(); 
+
+            } else {
+                // End Quiz
+                console.log("[QUIZ FLOW] Quiz finished.");
+                finalScoreEl.textContent = totalScore;
+                document.querySelector('main').classList.add('hidden');
+                quizEndMessageEl.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Initializes the quiz state and renders the starting view.
+         */
+        function initializeQuiz() {
+            // 1. Shuffle the scale keys (C, D, E, F, G, A, B)
+            shuffledKeys = [...scaleKeys]; // Create a copy
+            shuffleArray(shuffledKeys);
+            
+            // 2. Set initial state and UI
+            currentScaleIndex = 0;
+            totalScore = 0;
+            isSubmitting = false;
+            isFeedbackMode = false;
+            currentScoreEl.textContent = totalScore;
+            
+            // 3. Render note options
+            renderNoteOptions();
+            
+            // 4. Attach event listeners
+            submitButton.addEventListener('click', submitScale);
+            clearButton.addEventListener('click', clearLastNote);
+
+            // 5. Load the first question
+            loadNextScale();
+        }
+
+        // Start the quiz once the DOM is fully loaded
+        window.onload = initializeQuiz;
+
+    </script>
+</body>
+</html>

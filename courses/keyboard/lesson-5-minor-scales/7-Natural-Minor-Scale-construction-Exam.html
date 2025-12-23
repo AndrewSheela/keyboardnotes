@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minor Scale Construction Mastery</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for Inter font and custom colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'success': '#10b981', /* Use secondary for success */
+                        'danger': '#ef4444', /* Use tailwind red for danger */
+                        'dark-bg': '#1f2937',
+                        'card-bg': '#374151',
+                        'selected-bg': '#fde047',
+                        'selected-text': '#1f2937',
+                        'level-btn': '#6366f1',
+                        'level-active': '#c4b5fd',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* General styling for a dark, engaging theme */
+        body {
+            background-color: #0d1117;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Styling for the note buttons */
+        .note-button {
+            transition: all 0.1s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* Ensure the main container is centered and uses the full viewport width responsively */
+        #quiz-container {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container" class="max-w-4xl mx-auto p-4 flex flex-col items-center">
+
+        <!-- Header -->
+        <header class="w-full text-center py-6 bg-dark-bg rounded-b-xl shadow-lg border-b-4 border-primary">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">Minor Scale Construction Mastery</h1>
+            <p class="mt-2 text-xl font-medium text-secondary">Natural Minor Scale Formulae: W H W W H W W</p>
+            <p class="text-sm text-gray-400">(W - Whole Step &nbsp; H - Half Step)</p>
+        </header>
+
+        <!-- Quiz Area -->
+        <main class="w-full mt-8 p-4 md:p-8 bg-card-bg rounded-xl shadow-2xl">
+
+            <!-- Current Key, Question Index, and SCORE Display -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-gray-600 pb-4">
+                <div class="text-lg font-semibold text-gray-300">
+                    Question <span id="current-question-index">1</span> of 7
+                </div>
+                <h2 class="text-3xl font-bold text-yellow-300 my-2 md:my-0">
+                    Key: <span id="current-key">C</span> Minor
+                </h2>
+                <div class="text-lg font-semibold text-gray-300">
+                    Score: <span id="total-score">0</span> / 56
+                </div> 
+            </div>
+
+            <!-- Note Input Slots -->
+            <div id="input-slots" class="grid grid-cols-4 md:grid-cols-8 gap-3 md:gap-4 mb-8">
+                <!-- Slots will be injected here -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="action-buttons-container" class="flex justify-center space-x-4 mb-8">
+                <button id="clear-button" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg note-button transition duration-150 ease-in-out disabled:opacity-50" disabled>
+                    Clear Last
+                </button>
+                <button id="submit-button" class="px-8 py-3 bg-primary hover:bg-indigo-600 text-white font-bold rounded-lg note-button transition duration-150 ease-in-out disabled:opacity-50">
+                    Check Scale
+                </button>
+            </div>
+            
+            <!-- Status/Auto-advance Message -->
+            <div id="status-message" class="hidden text-center mt-4 mb-8">
+                <!-- Status text will be injected here -->
+                <p class="text-xl font-medium"></p>
+            </div>
+
+
+            <!-- Note Options -->
+            <div class="note-options-container p-3 border border-gray-600 rounded-lg">
+                <h3 class="text-md font-semibold mb-3 text-gray-300">Available Notes (Click to select):</h3>
+                <div id="note-options" class="flex flex-col gap-2">
+                    <!-- Note buttons will be injected here by JS -->
+                </div>
+            </div>
+            
+            <!-- Quiz End Message -->
+            <div id="quiz-end-message" class="hidden text-center mt-8 p-6 bg-green-800/50 border border-green-700 rounded-lg">
+                <h3 class="text-3xl font-bold text-green-300">Mastery Complete!</h3>
+                <p class="mt-4 text-gray-200">You completed the quiz! Your final score is 0 out of 56. Hit the refresh button to try again!</p>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+        // --- DATA DEFINITIONS ---
+
+        // Canonical Natural Minor Scales (Root to Octave, 8 notes) for C minor to B minor
+        const CANONICAL_SCALES = {
+            "C": ["C", "D", "Eb", "F", "G", "Ab", "Bb", "C"],
+            "D": ["D", "E", "F", "G", "A", "Bb", "C", "D"],
+            "E": ["E", "F#", "G", "A", "B", "C", "D", "E"],
+            "F": ["F", "G", "Ab", "Bb", "C", "Db", "Eb", "F"],
+            "G": ["G", "A", "Bb", "C", "D", "Eb", "F", "G"],
+            "A": ["A", "B", "C", "D", "E", "F", "G", "A"],
+            "B": ["B", "C#", "D", "E", "F#", "G", "A", "B"],
+        };
+
+        // Full list of available note options for the buttons (21 total)
+        const ALL_NOTE_OPTIONS = [
+            "C", "D", "E", "F", "G", "A", "B",
+            "C#", "D#", "E#", "F#", "G#", "A#", "B#",
+            "Cb", "Db", "Eb", "Fb", "Gb", "Ab", "Bb"
+        ];
+        
+        // --- QUIZ STATE ---
+        let scaleKeys = Object.keys(CANONICAL_SCALES); 
+        let shuffledKeys = [];
+        let currentScaleIndex = 0;
+        let currentScaleUser = []; 
+        const totalScales = scaleKeys.length;
+        let isSubmitting = false; // Locks all user input during the feedback delay.
+        let isFeedbackMode = false; // Controls whether to display the red/green feedback colors.
+        let totalScore = 0; 
+
+        // --- DOM ELEMENTS ---
+        const currentKeyEl = document.getElementById('current-key');
+        const questionIndexEl = document.getElementById('current-question-index');
+        const totalScoreEl = document.getElementById('total-score'); 
+        const inputSlotsEl = document.getElementById('input-slots');
+        const noteOptionsEl = document.getElementById('note-options');
+        const submitButton = document.getElementById('submit-button');
+        const clearButton = document.getElementById('clear-button');
+        const actionButtonsContainer = document.getElementById('action-buttons-container');
+        const statusMessageEl = document.getElementById('status-message');
+        const statusTextEl = statusMessageEl.querySelector('p');
+        const quizEndMessageEl = document.getElementById('quiz-end-message');
+        const mainQuizArea = document.querySelector('main');
+
+        // --- UTILITY FUNCTIONS ---
+
+        /** Shuffles an array in place. */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /** Disables or enables all note option buttons. */
+        function setNoteOptionsDisabled(disabled) {
+            Array.from(noteOptionsEl.querySelectorAll('button')).forEach(btn => btn.disabled = disabled);
+        }
+
+        /** Renders the 8 note input slots and applies feedback styles if in feedback mode. */
+        function renderInputSlots(feedbackIndex = -1) {
+            inputSlotsEl.innerHTML = '';
+            
+            const isShowingFeedback = isFeedbackMode && feedbackIndex !== -1;
+            let canonicalScale = null;
+
+            if (isShowingFeedback) {
+                const currentKey = shuffledKeys[feedbackIndex];
+                canonicalScale = CANONICAL_SCALES[currentKey];
+            }
+
+            for (let i = 0; i < 8; i++) {
+                const note = currentScaleUser[i] || '—';
+                const slotDiv = document.createElement('div');
+                
+                let classList = "w-full h-16 md:h-20 flex items-center justify-center border-2 rounded-lg text-xl md:text-2xl font-semibold transition-colors duration-150 ";
+                
+                if (note === '—') {
+                    // Empty slot style
+                    classList += "border-gray-500 bg-gray-700 text-gray-400";
+                } else {
+                    // Filled slot style - Yellow box and black font
+                    classList += "border-selected-bg bg-selected-bg text-selected-text"; 
+                }
+
+                if (isShowingFeedback && canonicalScale && canonicalScale.length === 8) {
+                    const userNote = (currentScaleUser[i] || '').trim(); // Handle undefined if user didn't finish
+                    const correctNote = canonicalScale[i].trim();
+                    const isCorrect = userNote === correctNote;
+                    
+                    // Apply success/danger feedback colors
+                    classList = classList.replace("border-selected-bg bg-selected-bg text-selected-text", "");
+                    classList = classList.replace("border-gray-500 bg-gray-700 text-gray-400", ""); // Also remove default empty styles
+                    
+                    // Add padding to ensure text alignment isn't thrown off by color change
+                    classList += " p-1"; 
+                    
+                    if (isCorrect) {
+                        classList += " border-success bg-success/30 text-success";
+                    } else if (userNote !== '') {
+                        // Incorrect note provided
+                        classList += " border-danger bg-danger/30 text-danger";
+                    } else {
+                        // Missing note, show empty style but with danger border to highlight omission
+                         classList += " border-danger bg-gray-700 text-gray-400";
+                    }
+                }
+                
+                slotDiv.className = classList;
+                slotDiv.textContent = note;
+                inputSlotsEl.appendChild(slotDiv);
+            }
+            
+            // Update button states
+            const isScaleComplete = currentScaleUser.length === 8;
+            
+            clearButton.disabled = isSubmitting || isFeedbackMode || currentScaleUser.length === 0;
+            submitButton.disabled = isSubmitting || isFeedbackMode || !isScaleComplete;
+
+            // Disable note options only if locked or scale is complete and not in reset mode
+            setNoteOptionsDisabled(isSubmitting || isFeedbackMode || isScaleComplete);
+        }
+
+        /** Renders the clickable note option buttons (shuffled). */
+        function renderNoteOptions() {
+            noteOptionsEl.innerHTML = '';
+
+            const optionsToRender = [...ALL_NOTE_OPTIONS]; // Start with all notes
+            shuffleArray(optionsToRender); // <<< SHUFFLE THE OPTIONS
+
+            const gridDiv = document.createElement('div');
+            gridDiv.className = `w-full grid grid-cols-3 sm:grid-cols-7 gap-2`; 
+            
+            optionsToRender.forEach(note => {
+                const button = createNoteButton(note);
+                gridDiv.appendChild(button);
+            });
+            noteOptionsEl.appendChild(gridDiv);
+            
+            setNoteOptionsDisabled(isSubmitting || isFeedbackMode || currentScaleUser.length === 8);
+        }
+        
+        /** Helper function to create a single note button. */
+        function createNoteButton(note) {
+            const button = document.createElement('button');
+            button.textContent = note;
+            button.className = "note-button w-full px-2 py-2.5 bg-card-bg border border-gray-600 text-white text-base rounded-lg hover:bg-primary/50 disabled:opacity-50";
+            button.addEventListener('click', () => selectNote(note));
+            return button;
+        }
+
+
+        /** Adds a note to the user's current scale construction. */
+        function selectNote(note) {
+            if (isSubmitting || isFeedbackMode) return;
+
+            if (currentScaleUser.length < 8) {
+                currentScaleUser.push(note);
+                renderInputSlots();
+            }
+        }
+
+        /** Removes the last selected note. */
+        function clearLastNote() {
+            if (isSubmitting || isFeedbackMode) return;
+
+            if (currentScaleUser.length > 0) {
+                currentScaleUser.pop();
+                renderInputSlots();
+            }
+        }
+
+        /** Resets the current question's input for a new attempt. */
+        function resetCurrentScale() {
+            isSubmitting = false;
+            isFeedbackMode = false;
+            currentScaleUser = [];
+            
+            statusMessageEl.classList.add('hidden');
+            actionButtonsContainer.classList.remove('hidden');
+            
+            renderInputSlots(); 
+            renderNoteOptions(); 
+        }
+
+        /** Loads the next scale question or ends the quiz. */
+        function loadNextScale() {
+            resetCurrentScale(); // Resets flags and UI
+            mainQuizArea.classList.remove('hidden');
+            quizEndMessageEl.classList.add('hidden');
+            
+            if (currentScaleIndex < totalScales) {
+                const nextKey = shuffledKeys[currentScaleIndex];
+                
+                // Update UI header
+                questionIndexEl.textContent = currentScaleIndex + 1;
+                currentKeyEl.textContent = nextKey;
+
+            } else {
+                // End Quiz
+                mainQuizArea.classList.add('hidden');
+                quizEndMessageEl.classList.remove('hidden');
+                quizEndMessageEl.querySelector('p').textContent = `You completed the quiz! Your final score is ${totalScore} out of ${totalScales * 8}. Hit the refresh button to try again!`;
+            }
+        }
+        
+        /** Calculates the correctness of the scale and handles advancement/retry. */
+        function submitScale() {
+            if (currentScaleUser.length !== 8 || isSubmitting || isFeedbackMode) return;
+
+            const submittedIndex = currentScaleIndex;
+
+            // Set state to enter feedback mode and prevent interaction
+            isSubmitting = true;
+            isFeedbackMode = true;
+
+            const submittedKey = shuffledKeys[submittedIndex];
+            const canonicalScale = CANONICAL_SCALES[submittedKey];
+            let scaleScore = 0;
+
+            // Score calculation: 1 point per correctly placed note
+            for (let i = 0; i < 8; i++) {
+                if ((currentScaleUser[i] || '').trim() === canonicalScale[i].trim()) {
+                    scaleScore++;
+                }
+            }
+            
+            // *** SCORING LOGIC ***
+            totalScore += scaleScore; // Add score for this attempt
+            totalScoreEl.textContent = totalScore; // Update global score UI
+            
+            // Hide action buttons
+            actionButtonsContainer.classList.add('hidden');
+
+            // Render the slots to show correctness feedback (red/green highlights)
+            renderInputSlots(submittedIndex); 
+
+            // Create dynamic status message
+            let message = `You scored ${scaleScore} out of 8 notes correctly on this scale.`;
+            
+            if (scaleScore === 8) {
+                statusTextEl.textContent = `${message} Perfect score! Moving to the next key in 3 seconds...`;
+                statusTextEl.classList.remove('text-danger');
+                statusTextEl.classList.add('text-success');
+            } else {
+                statusTextEl.textContent = `${message} Review the red notes. Moving to the next key in 3 seconds...`;
+                statusTextEl.classList.remove('text-success');
+                statusTextEl.classList.add('text-danger');
+            }
+
+            statusMessageEl.classList.remove('hidden');
+
+            // Always advance to the next question after 3 seconds of feedback
+            currentScaleIndex++;
+            setTimeout(loadNextScale, 3000); 
+        }
+
+
+        /** Initializes the quiz state and renders the starting view. */
+        function initializeQuiz(attachListeners = true) {
+            // 1. Shuffle the scale keys to keep the question order random
+            shuffledKeys = [...scaleKeys]; 
+            shuffleArray(shuffledKeys);
+            
+            // 2. Set initial state 
+            currentScaleIndex = 0;
+            isSubmitting = false;
+            isFeedbackMode = false;
+            totalScore = 0; // Ensure score resets
+            totalScoreEl.textContent = totalScore; // Set initial score display
+            
+            // 3. Render note options (now shuffled)
+            renderNoteOptions();
+            
+            // 4. Attach event listeners (only once on load)
+            if (attachListeners) {
+                submitButton.addEventListener('click', submitScale);
+                clearButton.addEventListener('click', clearLastNote);
+                // Level buttons listeners removed
+            }
+            
+            // 5. Load the first question
+            loadNextScale();
+        }
+
+        // Start the quiz once the DOM is fully loaded
+        window.onload = () => initializeQuiz(true);
+
+    </script>
+</body>
+</html>

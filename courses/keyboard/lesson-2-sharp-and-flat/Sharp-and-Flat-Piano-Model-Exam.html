@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharp and Flat Piano Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- Mobile-First CSS Variables --- */
+        :root {
+            /* 90vw / 8 keys = 11.25vw. */
+            --key-width: 11.25vw; 
+            --white-key-height: calc(var(--key-width) * 5);
+            --black-key-height: calc(var(--key-width) * 3);
+            --black-key-width: calc(var(--key-width) * 0.6);
+        }
+
+        /* --- Desktop/Tablet Override (for screens >= 768px) --- */
+        @media (min-width: 768px) {
+            :root {
+                --key-width: 70px; 
+                --white-key-height: 350px;
+                --black-key-height: 210px;
+                --black-key-width: 42px;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            /* Center the content vertically and horizontally */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .piano-wrapper {
+            width: 100%;
+            overflow-x: hidden; 
+        }
+        
+        .piano-container {
+            display: flex;
+            position: relative;
+            margin: 0 auto;
+            /* Set width based on keys */
+            width: calc(8 * var(--key-width)); 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            background-color: #333;
+            padding: 10px 0;
+        }
+
+        .white-key, .black-key {
+            transition: background-color 0.05s ease, transform 0.05s ease, box-shadow 0.1s;
+            cursor: pointer;
+        }
+
+        /* Keys are disabled when the quiz is not active (initial or finished state) */
+        .piano-inactive .white-key,
+        .piano-inactive .black-key {
+            cursor: not-allowed;
+            opacity: 0.8;
+            pointer-events: none; /* Disable clicking */
+        }
+        
+        .white-key {
+            width: var(--key-width);
+            height: var(--white-key-height);
+            background-color: #ffffff;
+            border: 1px solid #00000020;
+            box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .white-key:active {
+            background-color: #ddd;
+            transform: translateY(2px);
+            box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .black-key {
+            width: var(--black-key-width);
+            height: var(--black-key-height);
+            background-color: #1a1a1a;
+            position: absolute;
+            z-index: 2;
+            box-shadow: inset 0 -8px 0 #00000080, 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 0 0 4px 4px;
+        }
+
+        .black-key:active {
+            background-color: #000;
+            transform: translateY(2px);
+            box-shadow: inset 0 -4px 0 #00000080;
+        }
+
+        .correct-key {
+            background-color: #34D399 !important; /* Green */
+        }
+        .incorrect-key {
+            background-color: #F87171 !important; /* Red */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Overall Application Title -->
+    <div class="w-full max-w-4xl text-center mb-4">
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">Sharp & Flat Musical Quiz</h1>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!--                  MAIN QUIZ VIEW                      -->
+    <!-- ---------------------------------------------------- -->
+    <div id="quiz-view" class="w-full max-w-4xl flex flex-col items-center">
+        
+        <!-- The old external scoreboard was removed -->
+
+        <p id="instruction-text" class="text-gray-600 mb-4 text-lg font-medium">Click the key on the piano that corresponds to the note shown.</p>
+
+        <!-- Quiz Display (Question, Score, and Feedback) -->
+        <div id="quiz-area" class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm flex flex-col space-y-4 border-4 border-indigo-200">
+            
+            <!-- Top Row: Question and Score (Side-by-Side) -->
+            <div class="flex justify-between items-center w-full">
+                
+                <!-- Question Display (Takes up most space, aligns left) -->
+                <!-- Increased size for better visual impact -->
+                <div id="question-display" class="text-7xl sm:text-8xl font-black text-gray-900 tracking-wider h-16 flex items-center justify-start w-1/2">
+                    
+                </div>
+                
+                <!-- Scoreboard and Question Counter (Aligned Right, Bigger Numbers) -->
+                <div class="text-lg sm:text-xl font-semibold text-gray-700 text-right w-1/2"> 
+                    
+                    <!-- NEW: Question Progress Indicator -->
+                    <span class="block text-sm sm:text-base text-gray-500">Question: <span id="current-question-num" class="font-extrabold text-gray-900">0</span> / <span id="total-questions-ref" class="inline">25</span></span>
+                    
+                    <!-- MODIFIED: Score Display -->
+                    <span class="block text-sm sm:text-base text-gray-500 mt-1">Score:</span>
+                    <span id="score-display" class="text-indigo-600 font-extrabold text-4xl sm:text-5xl">0</span>
+                </div>
+            </div>
+            
+            <!-- Feedback (Bottom) -->
+            <div id="feedback-message" class="h-6 text-lg font-semibold text-center transition-opacity duration-300 w-full"></div>
+        </div>
+
+        <!-- Piano Keyboard Wrapper -->
+        <div class="mt-10 mb-8 w-full flex justify-center piano-wrapper">
+            <div id="piano-keys" class="piano-container piano-inactive">
+                <!-- Keys will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Control Button (Start Quiz / Try Again) -->
+        <div class="w-full max-w-sm">
+             <button id="control-btn" class="w-full py-3 px-6 bg-indigo-600 text-white font-bold rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                Start Quiz
+            </button>
+        </div>
+    </div>
+
+    <!-- --- JAVASCRIPT LOGIC --- -->
+    <script>
+
+        // --- QUIZ DATA & STATE ---
+        const MAX_QUESTIONS = 25; // Total number of questions
+        
+        const noteMap = {
+            'C': 'key-C', 'B#': 'key-C', 'Db': 'key-Cs', 'C#': 'key-Cs', 
+            'D': 'key-D', 'Eb': 'key-Ds', 'D#': 'key-Ds', 
+            'E': 'key-E', 'Fb': 'key-E', 
+            'F': 'key-F', 'E#': 'key-F', 'Gb': 'key-Fs', 'F#': 'key-Fs', 
+            'G': 'key-G', 'Ab': 'key-Gs', 'G#': 'key-Gs', 
+            'A': 'key-A', 'Bb': 'key-As', 'A#': 'key-As', 
+            'B': 'key-B', 'Cb': 'key-B',
+        };
+        const naturalNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        // We only quiz on sharp/flat notes (non-natural notes)
+        const questions = Object.keys(noteMap).filter(note => !naturalNotes.includes(note)); 
+        
+        let currentScore = 0;
+        let totalQuestions = 0; // The current question count (1 to MAX_QUESTIONS)
+        let currentQuestion = '';
+        let correctKeyId = ''; 
+        let nextQuestionTimer = null;
+        let lastQuestionIndex = -1; // Track the index of the previously asked question
+        
+        // State Management
+        const STATE_INITIAL = 'initial';
+        const STATE_ACTIVE = 'active';
+        const STATE_FINISHED = 'finished';
+        let quizState = STATE_INITIAL;
+
+
+        // --- DOM Elements ---
+        const $questionDisplay = document.getElementById('question-display');
+        const $scoreDisplay = document.getElementById('score-display');
+        const $currentQuestionNum = document.getElementById('current-question-num'); // New element for current question number
+        const $totalQuestionsRef = document.getElementById('total-questions-ref'); // New element for total questions
+        const $feedbackMessage = document.getElementById('feedback-message');
+        const $pianoKeys = document.getElementById('piano-keys');
+        const $controlBtn = document.getElementById('control-btn'); 
+        const $instructionText = document.getElementById('instruction-text');
+
+        // --- QUIZ FUNCTIONS ---
+        
+        // Utility to get the computed value of a CSS variable for piano rendering
+        const getCssVariableValue = (variableName) => {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.cssText = `width: var(${variableName}); visibility: hidden; position: absolute;`;
+            document.body.appendChild(tempDiv);
+            const value = tempDiv.offsetWidth;
+            document.body.removeChild(tempDiv);
+            return value;
+        };
+
+        // Configuration for the C-to-C octave layout
+        const keyDefinitions = [
+            { uniqueId: 'key-C4', baseNote: 'C', logicalId: 'key-C', blackKey: 'key-Cs' },
+            { uniqueId: 'key-D4', baseNote: 'D', logicalId: 'key-D', blackKey: 'key-Ds' },
+            { uniqueId: 'key-E4', baseNote: 'E', logicalId: 'key-E', blackKey: null },
+            { uniqueId: 'key-F4', baseNote: 'F', logicalId: 'key-F', blackKey: 'key-Fs' },
+            { uniqueId: 'key-G4', baseNote: 'G', logicalId: 'key-G', blackKey: 'key-Gs' },
+            { uniqueId: 'key-A4', baseNote: 'A', logicalId: 'key-A', blackKey: 'key-As' },
+            { uniqueId: 'key-B4', baseNote: 'B', logicalId: 'key-B', blackKey: null },
+            { uniqueId: 'key-C5', baseNote: 'C', logicalId: 'key-C', blackKey: null }
+        ];
+
+        // Black key details for rendering/feedback
+        const blackKeyConfigMap = {
+            'key-Cs': { baseNote: 'C#' },
+            'key-Ds': { baseNote: 'D#' },
+            'key-Fs': { baseNote: 'F#' },
+            'key-Gs': { baseNote: 'G#' },
+            'key-As': { baseNote: 'A#' },
+        };
+
+        const renderPiano = () => {
+            $pianoKeys.innerHTML = '';
+            let whiteKeyIndex = 0; 
+
+            // Get live, computed CSS variables for positioning
+            const liveKeyWidth = getCssVariableValue('--key-width');
+            const liveBlackKeyWidth = getCssVariableValue('--black-key-width');
+            const liveBlackKeyHalfWidth = liveBlackKeyWidth / 2;
+
+            keyDefinitions.forEach((key) => {
+                // 1. Render White Key
+                const keyElement = document.createElement('div');
+                keyElement.id = key.uniqueId;
+                keyElement.className = 'white-key';
+                keyElement.dataset.note = key.baseNote; 
+                keyElement.dataset.logicalId = key.logicalId; 
+                keyElement.addEventListener('click', handleKeyClick);
+                $pianoKeys.appendChild(keyElement);
+                whiteKeyIndex++;
+
+                // 2. Render Black Key if needed (positioned on top of white keys)
+                if (key.blackKey) {
+                    const blackLogicalId = key.blackKey;
+                    const blackKeyData = blackKeyConfigMap[blackLogicalId];
+
+                    const blackKeyElement = document.createElement('div');
+                    blackKeyElement.id = `${blackLogicalId}-${key.uniqueId.slice(3, 5)}`;
+                    blackKeyElement.className = 'black-key';
+                    blackKeyElement.dataset.note = blackKeyData.baseNote; 
+                    blackKeyElement.dataset.logicalId = blackLogicalId; 
+                    
+                    // Position the black key relative to the end of the previous white key
+                    const position = (whiteKeyIndex * liveKeyWidth) - liveBlackKeyHalfWidth;
+                    blackKeyElement.style.left = `${position}px`;
+
+                    blackKeyElement.addEventListener('click', handleKeyClick);
+                    $pianoKeys.appendChild(blackKeyElement);
+                }
+            });
+        };
+
+        const setUIState = (state) => {
+            quizState = state;
+            $pianoKeys.classList.remove('piano-inactive');
+            $totalQuestionsRef.textContent = MAX_QUESTIONS; // Always set the max count
+
+            switch (state) {
+                case STATE_INITIAL:
+                    $questionDisplay.textContent = ''; 
+                    $feedbackMessage.textContent = ''; 
+                    $feedbackMessage.classList.remove('text-green-600', 'text-red-600', 'text-indigo-700', 'font-extrabold');
+                    $feedbackMessage.classList.add('text-indigo-600');
+                    $controlBtn.textContent = 'Start Quiz';
+                    $pianoKeys.classList.add('piano-inactive'); // Disable piano
+                    $instructionText.textContent = `Click 'Start Quiz' to begin your ${MAX_QUESTIONS}-question test.`;
+                    
+                    $currentQuestionNum.textContent = '0';
+                    $scoreDisplay.textContent = '0';
+                    break;
+
+                case STATE_ACTIVE:
+                    // Question is set by generateNewQuestion which is called right after setting state
+                    $controlBtn.textContent = 'Quiz In Progress...';
+                    $pianoKeys.classList.remove('piano-inactive'); // Enable piano
+                    $instructionText.textContent = "Click the key on the piano that corresponds to the note shown.";
+                    break;
+
+                case STATE_FINISHED:
+                    $questionDisplay.textContent = 'FINISHED';
+                    $controlBtn.textContent = 'Try Again';
+                    $controlBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                    $controlBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    $pianoKeys.classList.add('piano-inactive'); // Disable piano
+                    $instructionText.textContent = "Review your results or click 'Try Again' to restart.";
+                    
+                    // Display final message
+                    let message = `Game Over! Final Score: ${currentScore} / ${MAX_QUESTIONS}. `;
+                    if (currentScore === MAX_QUESTIONS) {
+                        message += "Perfect score!";
+                    } else if (currentScore > MAX_QUESTIONS * 0.8) {
+                        message += "Excellent work!";
+                    } else {
+                        message += "Keep practicing!";
+                    }
+                    $feedbackMessage.textContent = message;
+                    $feedbackMessage.classList.remove('text-green-600', 'text-red-600', 'text-indigo-600');
+                    $feedbackMessage.classList.add('text-indigo-700', 'font-extrabold');
+
+                    // Set final question count
+                    $currentQuestionNum.textContent = MAX_QUESTIONS;
+
+                    // Clear key colors after a moment
+                    setTimeout(() => {
+                        document.querySelectorAll('.correct-key, .incorrect-key').forEach(key => {
+                            key.classList.remove('correct-key', 'incorrect-key');
+                        });
+                    }, 1000);
+
+                    break;
+            }
+        };
+
+        const generateNewQuestion = () => {
+            if (nextQuestionTimer) {
+                clearTimeout(nextQuestionTimer);
+                nextQuestionTimer = null;
+            }
+            
+            if (totalQuestions >= MAX_QUESTIONS) {
+                setUIState(STATE_FINISHED);
+                return;
+            }
+
+            let randomIndex;
+            // Loop until a new question index is chosen that is different from the last one
+            do {
+                randomIndex = Math.floor(Math.random() * questions.length);
+            } while (randomIndex === lastQuestionIndex && questions.length > 1);
+
+            lastQuestionIndex = randomIndex; // Update the last asked question index
+
+            // Pick a new random sharp/flat question
+            currentQuestion = questions[randomIndex];
+            correctKeyId = noteMap[currentQuestion]; 
+
+            $questionDisplay.textContent = currentQuestion;
+            $feedbackMessage.textContent = '';
+            $feedbackMessage.classList.remove('text-green-600', 'text-red-600', 'text-indigo-600', 'text-indigo-700', 'font-extrabold');
+
+            // Reset key colors
+            document.querySelectorAll('.white-key, .black-key').forEach(key => {
+                key.classList.remove('correct-key', 'incorrect-key');
+            });
+        };
+
+        const updateScoreDisplay = () => {
+            $scoreDisplay.textContent = currentScore;
+            
+            // Update the question number indicator
+            if (quizState === STATE_INITIAL) {
+                $currentQuestionNum.textContent = 0;
+            } else if (quizState === STATE_FINISHED) {
+                 $currentQuestionNum.textContent = MAX_QUESTIONS;
+            } else {
+                $currentQuestionNum.textContent = totalQuestions; 
+            }
+        };
+
+        const handleKeyClick = (event) => {
+            if (quizState !== STATE_ACTIVE) return; 
+
+            // Prevent double-clicking while waiting for the next question
+            if (nextQuestionTimer) return;
+
+            const selectedKeyElement = event.currentTarget;
+            const selectedLogicalId = selectedKeyElement.dataset.logicalId;
+            const isCorrect = selectedLogicalId === correctKeyId;
+
+            totalQuestions++; // Increment question count before updating the display
+            
+            // Highlight all keys that correspond to the correct logical ID (e.g., C# / Db)
+            const correctKeyElements = document.querySelectorAll(`[data-logical-id="${correctKeyId}"]`);
+            
+            if (isCorrect) {
+                correctKeyElements.forEach(key => key.classList.add('correct-key'));
+                currentScore++;
+                $feedbackMessage.textContent = 'Correct! Great job.';
+                $feedbackMessage.classList.add('text-green-600');
+            } else {
+                selectedKeyElement.classList.add('incorrect-key');
+                correctKeyElements.forEach(key => key.classList.add('correct-key')); // Show the correct answer
+                
+                const correctNoteName = correctKeyElements[0]?.dataset.note || 'the correct key';
+                $feedbackMessage.textContent = `Incorrect. The note ${currentQuestion} is ${correctNoteName}.`;
+                $feedbackMessage.classList.add('text-red-600');
+            }
+
+            updateScoreDisplay(); // Update score and question indicator
+
+            // Check if the game is over or move to next question
+            if (totalQuestions >= MAX_QUESTIONS) {
+                 nextQuestionTimer = setTimeout(() => {
+                    setUIState(STATE_FINISHED); // This handles the final message and button state
+                    updateScoreDisplay(); // Final update to show MAX_QUESTIONS / MAX_QUESTIONS
+                    nextQuestionTimer = null;
+                }, 2000); 
+            } else {
+                nextQuestionTimer = setTimeout(() => {
+                    generateNewQuestion();
+                    nextQuestionTimer = null;
+                }, 2000); 
+            }
+        };
+
+        const startQuiz = () => {
+            if (nextQuestionTimer) {
+                clearTimeout(nextQuestionTimer);
+                nextQuestionTimer = null;
+            }
+            
+            // Reset state
+            currentScore = 0;
+            totalQuestions = 0;
+            lastQuestionIndex = -1; // Reset the last question tracker
+            
+            // Reset button styling
+            $controlBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            $controlBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            
+            updateScoreDisplay();
+            setUIState(STATE_ACTIVE); // Set active state first
+            generateNewQuestion(); // Generate the first question
+        };
+        
+        const handleControlClick = () => {
+            if (quizState === STATE_INITIAL || quizState === STATE_FINISHED) {
+                startQuiz();
+            }
+        };
+
+        const initQuiz = () => {
+            window.addEventListener('resize', renderPiano);
+            
+            renderPiano();
+            $controlBtn.addEventListener('click', handleControlClick);
+            
+            // Set initial state on load
+            setUIState(STATE_INITIAL); 
+        };
+
+        // Initialize the quiz when the script loads
+        initQuiz();
+    </script>
+</body>
+</html>

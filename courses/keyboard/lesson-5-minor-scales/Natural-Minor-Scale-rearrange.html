@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minor Scale Builder</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the draggable notes */
+        .note-tile {
+            cursor: grab;
+            /* Enhanced transition for a snappier, more "enthusiastic" feel */
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-in-out; 
+            user-select: none;
+            flex-shrink: 0; /* Important: prevents the note from shrinking */
+            width: 80px; /* Fixed width for notes */
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 3px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Baseline subtle shadow */
+        }
+
+        .note-tile:hover {
+            /* Stronger hover effect for enthusiasm: stronger shadow and slight lift */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
+            transform: translateY(-2px); /* Slight lift */
+        }
+
+        .note-tile.dragging {
+            opacity: 0.7;
+            /* Pronounced lift and scale change when actively dragging */
+            transform: scale(1.08) translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Very strong shadow */
+            z-index: 10;
+        }
+
+        .note-container {
+            min-height: 100px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px; /* Gap between notes */
+            padding: 1rem;
+            background-color: #f3f4f6;
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        /* Color definitions for notes to make them visually distinct */
+        .note-C { background-color: #fecaca; color: #dc2626; }
+        .note-Db { background-color: #fed7aa; color: #ea580c; }
+        .note-D { background-color: #fde68a; color: #ca8a04; }
+        .note-Eb { background-color: #d9f99d; color: #65a30d; }
+        .note-E { background-color: #a7f3d0; color: #059669; }
+        .note-F { background-color: #bfdbfe; color: #2563eb; }
+        .note-Gb { background-color: #e0f2f1; color: #0d9488; }
+        .note-G { background-color: #f0e6ff; color: #7c3aed; }
+        .note-Ab { background-color: #fbcfe8; color: #db2777; }
+        .note-A { background-color: #fce7f3; color: #be185d; }
+        .note-Bb { background-color: #dbeafe; color: #1d4ed8; }
+        .note-B { background-color: #fee2e2; color: #ef4444; }
+
+        /* Style for the button */
+        #check-button {
+            transition: background-color 0.15s ease-in-out, transform 0.1s;
+        }
+        #check-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .note-tile {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .note-container {
+                gap: 4px;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-3xl font-extrabold text-indigo-700 mb-2 border-b-2 pb-2">
+            The Natural Minor Scale Builder Challenge
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Drag the notes below and rearrange them in the correct ascending order for the minor scale shown.
+        </p>
+
+        <!-- Score and Exercise Info -->
+        <div class="flex justify-between items-center mb-6 p-4 bg-indigo-50 rounded-lg shadow-inner">
+            <div class="text-xl font-semibold">
+                Exercise: <span id="exercise-counter" class="text-indigo-800">1 / 20</span>
+            </div>
+            <div class="text-xl font-semibold">
+                Scale: <span id="current-scale" class="text-indigo-800 font-extrabold">A Minor</span>
+            </div>
+            <div class="text-xl font-semibold">
+                Score: <span id="score" class="text-indigo-800">0</span>
+            </div>
+        </div>
+
+        <!-- Draggable Note Container -->
+        <div id="note-container" class="note-container mb-6">
+            <!-- Note tiles will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Controls and Feedback -->
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+            <button id="check-button"
+                class="w-full md:w-auto px-8 py-3 bg-indigo-600 text-white text-lg font-bold rounded-xl hover:bg-indigo-700 shadow-lg transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Check Answer
+            </button>
+            <div id="feedback" class="text-xl font-semibold h-8 flex items-center">
+                <!-- Feedback messages appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Firebase/Canvas-Specific Setup (Required for all apps) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const apiKey = ""; // API key is handled by the canvas environment
+        // --- End Firebase Setup ---
+
+        // The 12 Natural Minor Scales and their notes (Root, 2, b3, 4, 5, b6, b7)
+        const ALL_MINOR_SCALES = [
+            { root: 'A Minor', notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+            { root: 'E Minor', notes: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'] },
+            { root: 'B Minor', notes: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'] },
+            { root: 'F# Minor', notes: ['F#', 'G#', 'A', 'B', 'C#', 'D', 'E'] },
+            { root: 'C# Minor', notes: ['C#', 'D#', 'E', 'F#', 'G#', 'A', 'B'] },
+            { root: 'G# Minor', notes: ['G#', 'A#', 'B', 'C#', 'D#', 'E', 'F#'] },
+            { root: 'D# Minor', notes: ['D#', 'E#', 'F#', 'G#', 'A#', 'B', 'C#'] },
+            { root: 'D Minor', notes: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'] },
+            { root: 'G Minor', notes: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'] },
+            { root: 'C Minor', notes: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'] },
+            { root: 'F Minor', notes: ['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'] },
+            { root: 'Bb Minor', notes: ['Bb', 'C', 'Db', 'Eb', 'F', 'Gb', 'Ab'] },
+        ];
+
+        // Custom array of 20 exercises (using all 12 and repeating 8)
+        const EXERCISE_COUNT = 20;
+        let exercises = [];
+        let currentExerciseIndex = 0;
+        let score = 0;
+        let isDragging = false;
+        let draggedElement = null;
+
+        const noteContainer = document.getElementById('note-container');
+        const checkButton = document.getElementById('check-button');
+        const feedbackElement = document.getElementById('feedback');
+        const exerciseCounterElement = document.getElementById('exercise-counter');
+        const currentScaleElement = document.getElementById('current-scale');
+        const scoreElement = document.getElementById('score');
+
+        // Utility to shuffle an array (Fisher-Yates)
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        // --- Core Logic Functions ---
+
+        const createNoteElement = (note) => {
+            const tile = document.createElement('div');
+            tile.className = `note-tile rounded-lg shadow-md note-${note.replace(/[#b]/g, '')}`; // Base color class
+            
+            // Set specific colors based on the full note name for better contrast
+            const colorMap = {
+                'C': 'note-C', 'C#': 'note-Gb', 'Db': 'note-Db',
+                'D': 'note-D', 'D#': 'note-Eb', 'Eb': 'note-Eb',
+                'E': 'note-E', 'E#': 'note-C', 'F': 'note-F',
+                'F#': 'note-Gb', 'Gb': 'note-Gb', 'G': 'note-G',
+                'G#': 'note-Ab', 'Ab': 'note-Ab', 'A': 'note-A',
+                'A#': 'note-Bb', 'Bb': 'note-Bb', 'B': 'note-B',
+                // Handling flats/sharps for color consistency (same as previous version)
+                'Cb': 'note-B', // Cb is enharmonically B
+                'Fb': 'note-E', // Fb is enharmonically E
+            };
+            
+            // Clear old classes and add new one
+            Object.values(colorMap).forEach(cls => tile.classList.remove(cls));
+            tile.classList.add(colorMap[note] || 'note-C');
+
+
+            tile.textContent = note;
+            tile.setAttribute('draggable', true);
+            tile.dataset.note = note;
+            return tile;
+        };
+
+        const initExercises = () => {
+            // Create a list of 20 scales, ensuring all 12 are used at least once
+            exercises = [...ALL_MINOR_SCALES];
+            // Add 8 more randomly
+            for (let i = 0; i < (EXERCISE_COUNT - ALL_MINOR_SCALES.length); i++) {
+                const randomIndex = Math.floor(Math.random() * ALL_MINOR_SCALES.length);
+                exercises.push(ALL_MINOR_SCALES[randomIndex]);
+            }
+            shuffleArray(exercises);
+        };
+
+        const loadExercise = (index) => {
+            if (index >= EXERCISE_COUNT) {
+                showFinalScore();
+                return;
+            }
+
+            const currentExercise = exercises[index];
+            const correctNotes = [...currentExercise.notes];
+            const jumbledNotes = shuffleArray([...correctNotes]); // Shuffle a copy
+
+            // Update UI text
+            exerciseCounterElement.textContent = `${index + 1} / ${EXERCISE_COUNT}`;
+            currentScaleElement.textContent = currentExercise.root;
+            feedbackElement.textContent = '';
+            checkButton.disabled = false;
+            checkButton.classList.remove('bg-green-600', 'bg-red-600');
+            checkButton.classList.add('bg-indigo-600');
+
+            // Clear container
+            noteContainer.innerHTML = '';
+
+            // Create and append note elements
+            jumbledNotes.forEach(note => {
+                const tile = createNoteElement(note);
+                noteContainer.appendChild(tile);
+            });
+        };
+
+        const checkSolution = () => {
+            const currentExercise = exercises[currentExerciseIndex];
+            const currentOrder = Array.from(noteContainer.children).map(tile => tile.dataset.note);
+            const correctOrder = currentExercise.notes;
+
+            const isCorrect = currentOrder.every((note, i) => note === correctOrder[i]);
+
+            checkButton.disabled = true;
+
+            if (isCorrect) {
+                feedbackElement.className = 'text-xl font-semibold text-green-600';
+                feedbackElement.textContent = '✅ Correct! Well done.';
+                checkButton.classList.remove('bg-indigo-600', 'bg-red-600');
+                checkButton.classList.add('bg-green-600');
+                score++;
+                scoreElement.textContent = score;
+
+                // Wait a moment then load next
+                setTimeout(nextExercise, 1500);
+            } else {
+                feedbackElement.className = 'text-xl font-semibold text-red-600';
+                feedbackElement.textContent = '❌ Incorrect. Try again!';
+                checkButton.classList.remove('bg-indigo-600');
+                checkButton.classList.add('bg-red-600');
+                checkButton.disabled = false; // Allow re-attempt
+            }
+        };
+
+        const nextExercise = () => {
+            currentExerciseIndex++;
+            loadExercise(currentExerciseIndex);
+        };
+
+        const showFinalScore = () => {
+            feedbackElement.className = 'text-2xl font-bold text-indigo-700';
+            feedbackElement.textContent = `Challenge Complete! Final Score: ${score} / ${EXERCISE_COUNT}`;
+            currentScaleElement.textContent = '---';
+            noteContainer.innerHTML = '<p class="text-gray-500 p-4">Refresh the page to start a new challenge!</p>';
+            checkButton.textContent = 'Finished';
+            checkButton.disabled = true;
+        };
+
+        // --- Drag and Drop Handlers ---
+
+        const dragStart = (e) => {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedElement.dataset.note);
+            setTimeout(() => {
+                draggedElement.classList.add('dragging');
+            }, 0);
+            isDragging = true;
+        };
+
+        const dragOver = (e) => {
+            e.preventDefault();
+            if (!isDragging || e.target === draggedElement || !e.target.classList.contains('note-tile')) {
+                return;
+            }
+
+            const container = noteContainer;
+            const targetElement = e.target;
+            
+            // Determine the insertion point
+            const targetRect = targetElement.getBoundingClientRect();
+            const midpoint = targetRect.left + (targetRect.width / 2);
+            
+            if (e.clientX < midpoint) {
+                // Dragging to the left of the target element
+                container.insertBefore(draggedElement, targetElement);
+            } else {
+                // Dragging to the right of the target element
+                container.insertBefore(draggedElement, targetElement.nextSibling);
+            }
+        };
+
+        const dragEnd = () => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+            isDragging = false;
+        };
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initExercises();
+            loadExercise(currentExerciseIndex);
+
+            checkButton.addEventListener('click', checkSolution);
+
+            // Add drag listeners to the container (delegation)
+            noteContainer.addEventListener('dragstart', dragStart);
+            noteContainer.addEventListener('dragover', dragOver);
+            noteContainer.addEventListener('dragend', dragEnd);
+            noteContainer.addEventListener('dragleave', (e) => e.preventDefault());
+            noteContainer.addEventListener('drop', (e) => e.preventDefault());
+        });
+    </script>
+</body>
+</html>

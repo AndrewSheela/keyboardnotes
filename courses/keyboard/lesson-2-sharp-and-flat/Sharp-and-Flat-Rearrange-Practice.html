@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromatic Scale Reordering Challenge (Sharp & Flat)</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Tone.js for musical instrument synthesis -->
+    <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+    <style>
+        /* Base styles for the entire app */
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Container to achieve the ~720px width feel and center the content */
+        #quiz-card {
+            max-width: 768px; /* Slightly wider than md but less than lg */
+        }
+        
+        /* The single container box holding both rows */
+        #note-area-container {
+            position: relative; 
+            /* Reverted padding now that labels are gone */
+            padding: 0.75rem; 
+            background-color: #f3f4f6; /* Light gray background for the whole box */
+            border-radius: 0.75rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            border: 4px solid #4f46e5; /* Distinct Indigo border */
+        }
+
+        /* Styling for the two main rows (now sub-sections of the single box) */
+        .note-row {
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 6px; 
+            padding: 0.25rem;
+            justify-content: center; /* Center the tiles horizontally */
+        }
+
+        .note-tile {
+            cursor: grab;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-in-out, opacity 0.2s; 
+            user-select: none;
+            flex-shrink: 0; 
+            width: 70px; /* Adjusted for 7 tiles per row in desktop layout */
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border: 3px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            position: relative; 
+        }
+
+        /* Color differentiation for natural notes (White Keys) */
+        .natural { 
+            background-color: #fef3c7; /* Pale Yellow */
+            color: #b45309; /* Darker Brown/Orange */
+        }
+        
+        /* Color differentiation for accidental notes (Black Keys) - handles both sharp and flat notation */
+        .sharp { 
+            background-color: #1f2937; /* Dark Gray/Black */
+            color: #d1d5db; /* Light Gray Text */
+            border-color: #4b5563;
+        }
+
+        .note-tile:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); 
+            transform: translateY(-2px); 
+        }
+
+        .note-tile.dragging {
+            opacity: 0.7;
+            transform: scale(1.1) translateY(-5px); 
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); 
+            z-index: 50; 
+        }
+
+        /* Mobile adjustments (<= 640px) - ensure responsiveness */
+        @media (max-width: 640px) {
+            .note-row {
+                gap: 4px; 
+                padding: 0.25rem 0.1rem;
+                min-height: 60px;
+            }
+            .note-tile {
+                /* CHANGE: Force 4 tiles per row (100% / 4 = 25%). 
+                   This makes the 12 tiles wrap into 4 visual rows (4, 3, 4, 1). */
+                width: calc(25% - 4px); 
+                height: 50px; 
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4" onclick="initializeAudio()">
+
+    <div id="quiz-card" class="mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl w-full">
+        <h1 class="text-3xl font-extrabold text-indigo-800 mb-4 border-b-4 border-indigo-200 pb-3">
+            Chromatic Scale Reordering Challenge (Sharp & Flat)
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Arrange all 12 notes in ascending cyclical order, starting with the root note displayed. Drag tiles between the top and bottom rows as needed. Click a note to hear it!
+        </p>
+
+        <!-- Exercise Info and Sound Feedback -->
+        <div class="grid grid-cols-1 md:grid-cols-3 items-center mb-6 p-4 bg-indigo-50 rounded-lg shadow-inner">
+            <div class="text-xl font-semibold text-gray-700 text-center md:text-left mb-2 md:mb-0">
+                Question: <span id="exercise-counter" class="text-indigo-800 font-extrabold">1 / 20</span>
+            </div>
+            <div class="text-xl font-semibold text-gray-700 text-center mb-2 md:mb-0">
+                Starting Note: <span id="current-root" class="text-indigo-800 font-extrabold text-2xl">C</span>
+            </div>
+            <div id="sound-feedback" class="text-lg text-gray-500 text-center md:text-right italic">
+                (Click anywhere to enable audio)
+            </div>
+        </div>
+
+        <!-- Draggable Note Containers - NOW IN ONE VISUAL BOX -->
+        <div id="note-area-container" class="mb-8">
+            
+            <div id="top-row" class="note-row mb-2 border-b-2 border-indigo-200">
+                <!-- Note tiles go here -->
+            </div>
+            
+            <div id="bottom-row" class="note-row">
+                <!-- Note tiles go here -->
+            </div>
+        </div>
+
+        <!-- Controls and Feedback -->
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+            <button id="check-button"
+                class="w-full md:w-auto px-8 py-3 bg-indigo-600 text-white text-lg font-bold rounded-xl hover:bg-indigo-700 shadow-xl transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 active:scale-98">
+                Check Arrangement
+            </button>
+            <button id="next-button"
+                class="w-full md:w-auto px-8 py-3 bg-gray-300 text-gray-700 text-lg font-bold rounded-xl hover:bg-gray-400 shadow-lg transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 active:scale-98 hidden"
+                disabled>
+                Next Challenge (Mistake)
+                
+            </button>
+            <div id="feedback" class="text-xl font-semibold h-8 flex items-center mt-2 md:mt-0 text-center">
+                <!-- Feedback messages appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Application Setup ---
+        
+        const EXERCISE_COUNT = 20; 
+        
+        let exercises = [];
+        let currentExerciseIndex = 0;
+        let score = 0;
+
+        // Canonical 12 notes defined by index, with sharp and flat notation
+        const NOTE_NAMES = [
+            { sharp: 'C', flat: 'C', canonical: 'C' },
+            { sharp: 'C#', flat: 'Db', canonical: 'C#' },
+            { sharp: 'D', flat: 'D', canonical: 'D' },
+            { sharp: 'D#', flat: 'Eb', canonical: 'D#' },
+            { sharp: 'E', flat: 'E', canonical: 'E' },
+            { sharp: 'F', flat: 'F', canonical: 'F' },
+            { sharp: 'F#', flat: 'Gb', canonical: 'F#' },
+            { sharp: 'G', flat: 'G', canonical: 'G' },
+            { sharp: 'G#', flat: 'Ab', canonical: 'G#' },
+            { sharp: 'A', flat: 'A', canonical: 'A' },
+            { sharp: 'A#', flat: 'Bb', canonical: 'A#' },
+            { sharp: 'B', flat: 'B', canonical: 'B' }
+        ];
+
+        // --- DOM Elements ---
+        const topRow = document.getElementById('top-row');
+        const bottomRow = document.getElementById('bottom-row');
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        const feedbackElement = document.getElementById('feedback');
+        const soundFeedbackElement = document.getElementById('sound-feedback');
+        const exerciseCounterElement = document.getElementById('exercise-counter');
+        const currentRootElement = document.getElementById('current-root');
+
+        // --- Tone.js Setup ---
+        let synth;
+        
+        // Initialize audio on first user interaction
+        const initializeAudio = () => {
+            if (synth) return;
+            try {
+                Tone.start(); 
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "triangle" },
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1
+                    }
+                }).toDestination();
+                soundFeedbackElement.textContent = 'Audio initialized (Synth)';
+            } catch (e) {
+                soundFeedbackElement.textContent = 'Error initializing audio.';
+                console.error("Audio initialization error:", e);
+            }
+        };
+
+        // Note: Tone.js only understands sharps/naturals (C, C#, Db etc. are played as C, C# etc.)
+        const playNote = (noteName) => {
+            if (!synth) initializeAudio(); 
+            if (!synth) return;
+            
+            // Convert flat notation to sharp notation for Tone.js
+            let toneNote = noteName;
+            switch (noteName) {
+                case 'Db': toneNote = 'C#'; break;
+                case 'Eb': toneNote = 'D#'; break;
+                case 'Gb': toneNote = 'F#'; break;
+                case 'Ab': toneNote = 'G#'; break;
+                case 'Bb': toneNote = 'A#'; break;
+            }
+
+            synth.triggerAttackRelease(toneNote + '4', '8n');
+        };
+
+
+        // --- Utility Functions ---
+
+        // Utility to shuffle an array (Fisher-Yates)
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        // Get the note name (sharp or flat) from its index
+        const getNoteName = (index, scaleType) => {
+            return NOTE_NAMES[index][scaleType];
+        };
+
+        // Utility to generate the correct 12-note cyclical sequence based on index and scale type
+        const generateCyclicSequence = (rootIndex, scaleType) => {
+            const sequence = [];
+            for (let i = 0; i < 12; i++) {
+                const index = (rootIndex + i) % 12;
+                sequence.push(getNoteName(index, scaleType));
+            }
+            return sequence;
+        };
+
+        // Creates a draggable note tile element
+        const createNoteElement = (note) => {
+            const tile = document.createElement('div');
+            
+            // Note is "accidental" if it contains '#' or 'b'
+            const isAccidental = note.includes('#') || note.includes('b');
+            const colorClass = isAccidental ? 'sharp' : 'natural';
+            
+            tile.className = `note-tile rounded-xl shadow-md ${colorClass}`;
+            tile.textContent = note;
+            tile.setAttribute('draggable', true);
+            tile.dataset.note = note;
+            
+            tile.addEventListener('click', (e) => {
+                // Remove the check for isDragging here to allow clicks immediately after dragging stops
+                if (!e.target.classList.contains('dragging')) { 
+                    playNote(note);
+                }
+            });
+
+            return tile;
+        };
+
+        // Initializes all 20 quiz exercises
+        const initExercises = () => {
+            exercises = [];
+            
+            // Create pool of 10 'sharp' and 10 'flat' assignments
+            let scaleTypes = [];
+            const halfCount = EXERCISE_COUNT / 2;
+            for (let i = 0; i < halfCount; i++) {
+                scaleTypes.push('sharp');
+                scaleTypes.push('flat');
+            }
+            // Shuffle the assignment pool to mix sharp and flat exercises
+            scaleTypes = shuffleArray(scaleTypes);
+
+            for (let i = 0; i < EXERCISE_COUNT; i++) {
+                const scaleType = scaleTypes[i];
+                
+                // Randomly pick a canonical note index (0-11) as the root
+                const rootIndex = Math.floor(Math.random() * 12); 
+                
+                // The root name displayed must match the scale type (e.g., 'C#' or 'Db')
+                const rootNoteName = getNoteName(rootIndex, scaleType);
+                
+                const correctSequence = generateCyclicSequence(rootIndex, scaleType);
+
+                exercises.push({
+                    root: rootNoteName,
+                    correctNotes: correctSequence,
+                    scaleType: scaleType, 
+                    isCorrect: null 
+                });
+            }
+        };
+        
+        // Function to enforce the 7/5 note split (7 max on top, remainder on bottom)
+        const enforceRowLimits = () => {
+            const maxTop = 7;
+            
+            // Loop while the top row exceeds the limit
+            while (topRow.children.length > maxTop) {
+                // Get the last child from the top row
+                const itemToMove = topRow.lastElementChild;
+                if (itemToMove) {
+                    // Remove it from the top row and append it to the end of the bottom row
+                    // This maintains the order within the combined sequence
+                    bottomRow.appendChild(itemToMove);
+                }
+            }
+        };
+
+
+        const loadExercise = (index) => {
+            if (index >= EXERCISE_COUNT) {
+                showFinalScore();
+                return;
+            }
+
+            const currentExercise = exercises[index];
+            const correctNotes = currentExercise.correctNotes;
+            
+            // 1. Shuffle a copy of the correct notes
+            const jumbledNotes = shuffleArray([...correctNotes]); 
+
+            // 2. Update UI text and buttons
+            exerciseCounterElement.textContent = `${index + 1} / ${EXERCISE_COUNT}`;
+            currentRootElement.textContent = currentExercise.root;
+            feedbackElement.textContent = '';
+            
+            // Reset button states
+            checkButton.disabled = false;
+            checkButton.textContent = 'Check Arrangement';
+            checkButton.classList.remove('bg-green-600', 'bg-red-600', 'cursor-not-allowed');
+            checkButton.classList.add('bg-indigo-600');
+            nextButton.classList.add('hidden');
+
+            // 3. Clear and repopulate containers (7 on top, 5 on bottom)
+            topRow.innerHTML = '';
+            bottomRow.innerHTML = '';
+            
+            jumbledNotes.forEach((note, i) => {
+                const tile = createNoteElement(note);
+                if (i < 7) {
+                    topRow.appendChild(tile);
+                } else {
+                    bottomRow.appendChild(tile);
+                }
+            });
+        };
+
+        const checkSolution = () => {
+            const currentExercise = exercises[currentExerciseIndex];
+            
+            // Enforce limits before checking final order
+            enforceRowLimits(); 
+
+            // Get the full 12-note order: TOP ROW (7) + BOTTOM ROW (5)
+            const topOrder = Array.from(topRow.children).map(tile => tile.dataset.note);
+            const bottomOrder = Array.from(bottomRow.children).map(tile => tile.dataset.note);
+
+            const currentOrder = topOrder.concat(bottomOrder);
+            
+            const correctOrder = currentExercise.correctNotes;
+
+            if (currentOrder.length !== 12) {
+                feedbackElement.className = 'text-xl font-semibold text-red-600';
+                feedbackElement.textContent = '❌ Error: Not all 12 notes are present in the layout.';
+                return;
+            }
+
+            // Check if every note matches the correct order
+            const isCorrect = currentOrder.every((note, i) => note === correctOrder[i]);
+
+            checkButton.disabled = true;
+
+            if (isCorrect) {
+                score++;
+                currentExercise.isCorrect = true;
+                feedbackElement.className = 'text-xl font-semibold text-green-600';
+                feedbackElement.textContent = '🎶 Perfect! Sequence is correct.';
+                checkButton.classList.remove('bg-indigo-600', 'bg-red-600');
+                checkButton.classList.add('bg-green-600', 'cursor-not-allowed');
+                checkButton.textContent = 'Correct!';
+                nextButton.classList.remove('hidden');
+                nextButton.textContent = 'Next Challenge >>';
+                nextButton.classList.remove('bg-gray-300', 'bg-red-600', 'hover:bg-gray-400');
+                nextButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                nextButton.disabled = false;
+
+            } else {
+                currentExercise.isCorrect = false;
+                feedbackElement.className = 'text-xl font-semibold text-red-600';
+                feedbackElement.textContent = '❌ Try again. The order is incorrect.';
+                checkButton.classList.remove('bg-indigo-600', 'bg-green-600', 'cursor-not-allowed');
+                checkButton.classList.add('bg-red-600');
+                checkButton.textContent = 'Try Again';
+                checkButton.disabled = false; // Allow re-attempt
+                nextButton.classList.remove('hidden');
+                nextButton.textContent = 'Skip (Show Solution)';
+                nextButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                nextButton.classList.add('bg-gray-300', 'hover:bg-gray-400');
+                nextButton.disabled = false;
+            }
+        };
+
+        const nextExercise = (wasSkipped = false) => {
+            if (wasSkipped) {
+                // Show the correct order for the solution
+                const correctOrder = exercises[currentExerciseIndex].correctNotes;
+                topRow.innerHTML = '';
+                bottomRow.innerHTML = '';
+                
+                correctOrder.forEach((note, i) => {
+                    const tile = createNoteElement(note);
+                    tile.classList.add('shadow-xl', 'ring-2', 'ring-green-500'); 
+                    tile.textContent = `✅ ${note}`;
+                    tile.setAttribute('draggable', false);
+                    if (i < 7) {
+                        topRow.appendChild(tile);
+                    } else {
+                        bottomRow.appendChild(tile);
+                    }
+                });
+
+                feedbackElement.textContent = `Solution shown. Advancing...`;
+                
+                setTimeout(() => {
+                    currentExerciseIndex++;
+                    loadExercise(currentExerciseIndex);
+                }, 2000);
+            } else {
+                currentExerciseIndex++;
+                loadExercise(currentExerciseIndex);
+            }
+        };
+
+        const showFinalScore = () => {
+            // ... (Final score display logic remains the same)
+            feedbackElement.className = 'text-2xl font-bold text-indigo-700';
+            feedbackElement.textContent = `Challenge Complete! Score: ${score} / ${EXERCISE_COUNT}`;
+            currentRootElement.textContent = '---';
+            topRow.innerHTML = '';
+            bottomRow.innerHTML = `<p class="text-gray-500 p-8 text-center text-lg">
+                Great work! You mastered the 12-note chromatic scale using both sharp and flat notation. 
+                Your final score is <span class="text-indigo-600 font-bold">${score} / ${EXERCISE_COUNT}</span>.
+                Refresh the page to start a new quiz!
+            </p>`;
+            // Clean up the container display for the final screen
+            const noteAreaContainer = document.getElementById('note-area-container');
+            if(noteAreaContainer) {
+                topRow.remove(); 
+                noteAreaContainer.style.border = 'none';
+                noteAreaContainer.style.padding = '0';
+                noteAreaContainer.style.backgroundColor = 'transparent';
+            }
+            
+            checkButton.classList.add('hidden');
+            nextButton.classList.add('hidden');
+        };
+
+        // --- Drag and Drop Handlers (Delegated to the container) ---
+        let draggedElement = null;
+        let isDragging = false; 
+
+        const handleDragStart = (e) => {
+            // Ensure only note tiles are draggable
+            if (!e.target.classList.contains('note-tile')) {
+                e.preventDefault();
+                return;
+            }
+
+            initializeAudio(); 
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedElement.dataset.note);
+            setTimeout(() => {
+                draggedElement.classList.add('dragging');
+            }, 0);
+            isDragging = true;
+        };
+
+        const handleDragOver = (e) => {
+            e.preventDefault();
+            
+            const target = e.target;
+            const targetRow = target.closest('.note-row');
+
+            // Only proceed if we are over one of the valid row containers
+            if (!targetRow) return;
+
+            // If hovering over another tile, decide insertion point
+            if (target.classList.contains('note-tile') && target !== draggedElement) {
+                const targetRect = target.getBoundingClientRect();
+                const midpoint = targetRect.left + (targetRect.width / 2);
+                
+                if (e.clientX < midpoint) {
+                    targetRow.insertBefore(draggedElement, target); // Insert before
+                } else {
+                    targetRow.insertBefore(draggedElement, target.nextSibling); // Insert after
+                }
+            } 
+            // If hovering over an empty/background area of a row
+            else if (targetRow && !target.classList.contains('note-tile')) {
+                 // Append to the end of the row
+                 const children = Array.from(targetRow.children).filter(el => el.classList.contains('note-tile'));
+                 if (children.length === 0) {
+                     targetRow.appendChild(draggedElement);
+                 } else {
+                     // Find the last note tile and insert after it
+                     const lastTile = children[children.length - 1];
+                     targetRow.insertBefore(draggedElement, lastTile.nextSibling);
+                 }
+            }
+        };
+
+        const handleDragEnd = () => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+                enforceRowLimits(); // Enforce the 7/5 split after drop
+            }
+            setTimeout(() => { isDragging = false; }, 50); 
+        };
+
+        // --- Touch Handlers (Delegated to the container) ---
+        let currentTouchTile = null;
+
+        const getTouchTarget = (touch) => {
+            // FIX: Temporarily remove the original tile from the DOM flow (display: none) 
+            // to accurately detect the element beneath the clone. This makes touch targeting much more reliable.
+            if (currentTouchTile) currentTouchTile.style.display = 'none';
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            // Restore display: flex (since .note-tile uses flex)
+            if (currentTouchTile) currentTouchTile.style.display = 'flex'; 
+            return target;
+        };
+
+        const handleTouchStart = (e) => {
+            if (e.target.classList.contains('note-tile')) {
+                if (e.touches.length > 1) return; 
+                e.preventDefault(); 
+                currentTouchTile = e.target;
+                
+                // Create clone for visual feedback
+                const clone = currentTouchTile.cloneNode(true);
+                clone.id = 'touch-clone';
+                clone.style.position = 'fixed';
+                clone.style.pointerEvents = 'none';
+                clone.style.transform = `translate(-50%, -50%) scale(1.1)`;
+                clone.style.left = `${e.touches[0].clientX}px`;
+                clone.style.top = `${e.touches[0].clientY}px`;
+                clone.style.zIndex = '1000';
+                document.body.appendChild(clone);
+                
+                currentTouchTile.style.opacity = '0.4';
+                currentTouchTile.classList.add('dragging');
+                isDragging = true;
+            }
+        };
+
+        const handleTouchMove = (e) => {
+            if (!currentTouchTile) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            const clone = document.getElementById('touch-clone');
+            if (clone) {
+                clone.style.left = `${touch.clientX}px`;
+                clone.style.top = `${touch.clientY}px`;
+            }
+
+            const target = getTouchTarget(touch);
+            const targetRow = target ? target.closest('.note-row') : null;
+
+            if (!targetRow) return;
+
+            // Reordering logic
+            if (target && target !== currentTouchTile && target.classList.contains('note-tile')) {
+                const targetRect = target.getBoundingClientRect();
+                const midpoint = targetRect.left + (targetRect.width / 2);
+
+                if (touch.clientX < midpoint) {
+                    targetRow.insertBefore(currentTouchTile, target);
+                } else {
+                    targetRow.insertBefore(currentTouchTile, target.nextSibling);
+                }
+            } else if (targetRow) {
+                 // Append to the end of the row
+                 const children = Array.from(targetRow.children).filter(el => el.classList.contains('note-tile'));
+                 if (children.length === 0) {
+                     targetRow.appendChild(currentTouchTile);
+                 } else {
+                     // Find the last note tile and insert after it
+                     const lastTile = children[children.length - 1];
+                     targetRow.insertBefore(currentTouchTile, lastTile.nextSibling);
+                 }
+            }
+        };
+
+        const handleTouchEnd = () => {
+            if (currentTouchTile) {
+                currentTouchTile.classList.remove('dragging');
+                currentTouchTile.style.opacity = '1';
+                // Restore display property after drag ends
+                currentTouchTile.style.display = 'flex'; 
+                currentTouchTile = null;
+
+                const clone = document.getElementById('touch-clone');
+                if (clone) {
+                    clone.remove();
+                }
+                enforceRowLimits(); // Enforce the 7/5 split after touch release
+            }
+            setTimeout(() => { isDragging = false; }, 50); 
+        };
+
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initExercises();
+            loadExercise(currentExerciseIndex);
+
+            checkButton.addEventListener('click', checkSolution);
+            nextButton.addEventListener('click', () => {
+                const wasSkipped = nextButton.textContent.includes('Skip');
+                nextExercise(wasSkipped);
+            });
+
+
+            // --- Desktop Drag Listeners (Delegated to the container) ---
+            const noteAreaContainer = document.getElementById('note-area-container');
+
+            noteAreaContainer.addEventListener('dragstart', handleDragStart);
+            noteAreaContainer.addEventListener('dragover', handleDragOver);
+            noteAreaContainer.addEventListener('dragend', handleDragEnd);
+
+            // Prevent default drop behavior on the entire rows
+            topRow.addEventListener('dragleave', (e) => e.preventDefault());
+            topRow.addEventListener('drop', (e) => e.preventDefault());
+            bottomRow.addEventListener('dragleave', (e) => e.preventDefault());
+            bottomRow.addEventListener('drop', (e) => e.preventDefault());
+
+
+            // --- Mobile Touch Listeners (Delegated to the container) ---
+            noteAreaContainer.addEventListener('touchstart', handleTouchStart);
+            noteAreaContainer.addEventListener('touchmove', handleTouchMove);
+            noteAreaContainer.addEventListener('touchend', handleTouchEnd);
+            noteAreaContainer.addEventListener('touchcancel', handleTouchEnd);
+        });
+    </script>
+</body>
+</html>
