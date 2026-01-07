@@ -125,6 +125,37 @@
         font-family: "IM Fell English", serif;
         color: #5b4120;
     }
+    .rules-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.rules-table td {
+    vertical-align: top;
+    padding: 15px;
+    border-bottom: 1px solid #d9c9a3;
+}
+
+/* English Column */
+.rule-en {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #1a3d7c; /* Royal Blue */
+    font-weight: 500;
+}
+
+/* Tamil Column */
+.rule-ta {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #7a2e1f; /* Maroon/Brown */
+    font-weight: 500;
+    font-style: italic;
+}
+
+.icon {
+    margin-right: 6px;
+    font-size: 20px;
+}
 </style>
 </head>
 
@@ -137,35 +168,105 @@
     <h1>📜 Rules & Regulations</h1>
     <div class="divider"></div>
 
-    <ol>
-        <li><span class="icon">🎹</span>How many of you do not have a keyboard? Please try to purchase a new or second-hand keyboard. You <span class="highlight">must</span> have a keyboard for this course.</li>
+ <style>
+.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.rules-table td {
+    vertical-align: top;
+    padding: 15px;
+    border-bottom: 1px solid #d9c9a3;
+}
+.rule-en {
+    font-size: 18px;
+    line-height: 1.7;
+}
+.rule-ta {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #5b4020;
+    font-style: italic;
+}
+.icon {
+    margin-right: 6px;
+}
+</style>
 
-        <li><span class="icon">❗</span><span class="highlight">No absences allowed.</span> Attendance will be taken in every class.</li>
+<table class="rules-table">
 
-        <li><span class="icon">⏰</span>If you cannot join the class, you must provide a valid reason <span class="highlight">before the class begins</span>. Otherwise, it will be considered absent.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">🎹</span>How many of you do not have a keyboard? Please try to purchase a new or second-hand keyboard. You <b>must</b> have a keyboard for this course.</td>
+        <td class="rule-ta">🎹 உங்களிடம் கீபோர்ட் இல்லையா? புதியது அல்லது பழையது ஒன்றை வாங்க முயற்சி செய்யுங்கள். இந்த பாடத்திற்குப் <b>கீபோர்ட் கட்டாயம்</b> வேண்டும்.</td>
+    </tr>
 
-        <li><span class="icon">📝</span><strong>Attendance Rule:</strong> Type your <span class="highlight">name</span> and <span class="highlight">roll number</span> in the comment section before <span class="highlight">8:50 PM</span> or at the class ending time.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">❗</span><b>No absences allowed.</b> Attendance will be taken in every class.</td>
+        <td class="rule-ta">❗ வருகை தவறுவது அனுமதிக்கப்படாது. ஒவ்வொரு வகுப்பிலும் வருகை பதிவு செய்யப்படும்.</td>
+    </tr>
 
-        <li><span class="icon">🎥</span>Students who do not attend the class must watch the recorded session and submit the assignment.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">⏰</span>If you cannot join the class, you must provide a valid reason <b>before the class begins</b>. Otherwise, it will be considered absent.</td>
+        <td class="rule-ta">⏰ வகுப்பு தொடங்குவதற்கு முன் காரணத்தை தெரிவிக்க வேண்டும். அல்லாவிட்டால் வராததாக கணக்கிடப்படும்.</td>
+    </tr>
 
-        <li><span class="icon">⚠️</span>Anyone absent for <span class="highlight">3 consecutive classes</span> without informing will be removed from the group.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">📝</span><b>Attendance Rule:</b> Type your <b>name</b> and <b>roll number</b> before <b>8:50 PM</b> or at class ending time.</td>
+        <td class="rule-ta">📝 வருகை விதி: <b>8:50 PM</b> க்கு முன் அல்லது வகுப்பு முடிவில் உங்கள் <b>பெயர், ரோல் நம்பர்</b> எழுத வேண்டும்.</td>
+    </tr>
 
-        <li><span class="icon">📢</span>If you do not inform before class, it will be marked absent. Informing after the class will still be counted as absent.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">🎥</span>Students who do not attend must watch the recorded session and submit the assignment.</td>
+        <td class="rule-ta">🎥 வகுப்பில் கலந்து கொள்ளாதவர்கள் பதிவு செய்யப்பட்ட காணொளியை பார்த்து அசைன்மென்ட் சமர்ப்பிக்க வேண்டும்.</td>
+    </tr>
 
-        <li><span class="icon">📚</span>Assignments must be submitted on or before the due date. Students failing to submit assignments for <span class="highlight">3 weeks</span> will be removed from the group.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">⚠️</span>Absent for <b>3 consecutive classes</b> without informing will result in removal.</td>
+        <td class="rule-ta">⚠️ தகவல் இல்லாமல் தொடர்ந்து <b>3 வகுப்புகள்</b> வராதவர்கள் குழுவிலிருந்து நீக்கப்படுவார்கள்.</td>
+    </tr>
 
-        <li><span class="icon">🎬</span>All video exercises must have clear video and audio, with the camera focused mainly on the <span class="highlight">keyboard</span> and your <span class="highlight">fingers</span>.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">📢</span>If you do not inform before class, it will be marked absent (even if you tell after class).</td>
+        <td class="rule-ta">📢 வகுப்பு முன் தகவல் தராதால் வராததாகவே கணக்கிடப்படும். வகுப்பு முடிந்தபின் சொல்லினாலும் கணக்கு மாறாது.</td>
+    </tr>
 
-        <li><span class="icon">✏️</span>Every student must have their keyboard, notebook, and pen while attending the class.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">📚</span>Assignments must be submitted on time. Missing <b>3 weeks</b> leads to removal.</td>
+        <td class="rule-ta">📚 அசைன்மென்ட்களை நேரத்தில் சமர்ப்பிக்க வேண்டும். <b>3 வாரங்கள்</b> சமர்ப்பிக்காமல் இருந்தால் குழுவிலிருந்து நீக்கப்படுவார்கள்.</td>
+    </tr>
 
-        <li><span class="icon">❓</span>Questions can be asked after class during the Q&A session or anytime in the WhatsApp group. Write down your questions so you don’t forget.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">🎬</span>All video exercises must be clear and focused on the <b>keyboard</b> and <b>your fingers</b>.</td>
+        <td class="rule-ta">🎬 பயிற்சி வீடியோக்களில் படமும் ஒலியும் தெளிவாக இருக்க வேண்டும். கேமரா <b>கீபோர்ட்</b> மற்றும் <b>விரல்கள்</b> மீதான கவனம் வேண்டும்.</td>
+    </tr>
 
-        <li><span class="icon">📣</span>We will not send any private messages. All communication will be shared in the group and during the live Google Meet class. Stay active and read all messages posted by Admin: <strong>Brother Andrew & Brother Elijah Ruben</strong>.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">✏️</span>Every student must have their keyboard, notebook, and pen.</td>
+        <td class="rule-ta">✏️ ஒவ்வொரு மாணவரும் கீபோர்ட், நோட்புக், பேனா வைத்திருக்க வேண்டும்.</td>
+    </tr>
 
-        <li><span class="icon">🤝</span>Please respect one another during and after the class.</li>
+    <tr>
+        <td class="rule-en"><span class="icon">❓</span>Questions may be asked after class or in the WhatsApp group.</td>
+        <td class="rule-ta">❓ கேள்விகளை வகுப்பு முடிந்தபின் அல்லது வாட்ஸ்அப் குழுவில் கேட்கலாம்.</td>
+    </tr>
 
-        <li><span class="icon">🎼</span><strong>Course Content:</strong> You will learn basic music theory lessons, with a focus on personal worship, church music, and finding chords for songs during live meetings.</li>
-    </ol>
+    <tr>
+        <td class="rule-en"><span class="icon">📣</span>All communication will be in the group. Stay active and read all messages from Admin.</td>
+        <td class="rule-ta">📣 அனைத்து தகவல்களும் குழுவில் மட்டுமே வழங்கப்படும். Admin அனுப்பும் செய்திகளை கவனமாக படிக்கவும்.</td>
+    </tr>
+
+    <tr>
+        <td class="rule-en"><span class="icon">🤝</span>Please respect one another during and after class.</td>
+        <td class="rule-ta">🤝 வகுப்பு நடக்கும் போது மற்றும் பிறகு ஒருவருக்கொருவர் கனிவாக நடந்து கொள்ளுங்கள்.</td>
+    </tr>
+
+    <tr>
+        <td class="rule-en"><span class="icon">🎼</span><b>Course Content:</b> Basic music theory, personal worship, church music, and finding chords for songs.</td>
+        <td class="rule-ta">🎼 <b>பாடத்திட்டம்:</b> அடிப்படை இசை, தனிப்பட்ட வாழ்வில் ஆராதனை, சபை இசை மற்றும் பாடல்களுக்கு Chord கண்டுபிடிப்பது.</td>
+    </tr>
+
+</table>
+
 
     <div class="footer">🕊️ May the grace and peace of the Lord be with you always. 🕊️</div>
 
