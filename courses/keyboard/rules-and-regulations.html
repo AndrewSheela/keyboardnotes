@@ -2,80 +2,112 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Parchment Class Rules</title>
+<title>Rules & Regulations - Parchment Scroll</title>
 
-<!-- Google Fonts -->
+<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:wght@400;700&family=Cardo:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
     body {
         font-family: "Cardo", serif;
-        background: #e9dfc8;
+        background: #efe8d8;
         padding: 40px;
-        color: #3b2f1d;
+        color: #3f301f;
     }
 
-    /* Scroll Parchment Container */
+    /* Scroll Container */
     .scroll {
         max-width: 900px;
         margin: auto;
-        background: #fdf5e6 url('https://i.imgur.com/DG9Um1Z.png') repeat; /* parchment texture */
-        padding: 50px 45px;
-        border: 10px solid #c5a46d;
-        border-radius: 20px;
-        box-shadow: 0 0 35px rgba(0,0,0,0.35), inset 0 0 30px rgba(0,0,0,0.25);
+        padding: 50px;
+        border-radius: 10px;
+
+        /* Parchment effect using gradient layers */
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.4), rgba(0,0,0,0) 70%),
+            radial-gradient(circle at bottom right, rgba(255,255,255,0.4), rgba(0,0,0,0) 70%),
+            linear-gradient(180deg, #f8f0d8, #f2e3c0 40%, #edd8a5 60%, #f6e6c4);
+
+        box-shadow:
+            inset 0 0 25px rgba(0,0,0,0.25),
+            0 0 35px rgba(0,0,0,0.35);
+        border: 5px solid #c9a86a;
         position: relative;
     }
 
-    /* Scroll top and bottom edges */
-    .scroll:before,
+    /* Scroll top rolled edge */
+    .scroll:before {
+        content: "";
+        position: absolute;
+        height: 30px;
+        left: 0;
+        right: 0;
+        top: -30px;
+
+        background: linear-gradient(to bottom,
+            #e4d3a8,
+            #d4ba7a,
+            #c5a56a
+        );
+        border-radius: 50% 50% 0 0;
+        box-shadow: 0 10px 10px rgba(0,0,0,0.25);
+    }
+
+    /* Scroll bottom rolled edge */
     .scroll:after {
         content: "";
         position: absolute;
+        height: 30px;
         left: 0;
         right: 0;
-        height: 50px;
-        background: url('https://i.imgur.com/WU6Xx2X.png') repeat-x; /* scroll edges */
+        bottom: -30px;
+
+        background: linear-gradient(to top,
+            #e4d3a8,
+            #d4ba7a,
+            #c5a56a
+        );
+        border-radius: 0 0 50% 50%;
+        box-shadow: 0 -10px 10px rgba(0,0,0,0.25);
     }
-    .scroll:before { top: -45px; }
-    .scroll:after { bottom: -45px; }
 
     h1 {
         text-align: center;
         font-family: "IM Fell English", serif;
         font-size: 40px;
-        color: #5a421e;
+        color: #5b4020;
         margin-bottom: 20px;
         letter-spacing: 2px;
         text-shadow: 1px 1px 0 #fff;
     }
 
     .divider {
-        width: 160px;
+        width: 150px;
         height: 4px;
-        background: #c5a46d;
         margin: 0 auto 30px auto;
-        border-radius: 4px;
+        background: #caa869;
+        border-radius: 5px;
     }
 
     ol {
         font-size: 19px;
-        line-height: 1.85;
-        padding-left: 20px;
+        line-height: 1.9;
+        padding-left: 25px;
     }
 
     li {
-        margin-bottom: 28px;
+        margin-bottom: 26px;
         padding: 18px;
-        background: rgba(255, 247, 219, 0.8);
-        border-left: 6px solid #b8924b;
-        border-radius: 8px;
-        box-shadow: inset 0 0 12px rgba(0,0,0,0.15);
+        background: rgba(255, 245, 215, 0.6);
+        border-left: 6px solid #c9a86a;
+        border-radius: 10px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.15);
     }
 
     .icon {
         margin-right: 8px;
         font-size: 22px;
+        color: #b88a37;
     }
 
     .highlight {
@@ -91,18 +123,18 @@
         margin-top: 40px;
         font-size: 22px;
         font-family: "IM Fell English", serif;
-        color: #5a421e;
-        letter-spacing: 1px;
+        color: #5b4120;
     }
 </style>
 </head>
 
 <body>
-<!-- ✅ GLOBAL HEADER -->
+    <!-- ✅ GLOBAL HEADER -->
 <div id="globalHeader"></div>
 <div class="scroll">
 
-    <h1>📜 Class Rules & Instructions</h1>
+
+    <h1>📜 Rules & Regulations</h1>
     <div class="divider"></div>
 
     <ol>
@@ -110,33 +142,32 @@
 
         <li><span class="icon">❗</span><span class="highlight">No absences allowed.</span> Attendance will be taken in every class.</li>
 
-        <li><span class="icon">⏰</span>If you cannot join the class, you must provide a valid reason <span class="highlight">before the class begins</span>. Otherwise, you will be marked absent.</li>
+        <li><span class="icon">⏰</span>If you cannot join the class, you must provide a valid reason <span class="highlight">before the class begins</span>. Otherwise, it will be considered absent.</li>
 
-        <li><span class="icon">📝</span><strong>Attendance Rule:</strong> Type your <span class="highlight">name</span> and <span class="highlight">roll number</span> in the comment section before <span class="highlight">8:50 PM</span> or at the end of class.</li>
+        <li><span class="icon">📝</span><strong>Attendance Rule:</strong> Type your <span class="highlight">name</span> and <span class="highlight">roll number</span> in the comment section before <span class="highlight">8:50 PM</span> or at the class ending time.</li>
 
-        <li><span class="icon">🎥</span>Students who miss the class must watch the recorded session and submit the assignment.</li>
+        <li><span class="icon">🎥</span>Students who do not attend the class must watch the recorded session and submit the assignment.</li>
 
-        <li><span class="icon">⚠️</span>Absent for <span class="highlight">3 consecutive classes</span> without informing will result in removal from the group.</li>
+        <li><span class="icon">⚠️</span>Anyone absent for <span class="highlight">3 consecutive classes</span> without informing will be removed from the group.</li>
 
-        <li><span class="icon">📢</span>Informing after class will still be counted as absent. You must inform before class begins.</li>
+        <li><span class="icon">📢</span>If you do not inform before class, it will be marked absent. Informing after the class will still be counted as absent.</li>
 
-        <li><span class="icon">📚</span>Assignments must be submitted on or before the due date. Missing assignments for <span class="highlight">3 weeks</span> will lead to removal from the group.</li>
+        <li><span class="icon">📚</span>Assignments must be submitted on or before the due date. Students failing to submit assignments for <span class="highlight">3 weeks</span> will be removed from the group.</li>
 
-        <li><span class="icon">🎬</span>All video exercises must have clear video and audio, focused mainly on the <span class="highlight">keyboard and your fingers</span>.</li>
+        <li><span class="icon">🎬</span>All video exercises must have clear video and audio, with the camera focused mainly on the <span class="highlight">keyboard</span> and your <span class="highlight">fingers</span>.</li>
 
-        <li><span class="icon">✏️</span>Every student must have their keyboard, notebook, and pen during the class.</li>
+        <li><span class="icon">✏️</span>Every student must have their keyboard, notebook, and pen while attending the class.</li>
 
-        <li><span class="icon">❓</span>Questions can be asked after class during the Q&A session or anytime in the WhatsApp group.</li>
+        <li><span class="icon">❓</span>Questions can be asked after class during the Q&A session or anytime in the WhatsApp group. Write down your questions so you don’t forget.</li>
 
-        <li><span class="icon">📣</span>No private messages will be sent. All announcements will be posted in the group and in the live class.  
-        Stay active and read all messages from Admin: <strong>Brother Andrew & Brother Elijah Ruben</strong>.</li>
+        <li><span class="icon">📣</span>We will not send any private messages. All communication will be shared in the group and during the live Google Meet class. Stay active and read all messages posted by Admin: <strong>Brother Andrew & Brother Elijah Ruben</strong>.</li>
 
-        <li><span class="icon">🤝</span>Please treat and respect one another during and after the class.</li>
+        <li><span class="icon">🤝</span>Please respect one another during and after the class.</li>
 
-        <li><span class="icon">🎼</span><strong>Course Content:</strong> Basic music theory, personal worship, church music, and learning how to find chords for songs during live worship.</li>
+        <li><span class="icon">🎼</span><strong>Course Content:</strong> You will learn basic music theory lessons, with a focus on personal worship, church music, and finding chords for songs during live meetings.</li>
     </ol>
 
-    <div class="footer">🕊️ May the peace and grace of the Lord be with you always. 🕊️</div>
+    <div class="footer">🕊️ May the grace and peace of the Lord be with you always. 🕊️</div>
 
 </div>
 
