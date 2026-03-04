@@ -12,150 +12,252 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Segoe UI',system-ui,sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    body{
-      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
-      min-height:100vh;
-      padding:20px;
+    body {
+      background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
     }
 
-    .wrapper{
-      max-width:1100px;
-      margin:auto;
-      background:#fff;
-      border-radius:22px;
-      padding:24px;
-      box-shadow:0 12px 35px rgba(0,0,0,0.25);
+    .wrapper {
+      max-width: 1100px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 0;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
     }
 
-    /* ✅ HERO */
-    .hero{
-      text-align:center;
-      padding:20px 10px 20px;
+    .content-padding {
+      padding: 24px 40px 40px 40px;
     }
 
-    .hero h1{
-      font-size:34px;
-      font-weight:900;
+    /* ✅ SCRIPTURE HERO */
+    .scripture-section {
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+      position: relative;
     }
 
-    .hero p{
-      margin-top:8px;
-      font-size:16px;
-      color:#444;
+    .scripture-section blockquote {
+      font-size: 28px;
+      font-style: italic;
+      font-weight: 300;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.4;
     }
 
-    /* ✅ GLOBAL SEARCH */
-    .search-wrap{
-      width:100%;
-      max-width:520px;
-      margin:26px auto 10px;
-      position:relative;
+    .scripture-section cite {
+      display: block;
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.9;
     }
 
-    .search-input{
-      width:100%;
-      padding:14px 46px 14px 18px;
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.2);
-      font-size:15px;
-      outline:none;
+    /* ✅ YOUTUBE SECTION */
+    .youtube-section-header {
+      text-align: center;
+      padding-top: 50px;
+      background: #f8fafc;
+      font-size: 24px;
+      font-weight: 800;
+      color: #1a202c;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
     }
 
-    .search-input:focus{
-      border-color:#4a00e0;
-      box-shadow:0 0 0 2px rgba(74,0,224,0.18);
+    .youtube-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px 20px 50px 20px;
+      background: #f8fafc;
+      flex-wrap: wrap;
     }
 
-    /* ✅ RESULTS */
-    #globalResults{
-      margin-top:12px;
-      background:#fff;
-      border-radius:14px;
-      box-shadow:0 8px 20px rgba(0,0,0,0.18);
-      max-height:360px;
-      overflow-y:auto;
+    .yt-card {
+      flex: 1;
+      min-width: 240px;
+      max-width: 260px;
+      background: white;
+      border-radius: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      border: 1px solid #edf2f7;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    .global-item{
-      padding:12px 14px;
-      border-bottom:1px solid #eee;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
+    .yt-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 25px rgba(255, 0, 0, 0.15);
+      border-color: #feb2b2;
     }
 
-    .global-item:hover{ background:#f9fafb; }
-
-    .global-item a{
-      font-weight:800;
-      color:#4a00e0;
-      text-decoration:none;
+    .yt-thumb-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      position: relative;
+      overflow: hidden;
     }
 
-    .global-meta{
-      font-size:12px;
-      color:#555;
-      margin-top:4px;
+    .yt-thumb-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
     }
 
-    .type-badge{
-      font-size:11px;
-      font-weight:900;
-      padding:4px 10px;
-      border-radius:999px;
-      color:#fff;
-      white-space:nowrap;
+    .yt-card:hover .yt-thumb-container img {
+      transform: scale(1.1);
     }
 
-    .notes{ background:#ff9a9e; color:#333; }
-    .chords{ background:#f7971e; color:#333; }
-    .lyrics{ background:#ff512f; }
-    .ppt{ background:#ff416c; }
-
-    /* ✅ QUICK LINKS */
-    .quick-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:18px;
-      margin-top:35px;
+    .play-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.9);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      opacity: 0.8;
+      transition: all 0.3s ease;
     }
 
-    .quick-card{
-      background:linear-gradient(135deg,#ffffff,#eef2ff);
-      border-radius:18px;
-      padding:22px;
-      text-align:center;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15);
-      transition:0.25s;
-      text-decoration:none;
-      color:#111;
-      font-weight:800;
+    .yt-card:hover .play-overlay {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.2);
     }
 
-    .quick-card:hover{
-      transform:translateY(-5px);
-      box-shadow:0 12px 22px rgba(0,0,0,0.28);
+    .yt-info {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .quick-card i{
-      font-size:36px;
-      margin-bottom:10px;
-      color:#4a00e0;
+    .yt-info span {
+      display: block;
+      font-weight: 700;
+      font-size: 15px;
+      color: #2d3748;
     }
 
-    .footer{
-      margin-top:35px;
-      text-align:center;
-      font-size:14px;
-      color:#666;
+    .yt-link-text {
+      font-size: 11px;
+      color: #ff0000;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    /* ✅ SPACER */
+    .vertical-spacer {
+      height: 50px;
+    }
+
+    /* ✅ REQUEST SECTIONS */
+    .cta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .cta-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 35px;
+      border-radius: 20px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease;
+    }
+
+    .cta-card:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .cta-card h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: #1a202c;
+    }
+
+    .cta-card p {
+      color: #718096;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4a00e0;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #1a202c;
+      color: white;
+    }
+
+    .btn:hover {
+      filter: brightness(1.2);
+      transform: scale(1.02);
+    }
+
+    .footer {
+      margin-top: 60px;
+      padding-bottom: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .cta-grid { grid-template-columns: 1fr; }
+      .scripture-section blockquote { font-size: 22px; }
+      .content-padding { padding: 20px; }
     }
   </style>
 </head>
@@ -167,46 +269,104 @@
   <!-- ✅ GLOBAL HEADER -->
   <div id="globalHeader"></div>
 
-  <!-- ✅ HERO -->
-  <div class="hero">
-    <h1>🎹 Christian Worship Music Hub</h1>
-    <p>Search Notes • Chords • Lyrics • PPT from one place</p>
+  <!-- ✅ STYLISH SCRIPTURE -->
+  <section class="scripture-section">
+    <div class="container">
+      <blockquote>"For you are all one in Christ Jesus."</blockquote>
+      <cite>Galatians 3:28</cite>
+    </div>
+  </section>
+
+  <!-- ✅ OUR YOUTUBE CHANNELS TEXT -->
+  <div class="youtube-section-header">
+    Explore Our Channels
   </div>
 
-  <!-- ✅ ✅ ✅ ONLY GLOBAL SEARCH -->
- 
-
-  <div id="globalResults"></div>
-
-  <!-- ✅ QUICK ACCESS -->
-  <div class="quick-grid">
-
-    <a href="/keyboard-notes/index.html" class="quick-card">
-      <i class="fa-solid fa-music"></i><br>Keyboard Notes
+  <!-- ✅ YOUTUBE CHANNELS ROW -->
+  <div class="youtube-row">
+    
+    <!-- Channel 1: Main Ministry -->
+    <a href="https://youtu.be/pz8nC2OsIwo" target="_blank" class="yt-card">
+      <div class="yt-thumb-container">
+        <img src="https://img.youtube.com/vi/pz8nC2OsIwo/mqdefault.jpg" alt="Main Ministry Video">
+        <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
+      </div>
+      <div class="yt-info">
+        <span>Main Ministry</span>
+        <div class="yt-link-text">Watch Now</div>
+      </div>
     </a>
 
-    <a href="/chords/index.html" class="quick-card">
-      <i class="fa-solid fa-guitar"></i><br>Keyboard Chords
+    <!-- Channel 2: Keyboard Tutorials -->
+    <a href="https://youtu.be/RIpvfFbH4Ck" target="_blank" class="yt-card">
+      <div class="yt-thumb-container">
+        <img src="https://img.youtube.com/vi/RIpvfFbH4Ck/mqdefault.jpg" alt="Keyboard Tutorials Video">
+        <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
+      </div>
+      <div class="yt-info">
+        <span>Keyboard Tutorials</span>
+        <div class="yt-link-text">Watch Now</div>
+      </div>
     </a>
 
-    <a href="/lyrics/index.html" class="quick-card">
-      <i class="fa-solid fa-file-lines"></i><br>Song Lyrics
+    <!-- Channel 3: Karaoke Tracks -->
+    <a href="https://youtube.com/shorts/xHmJdQ--hPE" target="_blank" class="yt-card">
+      <div class="yt-thumb-container">
+        <img src="https://img.youtube.com/vi/xHmJdQ--hPE/mqdefault.jpg" alt="Karaoke Tracks Video">
+        <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
+      </div>
+      <div class="yt-info">
+        <span>Karaoke Tracks</span>
+        <div class="yt-link-text">Watch Now</div>
+      </div>
     </a>
 
-    <a href="/ppt-lyrics/index.html" class="quick-card">
-      <i class="fa-solid fa-file-powerpoint"></i><br>PPT Lyrics
+    <!-- Channel 4: Worship Sessions -->
+    <a href="https://youtu.be/gNg3YI40s3w" target="_blank" class="yt-card">
+      <div class="yt-thumb-container">
+        <img src="https://img.youtube.com/vi/gNg3YI40s3w/mqdefault.jpg" alt="Worship Sessions Video">
+        <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
+      </div>
+      <div class="yt-info">
+        <span>Worship Sessions</span>
+        <div class="yt-link-text">Watch Now</div>
+      </div>
     </a>
-
-    <a href="/courses/index.html" class="quick-card">
-      <i class="fa-solid fa-graduation-cap"></i><br>Music Courses
-    </a>
-
   </div>
 
-  <div class="footer">
-    © 2025 Christian Keyboard Ministry • All Rights Reserved
-  </div>
+  <div class="content-padding">
+    
+    <!-- ✅ VERTICAL SPACE -->
+    <div class="vertical-spacer"></div>
 
+    <!-- ✅ REQUEST BUTTONS SECTIONS -->
+    <div class="cta-grid">
+      
+      <!-- Song Request Card -->
+      <div class="cta-card">
+        <div>
+          <h2>🎵 Song & Karaoke Requests</h2>
+          <p>Missing your favorite song? Request custom keyboard notes or high-quality karaoke tracks for your next worship session. We try our best to fulfill every request!</p>
+        </div>
+        <a href="https://jgeneration.org/keyboard-notes/song-request-page" class="btn btn-primary" target="_blank">Request a Song</a>
+      </div>
+
+      <!-- Course Application Card -->
+      <div class="cta-card">
+        <div>
+          <h2>🎹 Music Course Application</h2>
+          <p>Ready to level up your keyboard skills? Apply for our structured music courses designed for ministry. Learn chords, scales, and professional worship techniques.</p>
+        </div>
+        <a href="#" class="btn btn-secondary">Apply for Course</a>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      © 2025 Christian Keyboard Ministry • All Rights Reserved
+    </div>
+
+  </div>
 </div>
 
 <!-- ✅ LOAD HEADER -->
@@ -219,55 +379,8 @@ fetch("/header.html")
     const script = document.createElement("script");
     script.src = "/js/global-search.js?v=" + Date.now();
     document.body.appendChild(script);
-  });
-</script>
-
-
-<!-- ✅ ✅ ✅ GLOBAL SEARCH ENGINE -->
-<script>
-let globalData = [];
-
-fetch("/data/global-search.json?v=" + Date.now())
-  .then(res => res.json())
-  .then(data => globalData = data)
-  .catch(err => console.error("Global Search JSON Error:", err));
-
-function runGlobalSearch(){
-  const input = document.getElementById("globalSearchInput").value.toLowerCase().trim();
-  const resultBox = document.getElementById("globalResults");
-  resultBox.innerHTML = "";
-
-  if (!input) return;
-
-  const results = globalData.filter(item =>
-    item.title.toLowerCase().includes(input) ||
-    item.album.toLowerCase().includes(input) ||
-    item.artist.toLowerCase().includes(input) ||
-    item.language.toLowerCase().includes(input)
-  );
-
-  if (!results.length){
-    resultBox.innerHTML = "<div class='global-item'>❌ No results found</div>";
-    return;
-  }
-
-  results.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "global-item";
-
-    div.innerHTML = `
-      <div>
-        <a href="${item.url}">${item.title}</a>
-        <div class="global-meta">
-          ${item.album} • ${item.artist} • ${item.language}
-        </div>
-      </div>
-      <span class="type-badge ${item.type}">${item.type.toUpperCase()}</span>
-    `;
-
-    resultBox.appendChild(div);
-  });
-}
+  })
+  .catch(err => console.log("Header load ignored for preview purposes."));
 </script>
 
 </body>
