@@ -6,78 +6,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body{
-      margin:0;
-      font-family:'Segoe UI',system-ui,sans-serif;
-      min-height:100vh;
-      background:linear-gradient(135deg,#4e54c8,#8f94fb,#ff758c);
-      background-size:400% 400%;
-      animation:bgMove 12s ease infinite;
-      display:flex;
-      justify-content:center;
-      padding:24px;
+    :root {
+      --primary-gradient: linear-gradient(135deg, #4e54c8, #8f94fb, #ff758c);
+      --text-gradient: linear-gradient(90deg, #ff512f, #dd2476, #36d1dc, #5b86e5);
+      --accent-color: #dd2476;
     }
 
-    @keyframes bgMove{
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      background: var(--primary-gradient);
+      background-size: 400% 400%;
+      animation: bgMove 12s ease infinite;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      color: #333;
     }
 
-    .wrapper{
-      width:100%;
-      max-width:950px;
-      background:rgba(255,255,255,0.96);
-      border-radius:24px;
-      box-shadow:0 15px 40px rgba(0,0,0,0.25);
-      padding:28px;
+    @keyframes bgMove {
+      0% { background-position: 0% 50% }
+      50% { background-position: 100% 50% }
+      100% { background-position: 0% 50% }
     }
 
-    h1{
-      text-align:center;
-      font-size:34px;
-      font-weight:900;
-      background:linear-gradient(90deg,#ff512f,#dd2476,#36d1dc,#5b86e5);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      margin-bottom:20px;
+    .wrapper {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      padding: 40px;
+      box-sizing: border-box;
+      margin-bottom: 40px;
     }
 
-    h2{
-      margin-top:22px;
-      font-size:22px;
-      color:#333;
+    .last-updated {
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+      margin-top: -10px;
+      margin-bottom: 30px;
     }
 
-    p, li{
-      font-size:18px;
-      line-height:1.7;
-      color:#444;
+    h1 {
+      text-align: center;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 900;
+      background: var(--text-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
     }
 
-    ul{
-      padding-left:20px;
+    h2 {
+      margin-top: 30px;
+      font-size: 24px;
+      color: #1a2a6c;
+      border-left: 5px solid var(--accent-color);
+      padding-left: 15px;
+      line-height: 1.2;
     }
 
-    .highlight{
-      background:linear-gradient(135deg,#ff512f,#dd2476);
-      color:white;
-      padding:14px;
-      border-radius:14px;
-      margin:16px 0;
-      font-weight:700;
-      text-align:center;
+    p, li {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #444;
+      margin-bottom: 15px;
     }
 
-    .contact-box{
-      margin-top:30px;
-      padding:22px;
-      border-radius:20px;
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      color:white;
-      text-align:center;
-      box-shadow:0 10px 24px rgba(0,0,0,0.25);
-      font-size:18px;
+    ul {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #ff512f, #dd2476);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin: 25px 0;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(221, 36, 118, 0.3);
+    }
+
+    .bible-quote {
+      font-style: italic;
+      color: #555;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+      margin-top: 10px;
+      display: block;
+      font-size: 15px;
+    }
+
+    .content-section {
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 20px; }
+      body { padding: 10px; }
     }
   </style>
 </head>
@@ -85,77 +120,120 @@
 <body>
 
   <div class="wrapper">
-
-    <!-- ✅ GLOBAL HEADER -->
+    <!-- GLOBAL HEADER -->
     <div id="globalHeader"></div>
 
     <h1>Terms & Conditions</h1>
+    <p class="last-updated">Last Updated: <span id="currentDate"></span></p>
 
     <p>
-      Welcome to <b>Christian Songs Keyboard Notes</b>. By accessing this website,
-      you agree to be bound by these Terms and Conditions. If you do not agree with
-      any part of these terms, please do not use our website.
+      Welcome to <b>Christian Songs Keyboard Notes</b>. These Terms and Conditions outline the rules and regulations for the use of JGeneration Ministry's Website, located at <strong>jgeneration.org</strong>.
     </p>
 
     <div class="highlight">
-      These Terms apply to all users, viewers, and visitors of this website.
+      By accessing this website, we assume you accept these terms and conditions. Do not continue to use Christian Songs Keyboard Notes if you do not agree to all of the terms and conditions stated on this page.
     </div>
 
-    <h2>1. Use of Content</h2>
-    <p>
-      All content provided on this website including songs, keyboard notes,
-      chords, lyrics, and layouts are for educational and worship purposes only.
-      You may not copy or redistribute content for commercial use without permission.
-    </p>
+    <section class="content-section">
+      <h2>1. Intellectual Property & Creative Commons</h2>
+      <p>
+        At JGeneration Ministry, we believe we are <strong>One Family in Christ Jesus</strong>. As we have freely received gifts from the Holy Spirit, we desire to share these musical resources to build up the Body of Christ worldwide.
+      </p>
+      <p>
+        All keyboard notes, transcriptions, and educational materials on this site are licensed under a 
+        <strong>Creative Commons CC0 (Public Domain) or Attribution-NonCommercial (CC BY-NC)</strong> spirit. We want our work to be a blessing to your ministry.
+      </p>
+      <p><strong>You are encouraged to:</strong></p>
+      <ul>
+        <li><strong>Share Freely:</strong> Copy and redistribute the material in any medium or format to help others learn and worship.</li>
+        <li><strong>Adapt & Use:</strong> Remix, transform, and build upon the material for your church services, personal learning, or small groups.</li>
+        <li><strong>Spread the Word (Optional):</strong> While not mandatory, we kindly ask you to share a link to <strong>jgeneration.org</strong> so that more brothers and sisters in Christ can benefit from these free resources.</li>
+      </ul>
+      <p><strong>Constraint:</strong></p>
+      <ul>
+        <li><strong>Non-Commercial:</strong> We ask that you do not sell these notes or use them for commercial profit, keeping the focus on free ministry and worship.</li>
+      </ul>
+      <span class="bible-quote">
+        "Freely you have received; freely give." — <strong>Matthew 10:8</strong><br>
+        "So we, being many, are one body in Christ, and every one members one of another." — <strong>Romans 12:5</strong>
+      </span>
+    </section>
 
-    <h2>2. Website Availability</h2>
-    <p>
-      We try to keep the website running smoothly. However, we are not responsible
-      if the website becomes temporarily unavailable due to technical issues beyond
-      our control.
-    </p>
+    <section class="content-section">
+      <h2>2. Content Accuracy & Educational Purpose</h2>
+      <p>
+        The keyboard notes, chords, and lyrics provided are transcribed for educational and worship purposes. While we strive for musical accuracy, we do not warrant that the materials on this website are accurate, complete, or current. Use of the musical notations provided is at your own risk.
+      </p>
+    </section>
 
-    <h2>3. External Links</h2>
-    <p>
-      Our website may contain links to external websites such as YouTube or other
-      services. We do not control the content or policies of those websites and are
-      not responsible for them.
-    </p>
+    <section class="content-section">
+      <h2>3. Advertisements & Third-Party Links</h2>
+      <p>
+        To keep our resources free and accessible to the global church, we display advertisements (including Google AdSense). These third-party ad servers use cookies to serve ads based on your prior visits to our website.
+      </p>
+      <ul>
+        <li>We have no control over the content of third-party websites linked on our pages.</li>
+        <li>You may opt-out of personalized advertising by visiting Google's Ad Settings.</li>
+      </ul>
+    </section>
 
-    <h2>4. Advertising</h2>
-    <p>
-      This website may display advertisements through Google AdSense or other
-      advertising networks. Advertisements help us keep this service free of cost.
-    </p>
+    <section class="content-section">
+      <h2>4. User Conduct</h2>
+      <p>
+        You agree to use the website only for lawful purposes. You are prohibited from using the site to harvest data, transmit malware, or engage in any activity that disrupts the website's performance or security.
+      </p>
+    </section>
 
-    <h2>5. Limitation of Liability</h2>
-    <p>
-      We are not liable for any loss or damage including indirect or consequential
-      loss arising from the use of our website.
-    </p>
+    <section class="content-section">
+      <h2>5. Disclaimer of Warranties</h2>
+      <p>
+        This website is provided "as is," with all faults, and JGeneration Ministry expresses no representations or warranties, of any kind related to this website or the materials contained on this website.
+      </p>
+    </section>
 
-    <h2>6. Changes to Terms</h2>
-    <p>
-      We may update these Terms & Conditions at any time without prior notice.
-      Continued use of the website means you accept the updated terms.
-    </p>
+    <section class="content-section">
+      <h2>6. Limitation of Liability</h2>
+      <p>
+        In no event shall JGeneration Ministry, nor any of its officers, directors, and employees, be held liable for anything arising out of or in any way connected with your use of this website.
+      </p>
+    </section>
 
-    <div class="contact-box">
-      <b>Website Name:</b> Christian Songs Keyboard Notes<br><br>
-      <b>Country:</b> India<br><br>
-      <b>Contact Email:</b> josepath.andrew@gmail.com
-    </div>
+    <section class="content-section">
+      <h2>7. Changes to These Terms</h2>
+      <p>
+        JGeneration Ministry is permitted to revise these Terms at any time as it sees fit, and by using this website you are expected to review these Terms on a regular basis.
+      </p>
+    </section>
+
+    <!-- GLOBAL FOOTER WILL BE LOADED HERE -->
+    <div id="globalFooter"></div>
 
   </div>
 
-  <!-- ✅ LOAD GLOBAL HEADER -->
   <script>
+    // Set dynamic dates
+    const now = new Date();
+    document.getElementById("currentDate").textContent = now.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+
+    // Load Global Header
     fetch("/header.html")
       .then(res => res.text())
       .then(data => {
         document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+      })
+      .catch(err => console.log("Header not found"));
 
+    // Load Global Footer
+    fetch("/footer.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalFooter").innerHTML = data;
+      })
+      .catch(err => console.log("Footer not found"));
+  </script>
 </body>
 </html>

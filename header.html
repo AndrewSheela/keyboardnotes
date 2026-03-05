@@ -1,231 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JGeneration Header</title>
+    <style>
+        /* ============================= */
+        /* HEADER BASE */
+        /* ============================= */
+        body { margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
+
+        .top-header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .top-header-inner {
+            max-width: 1200px;
+            margin: auto;
+            padding: 16px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ============================= */
+        /* BRAND ROW */
+        /* ============================= */
+        .brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        /* ============================= */
+        /* LOGO EFFECTS WRAPPER */
+        /* ============================= */
+        .logo-wrap {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-wrap::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            animation: spinGradient 10s linear infinite;
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .logo-wrap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            filter: blur(15px);
+            background: #6366f1;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .logo-wrap img, .logo-wrap svg {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 5;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: #fff;
+        }
+
+        .logo-wrap:hover img, .logo-wrap:hover svg {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        @keyframes spinGradient { 100% { transform: rotate(360deg); } }
+
+        /* TITLE */
+        .site-title {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .site-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 4px;
+            letter-spacing: 0.2px;
+        }
+
+        /* ============================= */
+        /* NAVIGATION - MODERN GLASS STYLE */
+        /* ============================= */
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            text-align: center;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        /* Default Style for buttons (Glass Effect) */
+        .nav-btn {
+            background: rgba(241, 245, 249, 0.8);
+            color: #475569;
+            border-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .nav-btn:hover {
+            background: #fff;
+            color: #6366f1;
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* Highlight Primary Action */
+        .btn-home {
+            background: #6366f1;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-home:hover {
+            background: #4f46e5;
+            color: #fff;
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Subtle indicator colors on hover only */
+        .btn-bible:hover { color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); }
+        .btn-lyrics:hover { color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
+        .btn-videos:hover { color: #0ea5e9; border-color: rgba(14, 165, 233, 0.2); }
+
+        /* SEARCH BAR */
+        .search-wrap {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 44px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+            color: #1e293b;
+        }
+
+        .search-wrap::before {
+            content: "🔍";
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        .search-input:focus {
+            background: #fff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Responsive Fixes */
+        @media (max-width: 768px) {
+            .nav-container { gap: 6px; }
+            .nav-btn { 
+                padding: 10px; 
+                font-size: 13px; 
+                flex: 1 1 calc(50% - 10px);
+                min-width: 140px;
+            }
+            .site-title { font-size: 28px; }
+            .logo-wrap { width: 70px; height: 70px; }
+            .logo-wrap img, .logo-wrap svg { width: 55px; height: 55px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-header">
+    <div class="top-header-inner">
+
+        <!-- BRAND -->
+        <div class="brand-row">
+            <div class="brand-left">
+                <div class="logo-wrap">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1" />
+                                <stop offset="100%" style="stop-color:#a855f7" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
+                        <text x="50" y="68" font-family="system-ui" font-size="45" fill="white" text-anchor="middle" font-weight="900">J</text>
+                    </svg>
+
+                    <!-- Subtle Sparkle (Simplified) -->
+                    <div style="position:absolute; width:100%; height:100%; pointer-events:none;">
+                        <div style="position:absolute; top:10%; right:10%; font-size:10px; animation: pulse 2s infinite;">✨</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="site-title">JGeneration</div>
+                    <div class="site-subtitle">Sons and Daughters of the Living God</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVIGATION - Modern Balanced Style -->
+        <nav class="nav-container">
+            <a class="nav-btn btn-home" href="/index.html">Home</a>
+            <a class="nav-btn btn-notes" href="/keyboard-notes/index.html">Keyboard Notes</a>
+            <a class="nav-btn btn-chords" href="/chords/index.html">Keyboard Chords</a>
+            <a class="nav-btn btn-lyrics" href="/lyrics/index.html">Song Lyrics</a>
+            <a class="nav-btn btn-videos" href="/videos/index.html">Videos</a>
+            <a class="nav-btn btn-bible" href="/bible/index.html">Bible Study</a>
+            <a class="nav-btn btn-courses" href="/courses/index.html">Music Courses</a>
+            <a class="nav-btn btn-ppt" href="/ppt-lyrics/index.html">PPT Lyrics</a>
+            <a class="nav-btn btn-about" href="/about.html">About</a>
+        </nav>
+
+        <!-- SEARCH -->
+        <div class="search-wrap">
+            <input
+                type="text"
+                id="globalSearchInput"
+                placeholder="Search resources..."
+                class="search-input"
+            >
+        </div>
+
+    </div>
+</header>
+
 <style>
-/* ✅ GLOBAL SEARCH RESULTS */
-#globalResults{
-  margin-top:14px;
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 6px 16px rgba(0,0,0,0.15);
-  max-height:350px;
-  overflow-y:auto;
-}
-
-.global-item{
-  padding:12px;
-  border-bottom:1px solid #eee;
-}
-
-.global-item:hover{ background:#f9fafb; }
-
-.global-item a{
-  font-weight:800;
-  color:#4a00e0;
-  text-decoration:none;
-}
-
-.global-meta{
-  font-size:12px;
-  color:#555;
-  margin-top:4px;
-}
-
-/* ✅ HEADER DESIGN */
-.top-header{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  margin-bottom:18px;
-  border-bottom:1px solid rgba(0,0,0,0.08);
-  padding:14px;
-  background:#fff;
-}
-
-.brand-row{ text-align:center; }
-.site-title{ font-size:26px; font-weight:800; }
-.site-subtitle{ font-size:14px; color:#555; margin-top:4px; }
-
-/* ✅ GLOBAL SEARCH BAR */
-.search-wrap{
-  width:100%;
-  max-width:420px;
-  margin:10px auto;
-}
-
-.search-input{
-  width:100%;
-  padding:12px 44px 12px 14px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,0.2);
-  font-size:14px;
-  outline:none;
-}
-
-.search-input:focus{
-  border-color:#4a00e0;
-  box-shadow:0 0 0 2px rgba(74,0,224,0.15);
-}
-
-/* ✅ NAV BUTTONS */
-.nav-buttons{
-  display:grid;
-  grid-template-columns: repeat(5, auto);
-  justify-content:center;
-  gap:12px 14px;
-}
-
-.nav-row-2{
-  grid-column: 1 / -1;
-  display:flex;
-  justify-content:center;
-  gap:14px;
-  flex-wrap:wrap;
-}
-
-.nav-btn{
-  padding:9px 18px;
-  border-radius:999px;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  color:#fff;
-  box-shadow:0 4px 10px rgba(0,0,0,0.22);
-  text-decoration:none;
-  transition:0.2s;
-  opacity:0.88;
-}
-
-.nav-btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 18px rgba(0,0,0,0.25);
-  filter:brightness(1.05);
-  opacity:1;
-}
-
-.nav-btn.active{
-  opacity:1 !important;
-  transform:scale(1.1);
-  animation:glowPulse 1.5s infinite alternate;
-}
-
-@keyframes glowPulse{
-  from{ filter:brightness(1); }
-  to{ filter:brightness(1.35); }
-}
-
-/* ✅ COLORS */
-.btn-home{ background:linear-gradient(135deg,#36d1dc,#5b86e5); }
-.btn-notes{ background:linear-gradient(135deg,#ff9a9e,#fad0c4); color:#333; }
-.btn-chords{ background:linear-gradient(135deg,#f7971e,#ffd200); color:#333; }
-.btn-lyrics{ background:linear-gradient(135deg,#ff512f,#dd2476); }
-.btn-about{ background:linear-gradient(135deg,#00c6ff,#0072ff); }
-.btn-bible{ background:linear-gradient(135deg,#8e2de2,#4a00e0); }
-.btn-courses{ background:linear-gradient(135deg,#f7971e,#ff6a00); }
-.btn-ppt{ background:linear-gradient(135deg,#ff416c,#ff4b2b); }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 </style>
 
-<div class="top-header">
-
-  <!-- ✅ BRAND -->
-  <div class="brand-row">
-    <div class="site-title">Christian Songs Keyboard Notes</div>
-    <div class="site-subtitle">Play With Peace</div>
-  </div>
-
-  <!-- ✅ NAVIGATION -->
-  <div class="nav-buttons">
-
-    <a class="nav-btn btn-home" href="/index.html">Home</a>
-    <a class="nav-btn btn-notes" href="/keyboard-notes/index.html">Keyboard Notes</a>
-    <a class="nav-btn btn-chords" href="/chords/index.html">Keyboard Chords</a>
-    <a class="nav-btn btn-lyrics" href="/lyrics/index.html">Song Lyrics</a>
-    <a class="nav-btn btn-about" href="/about.html">About Us</a>
-
-    <div class="nav-row-2">
-      <a class="nav-btn btn-bible" href="/bible/index.html">Bible Study</a>
-      <a class="nav-btn btn-courses" href="/courses/index.html">Music Courses</a>
-      <a class="nav-btn btn-ppt" href="/ppt-lyrics/index.html">PPT Lyrics</a>
-      <a class="nav-btn" style="background:#11998e;" href="/privacy.html">Privacy</a>
-      <a class="nav-btn" style="background:#7f00ff;" href="/terms.html">Terms</a>
-    </div>
-  </div>
-
-  <!-- ✅ GLOBAL SEARCH BELOW BUTTONS -->
-  <div class="search-wrap">
-    <input
-      type="text"
-      id="globalSearchInput"
-      placeholder="🔍 Search Notes • Chords • Lyrics • PPT"
-      onkeyup="runGlobalSearch()"
-      class="search-input"
-    >
-  </div>
-
-  <div id="globalResults"></div>
-
-</div>
-
-<!-- ✅ ACTIVE PAGE HIGHLIGHT -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const navLinks = document.querySelectorAll(".nav-btn");
-  const currentFile = location.pathname.split("/").pop() || "index.html";
-
-  navLinks.forEach(link => {
-    const linkFile = link.getAttribute("href").split("/").pop();
-    if (linkFile === currentFile) link.classList.add("active");
-  });
-});
-</script>
-
-<!-- ✅ ✅ ✅ GLOBAL SEARCH ENGINE (FULLY FIXED) -->
-<script>
-let globalData = [];
-
-/* ✅ ABSOLUTE PATH (WORKS ON ALL PAGES EVEN WHEN HEADER IS LOADED BY fetch) */
-const globalPath = "/data/global-search.json";
-
-fetch(globalPath + "?v=" + Date.now())
-  .then(res => {
-    if (!res.ok) throw new Error("Global JSON not found");
-    return res.json();
-  })
-  .then(data => {
-    console.log("✅ GLOBAL SEARCH LOADED:", data);
-    globalData = data;
-  })
-  .catch(err => console.error("❌ Global Search JSON error:", err));
-
-function runGlobalSearch(){
-  const input = document.getElementById("globalSearchInput").value.toLowerCase().trim();
-  const resultBox = document.getElementById("globalResults");
-  resultBox.innerHTML = "";
-
-  if (!input) return;
-
-  const results = globalData.filter(item =>
-    (item.title || "").toLowerCase().includes(input) ||
-    (item.album || "").toLowerCase().includes(input) ||
-    (item.artist || "").toLowerCase().includes(input) ||
-    (item.language || "").toLowerCase().includes(input)
-  );
-
-  if (!results.length){
-    resultBox.innerHTML = "<div class='global-item'>❌ No results found</div>";
-    return;
-  }
-
-  results.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "global-item";
-
-    div.innerHTML = `
-      <a href="${item.url}">${item.title}</a>
-      <div class="global-meta">
-        ${item.type.toUpperCase()} • ${item.album} • ${item.artist} • ${item.language}
-      </div>
-    `;
-
-    resultBox.appendChild(div);
-  });
-}
-</script>
-
+</body>
+</html>

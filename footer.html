@@ -1,0 +1,143 @@
+<footer style="
+  background: linear-gradient(135deg, #1a1446, #5b0a49, #ff3d9a);
+  background-size: 200% 200%;
+  animation: glossyMove 8s ease infinite;
+  color: white;
+  padding: 40px 15px 20px 15px;
+  text-align: center;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin-top: 50px;
+">
+
+  <!-- Bible Verse -->
+  <p style="
+    font-size: 18px;
+    font-style: italic;
+    margin-bottom: 12px;
+    color: #fffde7;
+    line-height: 1.5;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  ">
+    “Whatever you do, do all to the glory of God.”
+    <br>
+    <strong style="color: #ffd700;">— 1 Corinthians 10:31</strong>
+  </p>
+
+  <hr style="border: 0; height: 1.5px; background: rgba(255,255,255,0.2); margin: 20px auto; width: 85%;">
+
+  <!-- Ministry Name -->
+  <h2 style="margin: 10px 0; font-size: 24px; letter-spacing: 1px;">
+    JGeneration Ministry
+  </h2>
+
+  <!-- Contact Info Section -->
+  <div style="margin: 15px 0; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+    <!-- WhatsApp Support -->
+    <a href="https://wa.me/919790183938" target="_blank"
+      style="color:#25D366; text-decoration:none; font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 5px;">
+      <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" style="width: 20px; height: 20px;">
+      WhatsApp: +91 9790183938
+    </a>
+
+    <!-- Gmail Button -->
+    <a href="mailto:josepath.andrew@gmail.com" 
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(145deg, #ff6b6b, #c81d25);
+        padding: 10px 24px;
+        border-radius: 30px;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.3);
+        transition: transform 0.2s;
+      ">
+      <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" style="width: 18px; height: 18px; filter: brightness(0) invert(1);">
+      Email Us
+    </a>
+  </div>
+
+  <!-- Social Channel Buttons -->
+  <div style="
+      margin: 25px 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+  ">
+    <!-- WhatsApp Channel -->
+    <a href="https://whatsapp.com/channel/0029Vb6oGXeG8l5F61uVfP2g" target="_blank"
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(5px);
+        padding: 8px 18px;
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        border: 1px solid rgba(255,255,255,0.3);
+      ">
+      WhatsApp Channel
+    </a>
+
+    <!-- Telegram Channel -->
+    <a href="https://t.me/+KrWKr4luI0sxMWRl" target="_blank"
+      style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(5px);
+        padding: 8px 18px;
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        border: 1px solid rgba(255,255,255,0.3);
+      ">
+      Telegram Channel
+    </a>
+  </div>
+
+  <!-- AdSense Compliance & Legal Links -->
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+    <div style="margin-bottom: 15px; font-size: 14px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+      <a href="/privacy-policy" style="color: #eeeeee; text-decoration: none; border-bottom: 1px dotted #ccc;">Privacy Policy</a>
+      <a href="/terms-and-conditions" style="color: #eeeeee; text-decoration: none; border-bottom: 1px dotted #ccc;">Terms & Conditions</a>
+      <a href="/about-us" style="color: #eeeeee; text-decoration: none; border-bottom: 1px dotted #ccc;">About Us</a>
+      <a href="/contact-us" style="color: #eeeeee; text-decoration: none; border-bottom: 1px dotted #ccc;">Contact</a>
+    </div>
+
+    <!-- Copyright & Hosting -->
+    <p style="margin: 5px 0; font-size: 13px; color: rgba(255,255,255,0.7);">
+      &copy; <span id="year"></span> JGeneration Ministry. All Rights Reserved.
+    </p>
+    <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px;">
+      Hosted on GitHub & Cloudflare Pages
+    </p>
+  </div>
+
+  <style>
+    @keyframes glossyMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    footer a:hover {
+      opacity: 0.8;
+      transition: 0.3s;
+    }
+  </style>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</footer>

@@ -1,170 +1,151 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Privacy Policy - Christian Songs Keyboard Notes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body{
-      margin:0;
-      font-family:'Segoe UI',system-ui,sans-serif;
-      min-height:100vh;
-      background:linear-gradient(135deg,#43cea2,#185a9d,#ff758c);
-      background-size:400% 400%;
-      animation:bgMove 12s ease infinite;
-      display:flex;
-      justify-content:center;
-      padding:24px;
-    }
-
-    @keyframes bgMove{
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
-    }
-
-    .wrapper{
-      width:100%;
-      max-width:950px;
-      background:rgba(255,255,255,0.96);
-      border-radius:24px;
-      box-shadow:0 15px 40px rgba(0,0,0,0.25);
-      padding:28px;
-    }
-
-    h1{
-      text-align:center;
-      font-size:34px;
-      font-weight:900;
-      background:linear-gradient(90deg,#ff512f,#dd2476,#36d1dc,#5b86e5);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      margin-bottom:20px;
-    }
-
-    h2{
-      margin-top:22px;
-      font-size:22px;
-      color:#333;
-    }
-
-    p, li{
-      font-size:18px;
-      line-height:1.7;
-      color:#444;
-    }
-
-    ul{
-      padding-left:20px;
-    }
-
-    .highlight{
-      background:linear-gradient(135deg,#36d1dc,#5b86e5);
-      color:white;
-      padding:14px;
-      border-radius:14px;
-      margin:16px 0;
-      font-weight:700;
-      text-align:center;
-    }
-
-    .contact-box{
-      margin-top:30px;
-      padding:22px;
-      border-radius:20px;
-      background:linear-gradient(135deg,#667eea,#764ba2);
-      color:white;
-      text-align:center;
-      box-shadow:0 10px 24px rgba(0,0,0,0.25);
-      font-size:18px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | JGeneration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .section-nav:hover {
+            color: #667eea;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+    </style>
 </head>
+<body class="bg-gray-50 text-gray-800 antialiased">
 
-<body>
+    <!-- Header Section -->
+    <header class="gradient-bg py-16 px-4 text-center text-white shadow-lg">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+        <p class="text-lg opacity-90 max-w-2xl mx-auto">Your privacy is important to us. Learn how we collect, use, and protect your personal information at <strong>JGeneration</strong>.</p>
+        <div class="mt-6 inline-block bg-white/20 px-4 py-2 rounded-full text-sm font-medium">
+            Last Updated: March 2024
+        </div>
+    </header>
 
-  <div class="wrapper">
+    <main class="max-w-7xl mx-auto px-4 py-12 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="lg:w-1/4 hidden lg:block">
+            <div class="sticky top-8 glass-card p-6 rounded-2xl shadow-sm border border-gray-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Table of Contents</h3>
+                <nav class="space-y-3">
+                    <a href="#log-files" class="block text-sm font-medium section-nav">1. Log Files</a>
+                    <a href="#cookies" class="block text-sm font-medium section-nav">2. Cookies & Beacons</a>
+                    <a href="#dart" class="block text-sm font-medium section-nav">3. DoubleClick DART</a>
+                    <a href="#partners" class="block text-sm font-medium section-nav">4. Ad Partners</a>
+                    <a href="#third-party" class="block text-sm font-medium section-nav">5. Third-Party Tech</a>
+                    <a href="#ccpa" class="block text-sm font-medium section-nav">6. CCPA Rights</a>
+                    <a href="#gdpr" class="block text-sm font-medium section-nav">7. GDPR Rights</a>
+                    <a href="#children" class="block text-sm font-medium section-nav">8. Children's Info</a>
+                    <a href="#contact" class="block text-sm font-medium section-nav">9. Contact Us</a>
+                </nav>
+            </div>
+        </aside>
 
-    <!-- ✅ GLOBAL HEADER -->
-    <div id="globalHeader"></div>
+        <!-- Content Section -->
+        <section class="lg:w-3/4">
+            <div class="glass-card p-8 md:p-12 rounded-3xl shadow-xl space-y-12">
+                
+                <article>
+                    <p class="text-gray-600 leading-relaxed mb-8">
+                        Welcome to <strong>JGeneration</strong>. This Privacy Policy outlines the types of information we collect and record when you visit our website <strong>https://jgeneration.org</strong>. Your trust is our priority, and we are committed to protecting your personal data.
+                    </p>
+                </article>
 
-    <h1>Privacy Policy</h1>
+                <hr class="border-gray-100">
 
-    <p>
-      This Privacy Policy document explains how information is collected and used by
-      <b>Christian Songs Keyboard Notes</b>. By using our website, you agree to this
-      Privacy Policy.
-    </p>
+                <article id="log-files">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-blue-100 text-blue-600 w-8 h-8 flex items-center justify-center rounded-full font-bold">1</span>
+                        <h2 class="text-2xl font-bold text-gray-900">Log Files</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        JGeneration follows a standard procedure of using log files. These files log visitors when they visit websites. The information collected includes IP addresses, browser type, ISP, date/time stamps, and referring/exit pages. This data is used for analyzing trends and administering the site, and is not linked to personally identifiable information.
+                    </p>
+                </article>
 
-    <div class="highlight">
-      This website uses Google AdSense and displays third-party advertisements.
-    </div>
+                <article id="cookies">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-purple-100 text-purple-600 w-8 h-8 flex items-center justify-center rounded-full font-bold">2</span>
+                        <h2 class="text-2xl font-bold text-gray-900">Cookies and Web Beacons</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Like any other website, JGeneration uses 'cookies' to store visitors' preferences and the pages accessed. This information helps us optimize the user experience by customizing content based on browser types and other visitor information.
+                    </p>
+                </article>
 
-    <h2>1. Information We Collect</h2>
-    <p>
-      We do not collect personal information such as name or address directly.
-      However, third-party services may collect:
-    </p>
-    <ul>
-      <li>IP address</li>
-      <li>Browser type</li>
-      <li>Device information</li>
-      <li>Pages visited</li>
-    </ul>
+                <article id="dart" class="bg-blue-50 p-6 rounded-2xl border-l-4 border-blue-500">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-blue-500 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold text-xs">Ad</span>
+                        <h2 class="text-2xl font-bold text-gray-900">Google DoubleClick DART Cookie</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Google, as a third-party vendor, uses DART cookies to serve ads based on your visit to <strong>https://jgeneration.org</strong> and other sites. You may decline DART cookies by visiting the <a href="https://policies.google.com/technologies/ads" class="text-blue-600 underline">Google ad and content network Privacy Policy</a>.
+                    </p>
+                </article>
 
-    <h2>2. Cookies</h2>
-    <p>
-      Cookies are used by Google and other advertisers to show ads based on your visit
-      to this and other websites. Users may choose to disable cookies through their
-      browser settings.
-    </p>
+                <article id="partners">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-green-100 text-green-600 w-8 h-8 flex items-center justify-center rounded-full font-bold">4</span>
+                        <h2 class="text-2xl font-bold text-gray-900">Our Advertising Partners</h2>
+                    </div>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2">
+                        <li><strong>Google AdSense:</strong> <a href="https://policies.google.com/technologies/ads" class="text-blue-600 hover:underline">Privacy Policy link</a></li>
+                    </ul>
+                </article>
 
-    <h2>3. Google AdSense</h2>
-    <p>
-      Google uses cookies (including the DART cookie) to display advertisements to
-      users based on their visits to this site and other websites. Users may opt out of
-      personalized ads by visiting:
-      <br><br>
-      <b>https://adssettings.google.com</b>
-    </p>
+                <article id="ccpa">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-orange-100 text-orange-600 w-8 h-8 flex items-center justify-center rounded-full font-bold">6</span>
+                        <h2 class="text-2xl font-bold text-gray-900">CCPA Privacy Rights</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Under the CCPA, California consumers have the right to request disclosure of data collected, request deletion of personal data, and opt-out of the sale of personal data. Please contact us to exercise these rights.
+                    </p>
+                </article>
 
-    <h2>4. Third-Party Privacy Policies</h2>
-    <p>
-      Christian Songs Keyboard Notes’s Privacy Policy does not apply to other
-      advertisers or websites. We advise you to consult their respective Privacy
-      Policies for more detailed information.
-    </p>
+                <article id="gdpr">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="bg-indigo-100 text-indigo-600 w-8 h-8 flex items-center justify-center rounded-full font-bold">7</span>
+                        <h2 class="text-2xl font-bold text-gray-900">GDPR Data Protection Rights</h2>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Users are entitled to the right to access, rectification, erasure, restriction of processing, objection to processing, and data portability. We have one month to respond to your request.
+                    </p>
+                </article>
 
-    <h2>5. Children’s Information</h2>
-    <p>
-      We do not knowingly collect any Personal Identifiable Information from children
-      under the age of 13. If you believe your child provided such information, please
-      contact us immediately.
-    </p>
+                <article id="contact" class="bg-gray-900 text-white p-8 rounded-3xl text-center">
+                    <h2 class="text-3xl font-bold mb-4">Questions?</h2>
+                    <p class="opacity-80 mb-6">If you require any more information or have questions about our privacy policy, please feel free to contact us.</p>
+                    <div class="flex flex-col md:flex-row justify-center gap-4">
+                        <a href="mailto:admin@jgeneration.org" class="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">Email Us</a>
+                        <a href="https://jgeneration.org/contact" class="bg-white/10 text-white px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition">Contact Page</a>
+                    </div>
+                </article>
 
-    <h2>6. Consent</h2>
-    <p>
-      By using our website, you hereby consent to our Privacy Policy and agree to its
-      terms.
-    </p>
+            </div>
+        </section>
+    </main>
 
-    <div class="contact-box">
-      <b>Website Name:</b> Christian Songs Keyboard Notes<br><br>
-      <b>Country:</b> India<br><br>
-      <b>Contact Email:</b> josepath.andrew@gmail.com
-    </div>
-
-  </div>
-
-  <!-- ✅ LOAD GLOBAL HEADER -->
-  <script>
-    fetch("/header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+    <footer class="bg-white py-12 border-t border-gray-200 mt-12 text-center text-gray-500 text-sm">
+        <p>&copy; 2024 JGeneration. All rights reserved.</p>
+        <p class="mt-2 font-medium">Compliance: GDPR / CCPA / Google AdSense Ready</p>
+    </footer>
 
 </body>
 </html>
