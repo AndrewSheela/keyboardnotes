@@ -1,274 +1,194 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Christian Keyboard Notes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Notes Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .song-row {
+            transition: all 0.2s ease;
+        }
+        .song-row:hover {
+            background-color: #f1f5f9;
+        }
 
-  <meta name="description" content="Christian Tamil Keyboard Notes for Worship Songs">
-  <meta name="keywords" content="Christian keyboard notes, Tamil worship notes">
-  <meta name="author" content="Christian Music Ministry">
-
-  <!-- ✅ FONT AWESOME -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Segoe UI',system-ui,sans-serif;
-    }
-
-    body{
-      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
-      min-height:100vh;
-      padding:20px;
-    }
-
-    .wrapper{
-      max-width:1100px;
-      margin:auto;
-      background:#fff;
-      border-radius:22px;
-      padding:24px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    .hero{
-      text-align:center;
-      padding:10px 0 20px;
-    }
-
-    .hero h1{
-      font-size:32px;
-      font-weight:900;
-    }
-
-    .hero p{
-      margin-top:8px;
-      font-size:16px;
-      color:#444;
-    }
-
-    .search-wrap{
-      width:100%;
-      max-width:420px;
-      margin:20px auto;
-    }
-
-    .search-input{
-      width:100%;
-      padding:12px 44px 12px 14px;
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,0.2);
-      font-size:14px;
-      outline:none;
-    }
-
-    .search-input:focus{
-      border-color:#4a00e0;
-      box-shadow:0 0 0 2px rgba(74,0,224,0.15);
-    }
-
-    .song-grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:14px;
-      margin-top:20px;
-    }
-
-    .song-card{
-      background:linear-gradient(135deg,#fff,#f3f7ff);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);
-      transition:0.25s;
-    }
-
-    .song-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 12px 22px rgba(0,0,0,0.25);
-    }
-
-    .song-top-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .song-name{
-      font-weight:800;
-      font-size:15px;
-    }
-
-    /* ✅ ✅ ✅ BUTTON STYLES WITH COLORS */
-    .open-btn{
-      padding:6px 15px;
-      border-radius:999px;
-      border:none;
-      font-size:12px;
-      font-weight:800;
-      cursor:pointer;
-      color:#fff;
-      background:linear-gradient(135deg,#43cea2,#185a9d);
-      box-shadow:0 4px 10px rgba(0,0,0,0.25);
-      transition:0.25s ease;
-      display:flex;
-      align-items:center;
-      gap:6px;
-    }
-
-    .open-btn:hover{
-      transform:translateY(-2px);
-      box-shadow:0 8px 16px rgba(0,0,0,0.35);
-      filter:brightness(1.08);
-    }
-
-    .open-btn.pdf { background:linear-gradient(135deg,#ff9800,#ff5722); }
-    .open-btn.score { background:linear-gradient(135deg,#8e2de2,#4a00e0); }
-    .open-btn.youtube { background:linear-gradient(135deg,#ff0000,#c50000); }
-    .open-btn.ppt { background:linear-gradient(135deg,#ffb300,#f57c00); }
-
-  </style>
+        /* Filter Buttons: Black font by default, white when active */
+        .filter-btn {
+            color: #0f172a; /* Slate-900 (Deep Black) */
+            background-color: transparent;
+        }
+        
+        .filter-btn.active {
+            background-color: #2563eb !important;
+            color: white !important;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+    </style>
 </head>
+<body class="min-h-screen">
 
-<body>
+    <div id="globalHeader"></div>
 
-<div class="wrapper">
+    <header class="py-16 px-6 bg-slate-900 text-white text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Keyboard Notes Library</h1>
+        <p class="text-slate-400 max-w-2xl mx-auto text-lg">Quick access to Western and Indian classical music notation.</p>
+    </header>
 
-  <!-- ✅ GLOBAL HEADER -->
-  <div id="globalHeader"></div>
-
-  <!-- ✅ HERO -->
-  <div class="hero">
-    <h1>🎹 Christian Keyboard Notes</h1>
-    <p>Search and play keyboard notes easily</p>
-  </div>
-
-
-
-  <!-- ✅ GRID -->
-  <div class="song-grid" id="songGrid"></div>
-  <div id="pagination" style="margin-top:20px;text-align:center;"></div>
-
-</div>
-
-<!-- ✅ LOAD HEADER -->
-<script>
-fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("globalHeader").innerHTML = data;
-
-    // ✅ Load Global Search ONLY AFTER header is injected
-    const script = document.createElement("script");
-    script.src = "/js/global-search.js?v=" + Date.now();
-    document.body.appendChild(script);
-  })
-  .catch(err => console.error("❌ Header load failed:", err));
-</script>
-
-
-<!-- ✅ ✅ ✅ NOTES SEARCH + PAGINATION SYSTEM -->
-<script>
-const SONGS_PER_PAGE = 100;
-let currentPage = 1;
-let songs = [];
-let filteredSongs = [];
-
-const jsonPath =
-  location.hostname === "127.0.0.1" || location.hostname === "localhost"
-    ? "notes-list.json"
-    : "/keyboard-notes/notes-list.json";
-
-fetch(jsonPath + "?v=" + Date.now())
-  .then(res => {
-    if (!res.ok) throw new Error("JSON not found");
-    return res.json();
-  })
-  .then(data => {
-    songs = data;
-    songs.sort((a, b) => a.title.localeCompare(b.title));
-    renderSongs(songs, currentPage);
-  })
-  .catch(err => {
-    console.error("Notes JSON Load Error:", err);
-    document.getElementById("songGrid").innerHTML =
-      "<p style='padding:12px;color:red;'>❌ Notes list not loading</p>";
-  });
-
-function renderSongs(list, page = 1){
-  const songGrid = document.getElementById("songGrid");
-  songGrid.innerHTML = "";
-
-  const start = (page - 1) * SONGS_PER_PAGE;
-  const end   = start + SONGS_PER_PAGE;
-
-  list.slice(start, end).forEach(song => {
-    const card = document.createElement("div");
-    card.className = "song-card";
-
-    card.innerHTML = `
-      <div class="song-top-row">
-        <div class="song-name">${song.title}</div>
-
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <button class="open-btn" onclick="location.href='${song.url}'">
-            <i class="fa-solid fa-file-lines"></i> Open
-          </button>
-
-          ${song.sheetPdf ? `<button class="open-btn pdf" onclick="window.open('${song.sheetPdf}')">
-            <i class="fa-solid fa-file-pdf"></i> PDF
-          </button>` : ``}
-
-          ${song.score ? `<button class="open-btn score" onclick="window.open('${song.score}')">
-            <i class="fa-solid fa-music"></i> Score
-          </button>` : ``}
-
-          ${song.youtube ? `<button class="open-btn youtube" onclick="window.open('${song.youtube}')">
-            <i class="fa-brands fa-youtube"></i> Play
-          </button>` : ``}
-
-          ${song.ppt ? `<button class="open-btn ppt" onclick="window.open('${song.ppt}')">
-            <i class="fa-solid fa-file-powerpoint"></i> PPT
-          </button>` : ``}
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
+        <div class="glass sticky top-6 z-20 p-5 rounded-2xl shadow-xl mb-8">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-2 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span class="text-sm font-bold uppercase tracking-wider">Select Language</span>
+                    </div>
+                    <input type="text" id="songSearch" placeholder="Search songs..." onkeyup="renderSongs()" class="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64">
+                </div>
+                
+                <div class="flex flex-wrap gap-2" id="filter-container">
+                    <button data-lang="all" onclick="setFilter('all')" class="filter-btn active px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">All</button>
+                    <button data-lang="Tamil" onclick="setFilter('Tamil')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">Tamil</button>
+                    <button data-lang="Telugu" onclick="setFilter('Telugu')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">Telugu</button>
+                    <button data-lang="Kannada" onclick="setFilter('Kannada')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">Kannada</button>
+                    <button data-lang="Hindi" onclick="setFilter('Hindi')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">Hindi</button>
+                    <button data-lang="Malayalam" onclick="setFilter('Malayalam')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">Malayalam</button>
+                    <button data-lang="English" onclick="setFilter('English')" class="filter-btn px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold transition-all">English</button>
+                </div>
+            </div>
         </div>
-      </div>
-    `;
 
-    songGrid.appendChild(card);
-  });
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-20">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Song Name</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Album / Artist</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Language</th>
+                            <th class="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="songs-list-body"></tbody>
+                </table>
+            </div>
+        </div>
 
-  renderPagination(list.length);
-}
+        <div id="empty-state" class="hidden text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+            <h3 class="mt-4 text-lg font-semibold text-slate-900">No matching songs found</h3>
+        </div>
+    </main>
 
+    <div id="footer"></div>
 
+    <script>
+        // Set this to "notes" to highlight the Keyboard Notes button in your header
+        var ACTIVE_NAV = "notes"; 
 
-function renderPagination(total){
-  const totalPages = Math.ceil(total / SONGS_PER_PAGE);
-  const pagination = document.getElementById("pagination");
-  pagination.innerHTML = "";
+        fetch("/header.html")
+          .then(res => res.text())
+          .then(data => {
+            document.getElementById("globalHeader").innerHTML = data;
 
-  if (currentPage > 1)
-    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage - 1})">◀ Prev</button>`;
+            // Mapping from ACTIVE_NAV keys to your CSS classes
+            var map = {
+              'home':    '.btn-home',
+              'notes':   '.btn-notes',
+              'videos':  '.btn-videos',
+              'bible':   '.btn-bible',
+              'courses': '.btn-courses',
+              'ppt':     '.btn-ppt',
+              'about':   '.btn-about'
+            };
+            
+            var el = document.querySelector(map[ACTIVE_NAV]);
+            if (el) el.classList.add('active');
 
-  for (let i = 1; i <= totalPages; i++){
-    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${i})">${i}</button>`;
-  }
+            // Load Global Search
+            var script = document.createElement("script");
+            script.src = "/js/global-search.js?v=" + Date.now();
+            document.body.appendChild(script);
+          })
+          .catch(err => console.error("Header load failed:", err));
 
-  if (currentPage < totalPages)
-    pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage + 1})">Next ▶</button>`;
-}
+        // Load Footer
+        fetch("/footer.html").then(res => res.text()).then(data => document.getElementById("footer").innerHTML = data);
 
-function changePage(page){
-  currentPage = page;
-  renderSongs(filteredSongs.length ? filteredSongs : songs, currentPage);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-</script>
+        // --- SONG LIBRARY LOGIC ---
+        const songData = [
+            { name: "Yaega Sinthaiyae Yaega Snaegamae", info: "Aaron Samuel", lang: "Tamil", url: "/keyboard-notes/telugu-songs/Yega-Sinthaye-Yega-Snegame.html" },
+            { name: "Vaseegara", info: "Minnalae | Harris Jayaraj", lang: "Tamil", url: "#" },
+            { name: "Tum Hi Ho", info: "Aashiqui 2 | Mithoon", lang: "Hindi", url: "#" },
+            { name: "Samajavaragamana", info: "Ala Vaikunthapurramuloo", lang: "Telugu", url: "#" },
+            { name: "Perfect", info: "Ed Sheeran", lang: "English", url: "#" },
+            { name: "Belageddu", info: "Kirik Party", lang: "Kannada", url: "#" },
+            { name: "Malare", info: "Premam | Rajesh Murugesan", lang: "Malayalam", url: "#" }
+        ];
 
+        let currentFilter = 'all';
+
+        function setFilter(lang) {
+            currentFilter = lang;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+            renderSongs();
+        }
+
+        function renderSongs() {
+            const listBody = document.getElementById('songs-list-body');
+            const searchVal = document.getElementById('songSearch').value.toLowerCase();
+            const emptyState = document.getElementById('empty-state');
+            const tableContainer = listBody.closest('.bg-white');
+
+            const filtered = songData.filter(song => {
+                const matchesLang = currentFilter === 'all' || song.lang === currentFilter;
+                const matchesSearch = song.name.toLowerCase().includes(searchVal) || 
+                                    song.info.toLowerCase().includes(searchVal);
+                return matchesLang && matchesSearch;
+            });
+
+            if (filtered.length > 0) {
+                listBody.innerHTML = filtered.map(song => `
+                    <tr class="song-row border-b border-slate-100 group">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-900">${song.name}</div>
+                            <div class="sm:hidden text-xs text-slate-500">${song.info}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600 hidden sm:table-cell">${song.info}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide">${song.lang}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="${song.url}" class="text-blue-600 hover:text-blue-800 font-bold text-sm inline-flex items-center">
+                                Notes <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+                tableContainer.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            } else {
+                tableContainer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        window.onload = renderSongs;
+    </script>
 </body>
 </html>
