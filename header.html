@@ -4,236 +4,337 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JGeneration Header</title>
-    <style>
-        /* ============================= */
-        /* HEADER BASE */
-        /* ============================= */
-        body { margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            --navy:       #0b1120;
+            --navy-mid:   #111827;
+            --navy-light: #1a2540;
+            --gold:       #c9a84c;
+            --gold-light: #e8c97e;
+            --gold-glow:  rgba(201, 168, 76, 0.18);
+            --text-main:  #f0ede4;
+            --text-muted: #8a96b0;
+            --border:     rgba(201, 168, 76, 0.12);
+            --radius-btn: 8px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--navy);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* ========================
+           HEADER SHELL
+        ======================== */
         .top-header {
             position: sticky;
             top: 0;
             z-index: 999;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            background: rgba(11, 17, 32, 0.97);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Thin top accent line */
+        .top-header::before {
+            content: "";
+            display: block;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--gold) 40%, var(--gold-light) 60%, transparent 100%);
         }
 
         .top-header-inner {
-            max-width: 1200px;
-            margin: auto;
-            padding: 16px 20px 24px;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 18px 24px 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
         }
 
-        /* ============================= */
-        /* BRAND ROW */
-        /* ============================= */
+        /* ========================
+           BRAND ROW
+        ======================== */
         .brand-row {
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
         .brand-left {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
         }
 
-        /* ============================= */
-        /* LOGO EFFECTS WRAPPER */
-        /* ============================= */
+        /* Logo */
         .logo-wrap {
             position: relative;
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+        }
+
+        .logo-ring {
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--gold), var(--gold-light), var(--gold), transparent 60%, var(--gold));
+            animation: spinRing 8s linear infinite;
+            opacity: 0.8;
+        }
+
+        .logo-ring-mask {
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: var(--navy);
+            z-index: 1;
+        }
+
+        .logo-inner {
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1e2d50, #0d1830);
+            border: 1px solid rgba(201, 168, 76, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .logo-wrap::before {
-            content: "";
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
-            animation: spinGradient 10s linear infinite;
-            -webkit-mask:
-                linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
+        .logo-wrap:hover .logo-inner {
+            transform: scale(1.08) rotate(6deg);
         }
 
-        .logo-wrap::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            filter: blur(15px);
-            background: #6366f1;
-            opacity: 0.15;
-            z-index: -1;
-        }
-
-        .logo-wrap img, .logo-wrap svg {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            object-fit: cover;
-            position: relative;
-            z-index: 5;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background: #fff;
-        }
-
-        .logo-wrap:hover img, .logo-wrap:hover svg {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        @keyframes spinGradient { 100% { transform: rotate(360deg); } }
-
-        /* TITLE */
-        .site-title {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .logo-letter {
+            font-family: 'Cinzel', serif;
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--gold);
             line-height: 1;
-            letter-spacing: -1px;
+            text-shadow: 0 0 16px rgba(201, 168, 76, 0.5);
+        }
+
+        @keyframes spinRing { to { transform: rotate(360deg); } }
+
+        /* Brand text */
+        .brand-text-wrap { display: flex; flex-direction: column; gap: 3px; }
+
+        .site-title {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .site-title span {
+            color: var(--gold);
         }
 
         .site-subtitle {
-            font-size: 13px;
-            color: #64748b;
+            font-size: 11.5px;
             font-weight: 500;
-            margin-top: 4px;
-            letter-spacing: 0.2px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
-        /* ============================= */
-        /* NAVIGATION - MODERN GLASS STYLE */
-        /* ============================= */
+        /* ========================
+           NAV
+        ======================== */
         .nav-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            width: 100%;
+            gap: 8px;
         }
 
         .nav-btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 8px 18px;
-            border-radius: 12px;
-            font-size: 14px;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: var(--radius-btn);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
             font-weight: 600;
+            letter-spacing: 0.3px;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.2s ease;
-            text-align: center;
             white-space: nowrap;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
             border: 1px solid transparent;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
         }
 
-        /* Default Style for buttons (Glass Effect) */
-        .nav-btn {
-            background: rgba(241, 245, 249, 0.8);
-            color: #475569;
-            border-color: rgba(0, 0, 0, 0.03);
+        .nav-btn .icon {
+            font-size: 15px;
+            line-height: 1;
+            opacity: 0.85;
         }
 
         .nav-btn:hover {
-            background: #fff;
-            color: #6366f1;
-            border-color: rgba(99, 102, 241, 0.2);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+            background: var(--gold-glow);
+            color: var(--gold-light);
+            border-color: rgba(201, 168, 76, 0.3);
             transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(201, 168, 76, 0.12);
         }
 
-        /* Highlight Primary Action */
+        /* Home — primary CTA */
         .btn-home {
-            background: #6366f1;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+            background: var(--gold);
+            color: var(--navy);
+            border-color: transparent;
+            font-weight: 700;
+            box-shadow: 0 2px 12px rgba(201, 168, 76, 0.25);
         }
-
         .btn-home:hover {
-            background: #4f46e5;
-            color: #fff;
-            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+            background: var(--gold-light);
+            color: var(--navy);
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(201, 168, 76, 0.4);
         }
 
-        /* Subtle indicator colors on hover only */
-        .btn-bible:hover { color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); }
-        .btn-lyrics:hover { color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
-        .btn-videos:hover { color: #0ea5e9; border-color: rgba(14, 165, 233, 0.2); }
+        /* ========================
+           ACTIVE STATE
+        ======================== */
+        .nav-btn.active {
+            background: var(--gold-glow);
+            color: var(--gold-light);
+            border-color: rgba(201, 168, 76, 0.35);
+            box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.15), 0 4px 16px rgba(201, 168, 76, 0.1);
+            position: relative;
+        }
 
-        /* SEARCH BAR */
+        /* Glowing underline dot indicator */
+        .nav-btn.active::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            border-radius: 2px;
+            background: var(--gold);
+            box-shadow: 0 0 8px var(--gold);
+        }
+
+        /* Home active overrides (keeps gold bg, just brightens) */
+        .btn-home.active {
+            background: var(--gold-light);
+            color: var(--navy);
+            border-color: transparent;
+            box-shadow: 0 4px 22px rgba(201, 168, 76, 0.45);
+        }
+        .btn-home.active::after {
+            background: var(--navy);
+            box-shadow: none;
+        }
+
+        /* ========================
+           SEARCH
+        ======================== */
         .search-wrap {
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
             position: relative;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 12px 20px 12px 44px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            font-size: 14px;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.2s ease;
-            color: #1e293b;
-        }
-
-        .search-wrap::before {
-            content: "🔍";
+        .search-icon {
             position: absolute;
-            left: 16px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.5;
+            color: var(--text-muted);
+            pointer-events: none;
+            display: flex;
         }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 20px 11px 42px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            color: var(--text-main);
+            outline: none;
+            transition: border 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+
+        .search-input::placeholder { color: var(--text-muted); }
 
         .search-input:focus {
-            background: #fff;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(201, 168, 76, 0.45);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
         }
 
-        .search-input::placeholder {
-            color: #94a3b8;
+        /* ========================
+           DEMO PAGE CONTENT
+        ======================== */
+        .demo-body {
+            padding: 60px 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif;
+        }
+        .demo-body h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            color: var(--gold);
+            margin-bottom: 10px;
         }
 
-        /* Responsive Fixes */
-        @media (max-width: 768px) {
+        /* ========================
+           MOBILE RESPONSIVE
+        ======================== */
+        @media (max-width: 640px) {
+            .top-header-inner { padding: 14px 16px 16px; gap: 14px; }
+
+            .logo-wrap { width: 58px; height: 58px; }
+            .logo-letter { font-size: 22px; }
+
+            .site-title { font-size: 22px; letter-spacing: 1.5px; }
+            .site-subtitle { font-size: 10px; letter-spacing: 2px; }
+
             .nav-container { gap: 6px; }
-            .nav-btn { 
-                padding: 10px; 
-                font-size: 13px; 
-                flex: 1 1 calc(50% - 10px);
-                min-width: 140px;
+
+            .nav-btn {
+                padding: 9px 12px;
+                font-size: 12.5px;
+                flex: 1 1 calc(50% - 6px);
+                justify-content: center;
+                min-width: 130px;
             }
-            .site-title { font-size: 28px; }
-            .logo-wrap { width: 70px; height: 70px; }
-            .logo-wrap img, .logo-wrap svg { width: 55px; height: 55px; }
+
+            .search-wrap { max-width: 100%; }
+        }
+
+        @media (max-width: 400px) {
+            .nav-btn { flex: 1 1 100%; }
         }
     </style>
 </head>
@@ -246,59 +347,90 @@
         <div class="brand-row">
             <div class="brand-left">
                 <div class="logo-wrap">
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6366f1" />
-                                <stop offset="100%" style="stop-color:#a855f7" />
-                            </linearGradient>
-                        </defs>
-                        <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
-                        <text x="50" y="68" font-family="system-ui" font-size="45" fill="white" text-anchor="middle" font-weight="900">J</text>
-                    </svg>
-
-                    <!-- Subtle Sparkle (Simplified) -->
-                    <div style="position:absolute; width:100%; height:100%; pointer-events:none;">
-                        <div style="position:absolute; top:10%; right:10%; font-size:10px; animation: pulse 2s infinite;">✨</div>
+                    <div class="logo-ring"></div>
+                    <div class="logo-ring-mask"></div>
+                    <div class="logo-inner">
+                        <span class="logo-letter">J</span>
                     </div>
                 </div>
-
-                <div>
-                    <div class="site-title">JGeneration</div>
-                    <div class="site-subtitle">Sons and Daughters of the Living God</div>
+                <div class="brand-text-wrap">
+                    <div class="site-title">J<span>Generation</span></div>
+                    <div class="site-subtitle">Sons &amp; Daughters of the Living God</div>
                 </div>
             </div>
         </div>
 
-        <!-- NAVIGATION - Modern Balanced Style -->
-        <nav class="nav-container">
-            <a class="nav-btn btn-home" href="/index.html">Home</a>
-            <a class="nav-btn btn-notes" href="/keyboard-notes/index.html">Keyboard Notes</a>
-            <a class="nav-btn btn-chords" href="/chords/index.html">Keyboard Chords</a>
-            <a class="nav-btn btn-lyrics" href="/lyrics/index.html">Song Lyrics</a>
-            <a class="nav-btn btn-videos" href="/videos/index.html">Videos</a>
-            <a class="nav-btn btn-bible" href="/bible/index.html">Bible Study</a>
-            <a class="nav-btn btn-courses" href="/courses/index.html">Music Courses</a>
-            <a class="nav-btn btn-ppt" href="/ppt-lyrics/index.html">PPT Lyrics</a>
-            <a class="nav-btn btn-about" href="/about.html">About</a>
+        <!-- NAVIGATION -->
+        <nav class="nav-container" aria-label="Main Navigation">
+            <a class="nav-btn btn-home"    href="/index.html">
+                <span class="icon">⌂</span> Home
+            </a>
+            <a class="nav-btn btn-notes"   href="/keyboard-notes/index.html">
+                <span class="icon">🎹</span> Keyboard Notes
+            </a>
+            <a class="nav-btn btn-videos"  href="/videos/index.html">
+                <span class="icon">▶</span> Videos
+            </a>
+            <a class="nav-btn btn-bible"   href="/bible/index.html">
+                <span class="icon">✦</span> Bible Study
+            </a>
+            <a class="nav-btn btn-courses" href="/courses/index.html">
+                <span class="icon">🎵</span> Music Courses
+            </a>
+            <a class="nav-btn btn-ppt"     href="/ppt-lyrics/index.html">
+                <span class="icon">◈</span> PPT Lyrics
+            </a>
+            <a class="nav-btn btn-about"   href="/about.html">
+                <span class="icon">◎</span> About
+            </a>
         </nav>
 
         <!-- SEARCH -->
         <div class="search-wrap">
+            <span class="search-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </span>
             <input
                 type="text"
                 id="globalSearchInput"
                 placeholder="Search resources..."
                 class="search-input"
+                aria-label="Search"
             >
         </div>
 
     </div>
 </header>
 
-<style>
-    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-</style>
 
+
+<script>
+    (function () {
+        const path = window.location.pathname;
+
+        document.querySelectorAll('.nav-btn').forEach(function (btn) {
+            const href = btn.getAttribute('href');
+            if (!href) return;
+
+            const normHref = href.replace(/\/$/, '');
+            const normPath = path.replace(/\/$/, '');
+
+            // Home — exact match only
+            if (href === '/index.html' || href === '/') {
+                if (normPath === '' || normPath === '/index.html' || normPath === '/') {
+                    btn.classList.add('active');
+                }
+            } else {
+                // Other pages — match if current path lives under that section
+                const hrefDir = normHref.replace(/\/index\.html$/, '');
+                if (normPath === normHref || normPath.startsWith(hrefDir + '/') || normPath === hrefDir) {
+                    btn.classList.add('active');
+                }
+            }
+        });
+    })();
+</script>
 </body>
 </html>
