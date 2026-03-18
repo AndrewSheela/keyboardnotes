@@ -222,9 +222,36 @@ body{font-family:'Outfit',sans-serif;background:var(--app-bg);min-height:100vh;c
   .header-row3{gap:14px;}
   :root{--fs-note:12px;--fs-lyric:12px;--fs-chord:10px;--fs-bar:13px;}
 }
+/* YouTube Card Styling */
+.video-card {
+  max-width: 800px;
+  margin: 20px auto;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
 </style>
 </head>
 <body>
+  <!-- ✅ GLOBAL HEADER -->
+<div id="globalHeader"></div>
 <!-- TOOLBAR -->
 <div id="toolbar" style="display:flex">
   <div class="tb-inner">
@@ -287,6 +314,32 @@ body{font-family:'Outfit',sans-serif;background:var(--app-bg);min-height:100vh;c
     </div>
   </div>
 </div>
+<div class="video-card">
+  <div class="video-container">
+    <iframe 
+      src="https://www.youtube.com/embed/-lSwjznD_Ik" 
+      title="Vazhvin Aadharamae Keyboard Notes" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      allowfullscreen>
+    </iframe>
+  </div>
+</div>
+<div id="footer"></div>
+<!-- ✅ LOAD GLOBAL HEADER -->
+<script>
+  fetch("/header.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("globalHeader").innerHTML = data;
+    });
+</script>
+<script>
+fetch("/footer.html")
+  .then(response => response.text())
+  .then(data => {
+      document.getElementById("footer").innerHTML = data;
+  });
+</script>
 <script>
 'use strict';
 const CHR_SHARP=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
