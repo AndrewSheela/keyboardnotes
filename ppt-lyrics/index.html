@@ -1,93 +1,265 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <!-- ✅ REQUIRED FIRST -->
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <title>PPT Lyrics – Christian Worship Slides</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- ✅ BASIC SEO -->
-  <title>PPT Lyrics - Christian Worship Song Slides</title>
-  <meta name="description" content="Download Christian worship song PPT lyrics for church, prayer meetings, and worship services. Easy-to-use PowerPoint slides for praise and worship.">
-  <meta name="keywords" content="Christian PPT lyrics, worship song ppt, church song slides, praise lyrics ppt, Christian songs presentation">
-  <meta name="author" content="Christian Songs Keyboard Notes">
+  <meta name="description" content="Christian Tamil PPT Lyrics for Worship Songs">
+  <meta name="keywords" content="Christian PPT lyrics, worship slides, Tamil worship PPT">
+  <meta name="author" content="Christian Music Ministry">
 
-  <!-- ✅ MOBILE -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#ff416c">
-
-  <!-- ✅ OPEN GRAPH -->
-  <meta property="og:title" content="PPT Lyrics - Christian Worship Song Slides">
-  <meta property="og:description" content="Free Christian worship song PPT lyrics for church services and prayer meetings.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://yourdomain.com/ppt-lyrics/">
-  <meta property="og:image" content="https://yourdomain.com/assets/ppt-preview.jpg">
-
-  <!-- ✅ TWITTER -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PPT Lyrics - Christian Worship Song Slides">
-  <meta name="twitter:description" content="Download Christian worship song PPT lyrics easily for church use.">
-  <meta name="twitter:image" content="https://yourdomain.com/assets/ppt-preview.jpg">
-
-  <!-- ✅ Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
+
     body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:#f4f4f4;
+      background:linear-gradient(135deg,#fbc2eb,#a6c1ee);
+      min-height:100vh;
+      padding:20px;
     }
 
-    .ppt-wrapper{
-      max-width:900px;
-      margin:40px auto;
+    .wrapper{
+      max-width:1100px;
+      margin:auto;
       background:#fff;
-      padding:30px;
-      border-radius:18px;
+      border-radius:22px;
+      padding:24px;
       box-shadow:0 10px 30px rgba(0,0,0,0.2);
-      text-align:center;
     }
 
-    .back-btn{
-      display:inline-block;
-      margin-top:25px;
-      padding:12px 26px;
-      background:linear-gradient(135deg,#36d1dc,#5b86e5);
-      color:white;
-      text-decoration:none;
+    .search-wrap{
+      width:100%;
+      max-width:420px;
+      margin:20px auto;
+    }
+
+    .search-input{
+      width:100%;
+      padding:12px 44px 12px 14px;
       border-radius:999px;
-      font-weight:700;
+      border:1px solid rgba(0,0,0,0.2);
+      font-size:14px;
+      outline:none;
     }
 
-    .back-btn:hover{
-      transform:scale(1.05);
+    .song-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:20px;
     }
+
+    .song-card{
+      background:linear-gradient(135deg,#fff,#f3f7ff);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.12);
+      transition:0.25s ease;
+    }
+
+    .song-card:hover{
+      transform:translateY(-5px);
+      box-shadow:
+        0 10px 22px rgba(0,0,0,0.25),
+        0 0 18px rgba(255,75,43,0.25);
+    }
+
+    .song-top-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .song-name{
+      font-weight:800;
+      font-size:15px;
+    }
+
+    .open-btn{
+      padding:6px 14px;
+      border-radius:999px;
+      border:none;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg,#ff416c,#ff4b2b);
+      color:#fff;
+      box-shadow:0 4px 10px rgba(0,0,0,0.25);
+      transition:0.25s;
+    }
+
+    .open-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 16px rgba(0,0,0,0.35);
+    }
+
+    .hero{
+      text-align:center;
+      padding:10px 0 20px;
+    }
+
+    .hero h1{font-size:32px;font-weight:900;}
+    .hero p{margin-top:8px;font-size:16px;color:#444;}
   </style>
 </head>
 
 <body>
 
+<div class="wrapper">
+
   <!-- ✅ GLOBAL HEADER -->
   <div id="globalHeader"></div>
 
-  <div class="ppt-wrapper">
-    <h1>Christian Worship Song PPT Lyrics</h1>
-    <p>This is your PPT Lyrics page.</p>
-    <p>You can add song PPT downloads here.</p>
-
-    <a class="back-btn" href="/index.html">
-      <i class="fa-solid fa-house"></i> Back to Home
-    </a>
+  <div class="hero">
+    <h1>🖥 Christian PPT Lyrics</h1>
+    <p>Search and download worship presentation slides</p>
   </div>
 
-  <!-- ✅ LOAD GLOBAL HEADER -->
-  <script>
-    fetch("/header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+  <!-- ✅ SEARCH -->
+ 
+
+  <!-- ✅ GRID -->
+  <div class="song-grid" id="pptGrid"></div>
+  <div id="pagination" style="margin-top:20px;text-align:center;"></div>
+
+</div>
+
+<!-- ✅ LOAD HEADER -->
+<script>
+var ACTIVE_NAV = "ppt"; // ✅ correct key
+
+fetch("/header.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Highlight active nav AFTER header is injected
+    var map = {
+      'home':    '.btn-home',
+      'notes':   '.btn-notes',
+      'videos':  '.btn-videos',
+      'bible':   '.btn-bible',
+      'courses': '.btn-courses',
+      'ppt':     '.btn-ppt',
+      'about':   '.btn-about'
+    };
+    var el = document.querySelector(map[ACTIVE_NAV]);
+    if (el) el.classList.add('active');
+
+    // ✅ Load Global Search after header is injected
+    var script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("Header load failed:", err));
+</script>
+
+
+<!-- ✅ ✅ ✅ PPT SEARCH SYSTEM -->
+<script>
+  const PPT_PER_PAGE = 100;
+  let currentPage = 1;
+  let ppts = [];
+  let filteredPPT = [];
+
+  fetch("./ppt-list.json?v=" + Date.now())
+    .then(res => res.json())
+    .then(data => {
+      ppts = data;
+      ppts.sort((a, b) => a.title.localeCompare(b.title));
+      renderPPT(ppts, currentPage);
+    })
+    .catch(err => {
+      console.error("PPT JSON load error:", err);
+      document.getElementById("pptGrid").innerHTML =
+        "<p style='padding:10px;color:red;font-weight:700;'>❌ ppt-list.json NOT FOUND inside /ppt-lyrics</p>";
+    });
+
+  function renderPPT(list, page = 1){
+    const grid = document.getElementById("pptGrid");
+    grid.innerHTML = "";
+
+    if (!list.length){
+      grid.innerHTML = "<p style='padding:10px;'>❌ No PPTs Found</p>";
+      return;
+    }
+
+    const start = (page - 1) * PPT_PER_PAGE;
+    const end   = start + PPT_PER_PAGE;
+    const pagePPT = list.slice(start, end);
+
+    pagePPT.forEach(song => {
+      const card = document.createElement("div");
+      card.className = "song-card";
+
+      card.innerHTML = `
+        <div class="song-top-row">
+          <div class="song-name">${song.title}</div>
+
+          <button class="open-btn"
+            onclick="window.open('${song.ppt}','_blank')">
+            <i class="fa-solid fa-file-powerpoint"></i> Open PPT
+          </button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    renderPagination(list.length);
+  }
+
+  function filterPPT(){
+    const input = document.getElementById("pptSearch").value.toLowerCase().trim();
+
+    if (!input){
+      filteredPPT = [];
+      currentPage = 1;
+      renderPPT(ppts, currentPage);
+      return;
+    }
+
+    filteredPPT = ppts.filter(song =>
+      song.title.toLowerCase().includes(input) ||
+      song.album.toLowerCase().includes(input) ||
+      song.artist.toLowerCase().includes(input)
+    );
+
+    currentPage = 1;
+    renderPPT(filteredPPT, currentPage);
+  }
+
+  function renderPagination(total){
+    const totalPages = Math.ceil(total / PPT_PER_PAGE);
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+
+    if (currentPage > 1){
+      pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage - 1})">◀ Prev</button>`;
+    }
+
+    for (let i = 1; i <= totalPages; i++){
+      pagination.innerHTML += `
+        <button class="open-btn"
+          style="margin:4px;${i === currentPage ? 'background:#000' : ''}"
+          onclick="changePage(${i})">${i}</button>`;
+    }
+
+    if (currentPage < totalPages){
+      pagination.innerHTML += `<button class="open-btn" onclick="changePage(${currentPage + 1})">Next ▶</button>`;
+    }
+  }
+
+  function changePage(page){
+    currentPage = page;
+    renderPPT(filteredPPT.length ? filteredPPT : ppts, currentPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+</script>
 
 </body>
 </html>
