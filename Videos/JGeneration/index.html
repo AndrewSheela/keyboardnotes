@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JGeneration | JJ Vol 38 Keyboard Notes & Chords</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #e11d48;
+            --bg-color: #0f172a;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #f1f5f9;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            scroll-behavior: smooth;
+        }
+        .ad-placeholder {
+            background: #1e293b;
+            border: 1px dashed #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+        .playlist-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .playlist-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- ✅ GLOBAL HEADER CONTAINER -->
+    <div id="globalHeader"></div>
+    <script>
+        fetch("/header.html")
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("globalHeader").innerHTML = data;
+            })
+            .catch(err => {
+                console.warn("Global header not found, using fallback header.");
+                // Fallback content if header.html is missing
+            });
+    </script>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Ad Unit: Top Leaderboard -->
+        <div class="ad-placeholder w-full h-[90px] mb-8">
+            <span>Advertisement - Top Leaderboard</span>
+        </div>
+
+        <!-- Featured Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold border-l-4 border-rose-600 pl-4">Featured Content</h2>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Featured Video -->
+                <a href="https://www.youtube.com/watch?v=pz8nC2OsIwo" target="_blank" class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl aspect-video bg-slate-800 shadow-2xl block">
+                    <img src="https://img.youtube.com/vi/pz8nC2OsIwo/maxresdefault.jpg" alt="JJ Vol 38 Keyboard Notes" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6">
+                        <span class="bg-rose-600 text-[10px] font-bold uppercase px-2 py-1 rounded mb-3 inline-block">New Release</span>
+                        <h3 class="text-2xl md:text-3xl font-bold mb-2">JJ Vol 38 All Songs Keyboard Notes & Chords</h3>
+                        <p class="text-slate-300 text-sm line-clamp-2 max-w-xl">Learn Jebathotta Jeya Geethangal Vol 38 with full keyboard notes and chords by Father Berchmans.</p>
+                        <div class="flex items-center mt-4 text-xs font-medium text-slate-400">
+                            <i class="fas fa-play-circle mr-2 text-rose-500 text-lg"></i> Watch Now
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Playlists Sidebar -->
+                <div id="playlists" class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col h-full">
+                    <h3 class="text-lg font-bold mb-4 flex items-center shrink-0">
+                        <i class="fas fa-list-ul mr-2 text-rose-500"></i> Popular Playlists
+                    </h3>
+                    <div class="space-y-4 overflow-y-auto playlist-scroll pr-2">
+                        <a href="https://www.youtube.com/playlist?list=PLH9yutOWUk-AQ_UttLF0IIShkIuAp4SIn" target="_blank" class="flex items-center space-x-4 p-2 hover:bg-slate-700/50 rounded-lg transition border border-transparent hover:border-slate-600">
+                            <div class="w-16 h-12 bg-slate-700 rounded overflow-hidden flex-shrink-0 relative">
+                                <img src="https://img.youtube.com/vi/pz8nC2OsIwo/hqdefault.jpg" class="object-cover w-full h-full" alt="Playlist">
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-semibold leading-tight line-clamp-2">JJ Vol 1 to 38 - Keyboard Notes</h4>
+                                <p class="text-[10px] text-slate-400 mt-1">Full Collection</p>
+                            </div>
+                        </a>
+                        <a href="https://www.youtube.com/playlist?list=PLH9yutOWUk-A3dw0kMlK0AnkoLbERMf5j" target="_blank" class="flex items-center space-x-4 p-2 hover:bg-slate-700/50 rounded-lg transition border border-transparent hover:border-slate-600">
+                            <div class="w-16 h-12 bg-slate-700 rounded overflow-hidden flex-shrink-0 relative">
+                                <img src="https://img.youtube.com/vi/n_qGgGv3jC4/hqdefault.jpg" class="object-cover w-full h-full" alt="Playlist">
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-semibold leading-tight line-clamp-2">JJ All Songs Keyboard Tutorials</h4>
+                                <p class="text-[10px] text-slate-400 mt-1">Tutorial Series</p>
+                            </div>
+                        </a>
+                        <a href="https://www.youtube.com/playlist?list=PLH9yutOWUk-DCnNTC5Z7iqH1kxpqYRgHO" target="_blank" class="flex items-center space-x-4 p-2 hover:bg-slate-700/50 rounded-lg transition border border-transparent hover:border-slate-600">
+                            <div class="w-16 h-12 bg-slate-700 rounded overflow-hidden flex-shrink-0 relative">
+                                <img src="https://img.youtube.com/vi/p8M8E7l-Y0c/hqdefault.jpg" class="object-cover w-full h-full" alt="Playlist">
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-semibold leading-tight line-clamp-2">Learn Keyboard Basics</h4>
+                                <p class="text-[10px] text-slate-400 mt-1">Music Education</p>
+                            </div>
+                        </a>
+                        <a href="https://www.youtube.com/playlist?list=PLH9yutOWUk-D-dtoaCyIGvXGwYHbOR_38" target="_blank" class="flex items-center space-x-4 p-2 hover:bg-slate-700/50 rounded-lg transition border border-transparent hover:border-slate-600">
+                            <div class="w-16 h-12 bg-slate-700 rounded overflow-hidden flex-shrink-0 relative">
+                                <img src="https://img.youtube.com/vi/f4l3G7yT_vI/hqdefault.jpg" class="object-cover w-full h-full" alt="Playlist">
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-semibold leading-tight line-clamp-2">Christian Worship Chords</h4>
+                                <p class="text-[10px] text-slate-400 mt-1">Chord Library</p>
+                            </div>
+                        </a>
+                        <a href="https://www.youtube.com/playlist?list=PLH9yutOWUk-DVLe0LgSOpVLH4u6-tXVcb" target="_blank" class="flex items-center space-x-4 p-2 hover:bg-slate-700/50 rounded-lg transition border border-transparent hover:border-slate-600">
+                            <div class="w-16 h-12 bg-slate-700 rounded overflow-hidden flex-shrink-0 relative">
+                                <img src="https://img.youtube.com/vi/pz8nC2OsIwo/mqdefault.jpg" class="object-cover w-full h-full" alt="Playlist">
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <i class="fas fa-play text-white text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-semibold leading-tight line-clamp-2">Latest Arrangements</h4>
+                                <p class="text-[10px] text-slate-400 mt-1">Musical Works</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="lg:col-span-3">
+                <section id="latest">
+                    <h2 class="text-xl font-bold mb-6">Recent Uploads</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Video Card 1 -->
+                        <a href="https://www.youtube.com/watch?v=pz8nC2OsIwo" target="_blank" class="video-card group block">
+                            <div class="relative aspect-video rounded-xl overflow-hidden bg-slate-800">
+                                <img src="https://img.youtube.com/vi/pz8nC2OsIwo/mqdefault.jpg" alt="JJ Vol 38" class="w-full h-full object-cover">
+                                <div class="play-overlay absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 transition">
+                                    <div class="w-12 h-12 bg-rose-600 rounded-full flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-play text-white ml-1"></i>
+                                    </div>
+                                </div>
+                                <span class="absolute bottom-2 right-2 bg-black/80 text-[10px] px-1.5 py-0.5 rounded font-mono">13:03</span>
+                            </div>
+                            <div class="mt-3">
+                                <h4 class="font-semibold line-clamp-2 hover:text-rose-500 transition">JJ Vol 38 All Songs Keyboard Notes & Chords</h4>
+                                <div class="flex items-center text-[11px] text-slate-400 mt-1 space-x-2">
+                                    <span class="text-rose-500 font-bold uppercase">New Upload</span>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Ad Slot -->
+                        <div class="ad-placeholder h-full min-h-[150px]">
+                            <span>In-feed Native Ad</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar Ad Slot -->
+            <aside class="space-y-8">
+                <div class="ad-placeholder h-[600px] w-full sticky top-24">
+                    <span>Ad Unit - Large Skyscraper</span>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 mt-20 pt-12 pb-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-1">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-play text-white text-xs"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight">JGeneration</span>
+                    </div>
+                    <p class="text-sm text-slate-400">Official Jebathotta Jeya Geethangal tutorial resource.</p>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-4">Legal</h5>
+                    <ul class="text-sm text-slate-400 space-y-2">
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-6 text-center text-[10px] text-slate-500 uppercase tracking-widest">
+                &copy; 2026 JGeneration | Official Music Portal
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
