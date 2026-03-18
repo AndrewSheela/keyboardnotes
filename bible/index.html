@@ -79,13 +79,36 @@
   </div>
 
   <!-- ✅ LOAD SAME HEADER FILE -->
-  <script>
-    fetch("../header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("globalHeader").innerHTML = data;
-      });
-  </script>
+<script>
+var ACTIVE_NAV = "bible"; // ✅ correct key
+
+fetch("/header.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Highlight active nav AFTER header is injected
+    var map = {
+      'home':    '.btn-home',
+      'notes':   '.btn-notes',
+      'videos':  '.btn-videos',
+      'bible':   '.btn-bible',
+      'courses': '.btn-courses',
+      'ppt':     '.btn-ppt',
+      'about':   '.btn-about'
+    };
+    var el = document.querySelector(map[ACTIVE_NAV]);
+    if (el) el.classList.add('active');
+
+    // ✅ Load Global Search after header is injected
+    var script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("Header load failed:", err));
+</script>
+
+
 
 </body>
 </html>
