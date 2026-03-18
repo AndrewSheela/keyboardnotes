@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gospel Music & Bible Study Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .channel-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: border-color 0.3s ease;
+        }
+        .channel-section:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .video-thumbnail {
+            aspect-ratio: 16 / 9;
+            background: #1e293b;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .video-thumbnail:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .video-thumbnail::after {
+            content: "\f04b";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .video-thumbnail:hover::after {
+            opacity: 1;
+        }
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- ✅ GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+
+    <!-- Breadcrumb -->
+    <nav class="container mx-auto px-4 pt-8 text-sm text-slate-400">
+        <ol class="flex list-none p-0">
+            <li class="flex items-center">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <i class="fas fa-chevron-right mx-3 text-[10px] opacity-50"></i>
+            </li>
+            <li class="text-blue-400 font-medium">Videos</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <header class="py-12 text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+            Digital Ministry & Music
+        </h1>
+        <p class="mt-4 text-slate-400 text-lg max-w-2xl mx-auto px-4">
+            A comprehensive library for worship, musical mastery, and scriptural growth.
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pb-24 space-y-16">
+        
+        <!-- Channel 1: JGeneration -->
+        <section class="channel-section rounded-3xl p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="max-w-3xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-keyboard text-blue-400 text-xl"></i>
+                        <h2 class="text-3xl font-bold">JGeneration</h2>
+                    </div>
+                    <p class="text-slate-400">Master the keyboard with ease. High-quality free PDF notes, chord sheets, and step-by-step guides for all skill levels.</p>
+                </div>
+                <!-- Updated Link to Folder Structure -->
+                <a href="JGeneration/index.html" class="px-6 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-600/30 rounded-full text-sm font-semibold transition">
+                    View More <i class="fas fa-chevron-right ml-1"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="video-thumbnail rounded-xl" title="Introduction to Chords"></div>
+                <div class="video-thumbnail rounded-xl" title="Scale Exercises"></div>
+                <div class="video-thumbnail rounded-xl" title="PDF Guide Walkthrough"></div>
+                <div class="video-thumbnail rounded-xl" title="Left Hand Independence"></div>
+            </div>
+        </section>
+
+        <!-- Channel 2: Indian Christian Music -->
+        <section class="channel-section rounded-3xl p-8 border-emerald-500/20">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="max-w-3xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-music text-emerald-400 text-xl"></i>
+                        <h2 class="text-3xl font-bold">Indian Christian Music</h2>
+                    </div>
+                    <p class="text-slate-400">Multilingual tutorials for Tamil, Telugu, Hindi, and more. Play your favorite regional worship songs on piano.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showModal('Song Request Form')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-sm font-semibold transition shadow-lg">
+                        Request Song
+                    </button>
+                    <!-- Updated Link to Folder Structure -->
+                    <a href="Indian-christian-music/index.html" class="px-6 py-2 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-600/30 rounded-full text-sm font-semibold transition">
+                        View More <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="video-thumbnail rounded-xl" title="Tamil Worship Tutorial"></div>
+                <div class="video-thumbnail rounded-xl" title="Hindi Hymn Lesson"></div>
+                <div class="video-thumbnail rounded-xl" title="Telugu Chords Guide"></div>
+                <div class="video-thumbnail rounded-xl" title="Malayalam Tutorial"></div>
+            </div>
+        </section>
+
+        <!-- Channel 3: Gospel Music Production -->
+        <section class="channel-section rounded-3xl p-8 border-purple-500/20">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="max-w-3xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-sliders text-purple-400 text-xl"></i>
+                        <h2 class="text-3xl font-bold">Gospel Music Production</h2>
+                    </div>
+                    <p class="text-slate-400">Professional music theory and production lessons. Learn to arrange and mix gospel tracks from scratch.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showModal('Course Enrollment')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-semibold transition shadow-lg">
+                        Join Course
+                    </button>
+                    <!-- Updated Link to Folder Structure -->
+                    <a href="Gospel-music-production/index.html" class="px-6 py-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 border border-purple-600/30 rounded-full text-sm font-semibold transition">
+                        View More <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="video-thumbnail rounded-xl" title="DAW Basics"></div>
+                <div class="video-thumbnail rounded-xl" title="Vocal Mixing Tips"></div>
+                <div class="video-thumbnail rounded-xl" title="Drum Programming"></div>
+                <div class="video-thumbnail rounded-xl" title="Arranging for Worship"></div>
+            </div>
+        </section>
+
+        <!-- Channel 4: Bible Study -->
+        <section class="channel-section rounded-3xl p-8 border-amber-500/20">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="max-w-3xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-book-bible text-amber-400 text-xl"></i>
+                        <h2 class="text-3xl font-bold">Bible Study</h2>
+                    </div>
+                    <p class="text-slate-400">Biblical studies, daily thoughts, and creative riddles. Deepen your understanding of the Word in an interactive way.</p>
+                </div>
+                <!-- Updated Link to Folder Structure -->
+                <a href="Bible-study/index.html" class="px-6 py-2 bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 border border-amber-600/30 rounded-full text-sm font-semibold transition">
+                    View More <i class="fas fa-chevron-right ml-1"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="video-thumbnail rounded-xl" title="Parable Analysis"></div>
+                <div class="video-thumbnail rounded-xl" title="Weekly Bible Riddle"></div>
+                <div class="video-thumbnail rounded-xl" title="Old Testament Overview"></div>
+                <div class="video-thumbnail rounded-xl" title="Spiritual Growth Tips"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Simple Modal Component -->
+    <div id="modal" class="custom-modal p-4">
+        <div class="bg-slate-800 p-8 rounded-3xl max-w-md w-full border border-slate-600 shadow-2xl">
+            <h3 id="modalTitle" class="text-2xl font-bold mb-4 text-white">Request</h3>
+            <p class="text-slate-400 mb-6 text-sm">Please fill out the details below and we will get back to you shortly.</p>
+            <div class="space-y-4">
+                <input type="text" placeholder="Your Name" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" placeholder="Request Details" id="modalInput" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <textarea placeholder="Tell us more..." class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="hideModal()" class="flex-1 px-4 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 font-medium transition">Cancel</button>
+                <button onclick="handleSubmit()" class="flex-1 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold transition">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ LOAD HEADER -->
+   <script>
+var ACTIVE_NAV = "videos"; // ✅ correct key
+
+fetch("/header.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalHeader").innerHTML = data;
+
+    // ✅ Highlight active nav AFTER header is injected
+    var map = {
+      'home':    '.btn-home',
+      'notes':   '.btn-notes',
+      'videos':  '.btn-videos',
+      'bible':   '.btn-bible',
+      'courses': '.btn-courses',
+      'ppt':     '.btn-ppt',
+      'about':   '.btn-about'
+    };
+    var el = document.querySelector(map[ACTIVE_NAV]);
+    if (el) el.classList.add('active');
+
+    // ✅ Load Global Search after header is injected
+    var script = document.createElement("script");
+    script.src = "/js/global-search.js?v=" + Date.now();
+    document.body.appendChild(script);
+  })
+  .catch(err => console.error("Header load failed:", err));
+</script>
+
+    <script>
+        function showModal(title) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function handleSubmit() {
+            const submitBtn = document.querySelector('#modal button:last-child');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Sent!';
+            submitBtn.classList.remove('bg-blue-600');
+            submitBtn.classList.add('bg-emerald-600');
+            
+            setTimeout(() => {
+                hideModal();
+                submitBtn.innerText = originalText;
+                submitBtn.classList.add('bg-blue-600');
+                submitBtn.classList.remove('bg-emerald-600');
+            }, 1500);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                hideModal();
+            }
+        }
+    </script>
+</body>
+</html>
