@@ -125,17 +125,32 @@
 
   <!-- ✅ LOAD SAME GLOBAL HEADER -->
 <script>
-fetch("/header.html")   <!-- ✅ ROOT ABSOLUTE PATH -->
+var ACTIVE_NAV = "courses"; // ✅ correct key
+
+fetch("/header.html")
   .then(res => res.text())
   .then(data => {
     document.getElementById("globalHeader").innerHTML = data;
 
-    // ✅ Load Global Search ONLY AFTER header is injected
-    const script = document.createElement("script");
+    // ✅ Highlight active nav AFTER header is injected
+    var map = {
+      'home':    '.btn-home',
+      'notes':   '.btn-notes',
+      'videos':  '.btn-videos',
+      'bible':   '.btn-bible',
+      'courses': '.btn-courses',
+      'ppt':     '.btn-ppt',
+      'about':   '.btn-about'
+    };
+    var el = document.querySelector(map[ACTIVE_NAV]);
+    if (el) el.classList.add('active');
+
+    // ✅ Load Global Search after header is injected
+    var script = document.createElement("script");
     script.src = "/js/global-search.js?v=" + Date.now();
     document.body.appendChild(script);
   })
-  .catch(err => console.error("❌ Header load failed:", err));
+  .catch(err => console.error("Header load failed:", err));
 </script>
 
 
