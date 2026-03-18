@@ -309,33 +309,38 @@
 
     <div id="backToTop"><i class="fa-solid fa-arrow-up"></i></div>
 
-    <script>
-        // Global Header Loader
-        fetch("/header.html")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("globalHeader").innerHTML = data;
-            }).catch(err => console.log("Header error:", err));
+  <script>
+    // Global Header Loader
+    fetch("/header.html")
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("globalHeader").innerHTML = data;
 
-        // Global Footer Loader (Optional placeholder if you use a similar fetch method)
-        fetch("/footer.html")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("globalFooter").innerHTML = data;
-            }).catch(err => console.log("Footer error:", err));
+            // ✅ Highlight active nav
+            var el = document.querySelector('.btn-about');
+            if (el) el.classList.add('active');
 
-        // Back to Top Logic
-        const btt = document.getElementById("backToTop");
-        window.addEventListener("scroll", () => {
-            if (window.scrollY > 400) {
-                btt.style.display = "flex";
-            } else {
-                btt.style.display = "none";
-            }
-        });
-        btt.addEventListener("click", () => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-    </script>
+            // ✅ Fix invisible text: re-assert this page's own body styles
+            // (header.html injects CSS vars that override this page)
+            document.body.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
+            document.body.style.color = '#1f2937';
+        }).catch(err => console.log("Header error:", err));
+
+    // Global Footer Loader
+    fetch("/footer.html")
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("globalFooter").innerHTML = data;
+        }).catch(err => console.log("Footer error:", err));
+
+    // Back to Top Logic
+    const btt = document.getElementById("backToTop");
+    window.addEventListener("scroll", () => {
+        btt.style.display = window.scrollY > 400 ? "flex" : "none";
+    });
+    btt.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
 </body>
 </html>
