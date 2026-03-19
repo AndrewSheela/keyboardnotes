@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musical Alphabet Quiz</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the 16:9 container effect, font, and animations */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #8e44ad, #3498db);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        /* Enforce a tight container that hugs content */
+        .video-container {
+            width: 100%;
+            max-width: 1000px; /* Slightly narrower for a tighter look */
+            background-color: #ffffff;
+            background-image: linear-gradient(to top left, #fbfbfb, #ffffff);
+            border: 2px solid #a78bfa;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-blank {
+            display: inline-block;
+            min-width: 3rem;
+            text-align: center;
+            border-bottom: 3px solid transparent;
+            margin: 0 0.4rem;
+            padding-bottom: 0.2rem;
+            transition: all 0.3s ease-in-out;
+            color: #1f2937;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .note-blank.filled {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border-color: #38b2ac;
+            border-radius: 4px;
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+        }
+
+        .note-blank.active {
+            background-color: #fff9c4;
+            border-color: #fbbf24;
+            animation: pulse-blank 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-blank {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+            border: 2px solid #a78bfa;
+            background-color: #f3e8ff;
+            color: #6d28d9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .option-button:hover:not(:disabled) {
+            background-color: #8b5cf6;
+            color: white;
+            transform: scale(1.02);
+            border-color: #6d28d9;
+        }
+        .option-button.correct-choice {
+            background-color: #6ee7b7;
+            border-color: #10b981;
+            color: white;
+            animation: bounce-in 0.3s forwards;
+        }
+        .option-button.incorrect-choice {
+            background-color: #fda4af;
+            border-color: #ef4444;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .feedback-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            opacity: 0;
+            transition: all 0.4s ease-out;
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+        .feedback-visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #correct-feedback { background-color: #10b981; color: white; }
+        #incorrect-feedback { background-color: #ef4444; color: white; }
+
+        @media (max-width: 640px) {
+            .note-blank {
+                min-width: 2rem;
+                margin: 0 0.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container" class="video-container rounded-xl p-4 sm:p-6 relative">
+
+    <!-- Header / Score - Reduced Bottom Spacing -->
+    <div class="flex justify-between items-center mb-2 z-10">
+        <h1 class="text-xl sm:text-3xl font-extrabold text-indigo-700 leading-none">Lesson 1 Musical Alphabet Quiz</h1>
+        <div class="text-lg sm:text-2xl font-bold text-pink-600 leading-none">
+            Q:<span id="current-q">1</span>/20
+            <span class="mx-1 text-gray-300">|</span>
+            Score:<span id="score">0</span>/40
+        </div>
+    </div>
+
+    <!-- Main Content Area - Justify Start and Tight Spacing -->
+    <div id="quiz-content" class="flex flex-col justify-start">
+
+        <!-- Question Area - No top margin, tight bottom margin -->
+        <div class="text-center">
+            <p id="question-text" class="text-sm sm:text-2xl text-gray-500 font-bold mb-1">
+                What note comes in the blanks?
+            </p>
+            <div id="pattern-display" class="text-3xl sm:text-6xl font-black text-gray-900 tracking-wider mb-1">
+                <!-- Question pattern will be injected here -->
+            </div>
+            <div id="blank-status" class="text-green-700 font-bold text-xs sm:text-sm h-5 mb-2">
+                <!-- Status message -->
+            </div>
+        </div>
+
+        <!-- Options Grid - Brought up closer to the question -->
+        <div id="options-grid" class="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-xl mx-auto">
+            <!-- Options will be injected here -->
+        </div>
+
+    </div>
+
+    <!-- Feedback Popups -->
+    <div id="correct-feedback" class="feedback-box">✅ Correct!</div>
+    <div id="incorrect-feedback" class="feedback-box">❌</div>
+
+    <!-- Completion Screen -->
+    <div id="completion-screen" class="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col justify-center items-center rounded-xl p-8 hidden z-30">
+        <h2 class="text-3xl sm:text-6xl font-extrabold text-indigo-700 mb-4 text-center">Quiz Complete! 🎉</h2>
+        <p class="text-xl sm:text-3xl text-gray-800 mb-8">Your Final Score: <span id="final-score" class="text-pink-600 font-black"></span> / 40</p>
+        <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-full hover:bg-indigo-700 transition-all duration-300 shadow-lg">
+            Play Again
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function shuffleArray(array) {
+        const newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    const quizQuestions = [
+        { id: 1, pattern: "A B C __ E __ G", correctSequence: ["D", "F"], options: ["D", "F", "A", "B"] },
+        { id: 2, pattern: "G A __ C D __ F", correctSequence: ["B", "E"], options: ["B", "E", "G", "C"] },
+        { id: 3, pattern: "D E F __ A __ C", correctSequence: ["G", "B"], options: ["G", "B", "D", "F"] },
+        { id: 4, pattern: "F __ A B __ D E", correctSequence: ["G", "C"], options: ["G", "C", "F", "D"] },
+        { id: 5, pattern: "C D __ F G A __", correctSequence: ["E", "B"], options: ["E", "B", "D", "G"] },
+        { id: 6, pattern: "E F __ A B __ D", correctSequence: ["G", "C"], options: ["G", "C", "E", "A"] },
+        { id: 7, pattern: "B C __ E F __ A", correctSequence: ["D", "G"], options: ["D", "G", "B", "F"] },
+        { id: 8, pattern: "G __ B C __ E F", correctSequence: ["A", "D"], options: ["A", "D", "G", "C"] },
+        { id: 9, pattern: "C __ E F __ A B", correctSequence: ["D", "G"], options: ["D", "G", "C", "F"] },
+        { id: 10, pattern: "D __ F G __ B C", correctSequence: ["E", "A"], options: ["E", "A", "D", "G"] },
+        { id: 11, pattern: "A __ C D __ F G", correctSequence: ["B", "E"], options: ["B", "E", "A", "D"] },
+        { id: 12, pattern: "F G __ B C __ E", correctSequence: ["A", "D"], options: ["A", "D", "F", "C"] },
+        { id: 13, pattern: "C __ E __ G A B", correctSequence: ["D", "F"], options: ["D", "F", "C", "A"] },
+        { id: 14, pattern: "E __ G A __ C D", correctSequence: ["F", "B"], options: ["F", "B", "E", "G"] },
+        { id: 15, pattern: "B __ D E __ G A", correctSequence: ["C", "F"], options: ["C", "F", "B", "E"] },
+        { id: 16, pattern: "D E __ G __ B C", correctSequence: ["F", "A"], options: ["F", "A", "D", "G"] },
+        { id: 17, pattern: "G __ B __ D E F", correctSequence: ["A", "C"], options: ["A", "C", "G", "D"] },
+        { id: 18, pattern: "A B __ D E __ G", correctSequence: ["C", "F"], options: ["C", "F", "A", "D"] },
+        { id: 19, pattern: "F __ A __ C D E", correctSequence: ["G", "B"], options: ["G", "B", "F", "C"] },
+        { id: 20, pattern: "C D E __ G __ B", correctSequence: ["F", "A"], options: ["F", "A", "C", "G"] }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let currentBlankIndex = 0;
+    let currentPatternArray = [];
+
+    const qIndexEl = document.getElementById('current-q');
+    const scoreEl = document.getElementById('score');
+    const patternDisplayEl = document.getElementById('pattern-display');
+    const optionsGridEl = document.getElementById('options-grid');
+    const blankStatusEl = document.getElementById('blank-status');
+    const correctFeedbackEl = document.getElementById('correct-feedback');
+    const incorrectFeedbackEl = document.getElementById('incorrect-feedback');
+    const completionScreenEl = document.getElementById('completion-screen');
+    const finalScoreEl = document.getElementById('final-score');
+
+    function showFeedback(element) {
+        element.classList.add('feedback-visible');
+        setTimeout(() => element.classList.remove('feedback-visible'), 800);
+    }
+
+    function initializePatternDisplay() {
+        if (currentQuestionIndex >= quizQuestions.length) return;
+        const question = quizQuestions[currentQuestionIndex];
+        currentPatternArray = question.pattern.split(' ').map(item => item === '__' ? { note: '', type: 'blank' } : { note: item, type: 'note' });
+    }
+
+    function renderQuestion() {
+        if (currentQuestionIndex >= quizQuestions.length) {
+            showCompletionScreen();
+            return;
+        }
+
+        const question = quizQuestions[currentQuestionIndex];
+        qIndexEl.textContent = currentQuestionIndex + 1;
+        scoreEl.textContent = score;
+
+        const patternHtml = currentPatternArray.map((item) => {
+            if (item.type === 'note') return `<span class="text-indigo-800">${item.note}</span>`;
+            if (item.note) return `<span class="note-blank filled">${item.note}</span>`;
+            const isCurrentBlank = item.type === 'blank' && !item.note;
+            return `<span class="note-blank ${isCurrentBlank ? 'active' : ''}">?</span>`; 
+        }).join(' ');
+
+        patternDisplayEl.innerHTML = patternHtml;
+
+        const shuffledOptions = shuffleArray(question.options);
+        optionsGridEl.innerHTML = shuffledOptions.map(option => `
+            <button class="option-button w-full h-16 sm:h-20 text-xl sm:text-4xl font-extrabold rounded-lg" onclick="handleOptionClick('${option}')">
+                ${option}
+            </button>
+        `).join('');
+
+        const totalBlanks = question.correctSequence.length;
+        if (currentBlankIndex < totalBlanks) {
+            blankStatusEl.textContent = `Blank ${currentBlankIndex + 1} of ${totalBlanks}`;
+        } else {
+            blankStatusEl.textContent = "Done!";
+        }
+    }
+
+    function handleOptionClick(selectedNote) {
+        const question = quizQuestions[currentQuestionIndex];
+        const correctNote = question.correctSequence[currentBlankIndex];
+        const clickedButton = event.currentTarget;
+        const allButtons = optionsGridEl.querySelectorAll('button');
+
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (selectedNote === correctNote) {
+            clickedButton.classList.add('correct-choice');
+            showFeedback(correctFeedbackEl);
+            
+            const nextIdx = currentPatternArray.findIndex(p => p.type === 'blank' && !p.note);
+            if (nextIdx !== -1) {
+                currentPatternArray[nextIdx].note = selectedNote;
+                score++;
+                scoreEl.textContent = score;
+                currentBlankIndex++;
+                
+                if (currentBlankIndex === question.correctSequence.length) {
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        currentBlankIndex = 0;
+                        initializePatternDisplay();
+                        renderQuestion();
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        renderQuestion();
+                        optionsGridEl.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                    }, 600);
+                }
+            }
+        } else {
+            clickedButton.classList.add('incorrect-choice');
+            showFeedback(incorrectFeedbackEl);
+
+            setTimeout(() => {
+                clickedButton.classList.remove('incorrect-choice');
+                const nextIdx = currentPatternArray.findIndex(p => p.type === 'blank' && !p.note);
+                if (nextIdx !== -1) {
+                    currentPatternArray[nextIdx].note = correctNote;
+                    currentBlankIndex++;
+                    renderQuestion();
+                }
+
+                if (currentBlankIndex === question.correctSequence.length) {
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        currentBlankIndex = 0;
+                        initializePatternDisplay();
+                        renderQuestion();
+                    }, 500);
+                } else {
+                    optionsGridEl.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                }
+            }, 1000);
+        }
+    }
+
+    function showCompletionScreen() {
+        finalScoreEl.textContent = score;
+        completionScreenEl.classList.remove('hidden');
+    }
+
+    function resetQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        currentBlankIndex = 0;
+        completionScreenEl.classList.add('hidden');
+        initializePatternDisplay();
+        renderQuestion();
+    }
+
+    window.onload = () => {
+        initializePatternDisplay();
+        renderQuestion();
+    };
+</script>
+</body>
+</html>

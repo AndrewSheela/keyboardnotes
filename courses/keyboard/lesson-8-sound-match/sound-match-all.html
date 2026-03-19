@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Ear Training Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Tone.js for sound generation -->
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+        }
+        .btn-note {
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            color: white; 
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        }
+        .btn-note:hover:not(.btn-selected):not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.1); 
+        }
+        .btn-selected {
+            border: 4px solid #4f46e5;
+            background-color: #eef2ff !important;
+            color: #4f46e5; 
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.5), 0 4px 6px -4px rgba(79, 70, 229, 0.5);
+            text-shadow: none;
+        }
+        /* Grid layout for responsive button display */
+        #note-selection {
+            display: grid;
+            gap: 1rem;
+        }
+        /* Custom dynamic grid columns based on note count for better responsiveness */
+        #note-selection[data-notes="2"] { grid-template-columns: repeat(2, 1fr); }
+        #note-selection[data-notes="3"], #note-selection[data-notes="4"] { grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 640px) {
+            #note-selection[data-notes="3"] { grid-template-columns: repeat(3, 1fr); }
+            #note-selection[data-notes="4"] { grid-template-columns: repeat(4, 1fr); }
+        }
+        #note-selection[data-notes="5"], #note-selection[data-notes="6"] { grid-template-columns: repeat(3, 1fr); }
+        @media (min-width: 640px) {
+             #note-selection[data-notes="5"] { grid-template-columns: repeat(5, 1fr); }
+             #note-selection[data-notes="6"] { grid-template-columns: repeat(6, 1fr); }
+        }
+        #note-selection[data-notes="7"], #note-selection[data-notes="8"] { grid-template-columns: repeat(4, 1fr); }
+        #note-selection[data-notes="9"], #note-selection[data-notes="10"] { grid-template-columns: repeat(5, 1fr); }
+        #note-selection[data-notes="11"], #note-selection[data-notes="12"] { grid-template-columns: repeat(6, 1fr); }
+
+        /* Style for radio button level selection */
+        .radio-tile-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap; /* Re-enabled wrap for multi-level groups */
+            justify-content: space-between; 
+        }
+        .radio-tile-group input + label {
+            flex-shrink: 1;
+            min-width: fit-content; 
+            padding: 0.5rem 0.75rem; 
+            font-size: 0.875rem; /* text-sm */
+        }
+        .radio-tile-group label {
+            transition: all 0.2s;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            font-weight: 600;
+            background-color: #ffffff;
+            color: #4b5563;
+        }
+        .radio-tile-group input:checked + label {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4f46e5;
+            box-shadow: 0 0 0 3px #c7d2fe;
+        }
+    </style>
+</head>
+<body class="p-4 flex justify-center">
+
+
+    <!-- Main Application Container -->
+    <div id="app" class="w-full max-w-2xl bg-white rounded-xl p-6 md:p-8 shadow-2xl border border-gray-100">
+
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700">Ear Training</h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-600 mt-1">Dynamic Pitch Identification</h2>
+        </header>
+
+        <!-- Main Level Selector: Note Count -->
+        <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-indigo-50 rounded-lg mb-4 shadow-inner">
+            <label for="note-count-select" class="text-lg font-medium text-indigo-700 mb-2 sm:mb-0">Note Count:</label>
+            <select id="note-count-select" onchange="initializeQuizLayout()" class="p-2 border border-indigo-300 rounded-lg text-lg font-bold focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-auto">
+                <!-- Options populated by JS -->
+            </select>
+        </div>
+
+        <!-- Interval Level Selector (Visible only when Note Count = 2) -->
+        <div id="two-note-level-container" class="p-4 bg-purple-50 rounded-lg mb-6 shadow-md border border-purple-200 hidden">
+            <h3 class="text-lg font-semibold text-purple-700 mb-3">2-Note Interval Difficulty:</h3>
+            <div class="radio-tile-group" onchange="initializeQuizLayout()">
+                <input type="radio" id="level-2-1" name="interval-level-2" value="level-1" checked>
+                <label for="level-2-1">Level 1 (P5)</label>
+                
+                <input type="radio" id="level-2-2" name="interval-level-2" value="level-2">
+                <label for="level-2-2">Level 2 (M3)</label>
+                
+                <input type="radio" id="level-2-3" name="interval-level-2" value="level-3">
+                <label for="level-2-3">Level 3 (M2)</label>
+                
+                <input type="radio" id="level-2-4" name="interval-level-2" value="level-4">
+                <label for="level-2-4">Level 4 (m2)</label>
+            </div>
+        </div>
+
+        <!-- Interval Level Selector (Visible only when Note Count = 3) -->
+        <div id="three-note-level-container" class="p-4 bg-green-50 rounded-lg mb-6 shadow-md border border-green-200 hidden">
+            <h3 class="text-lg font-semibold text-green-700 mb-3">3-Note Pattern Difficulty:</h3>
+            <div class="radio-tile-group" onchange="initializeQuizLayout()">
+                <input type="radio" id="level-3-1" name="interval-level-3" value="level-1" checked>
+                <label for="level-3-1">Level 1</label>
+                
+                <input type="radio" id="level-3-2" name="interval-level-3" value="level-2">
+                <label for="level-3-2">Level 2</label>
+                
+                <input type="radio" id="level-3-3" name="interval-level-3" value="level-3">
+                <label for="level-3-3">Level 3</label>
+                
+                <input type="radio" id="level-3-4" name="interval-level-3" value="level-4">
+                <label for="level-3-4">Level 4</label>
+            </div>
+        </div>
+
+        <!-- Current Notes Display (Visible only when Note Count > 3 or when a custom pattern is active) -->
+        <div id="current-notes-display-container" class="p-4 bg-gray-50 rounded-lg mb-6 shadow-inner border border-gray-200">
+            <span id="current-notes-display" class="text-sm text-gray-600 font-medium">Range: C4 to B4 (12 notes)</span>
+        </div>
+
+
+        <!-- Scoreboard -->
+        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg mb-6 shadow-inner">
+            <div class="text-lg font-medium text-gray-700">Score: <span id="score" class="font-bold text-indigo-600">0</span></div>
+            <div class="text-lg font-medium text-gray-700">Round: <span id="round-count" class="font-bold text-indigo-600">0</span></div>
+        </div>
+
+        <!-- Instructions & Status -->
+        <div id="status-message" class="text-center text-lg md:text-xl font-medium p-4 rounded-lg transition-all duration-300 min-h-[5rem] flex items-center justify-center bg-blue-100 text-blue-700 mb-6">
+            Select a difficulty level and click 'Start Quiz' to begin.
+        </div>
+
+        <!-- Note Selection Buttons Container (Dynamically populated) -->
+        <div id="note-selection" class="mb-8" data-notes="2">
+            <!-- Dynamic Buttons will be placed here -->
+        </div>
+        
+        <!-- Controls -->
+        <div class="flex flex-col space-y-4">
+            <button id="start-quiz-btn" onclick="startQuiz()" class="p-3 bg-indigo-600 text-white font-bold rounded-lg text-xl hover:bg-indigo-700 transition-colors shadow-md">
+                Start Quiz
+            </button>
+
+            <button id="shuffle-btn" onclick="shuffleNotes()" class="p-3 bg-gray-500 text-white font-medium rounded-lg text-lg hover:bg-gray-600 transition-colors shadow-md">
+                Shuffle Notes
+            </button>
+            
+            <button id="submit-guess-btn" onclick="submitGuess()" disabled class="p-3 bg-gray-400 text-white font-bold rounded-lg text-xl cursor-not-allowed transition-colors shadow-md">
+                Submit Guess
+            </button>
+            
+            <button id="replay-btn" onclick="replayNote()" disabled class="p-3 bg-yellow-500 text-white font-medium rounded-lg text-lg hover:bg-yellow-600 transition-colors opacity-50 cursor-not-allowed">
+                Replay Note
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Global State & Tone.js Setup ---
+        let synth = null;
+        let isQuizActive = false;
+        let currentNote = null; 
+        let userGuess = null; 
+        let score = 0;
+        let roundCount = 0;
+        
+        // Master list of 24 notes (C4-B5) for range calculation and playing
+        const ALL_NOTES = [
+            "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+            "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5"
+        ];
+        let CURRENT_NOTES = []; // The notes shown as buttons in the quiz
+        let rootNoteIndex = 0; // Index of the lowest note in CURRENT_NOTES, relative to ALL_NOTES
+
+        // Difficulty levels structure: Note Count -> Level -> Definition
+        const DIFFICULTY_LEVELS = {
+            '2': {
+                // 2-Note Intervals (Semitones from root to upper note)
+                'level-1': { semitones: 7, label: 'P5' }, // Perfect Fifth
+                'level-2': { semitones: 4, label: 'M3' }, // Major Third
+                'level-3': { semitones: 2, label: 'M2' }, // Major Second
+                'level-4': { semitones: 1, label: 'm2' }  // Minor Second
+            },
+            '3': {
+                // 3-Note patterns (Semitone steps between consecutive notes: [N1->N2, N2->N3])
+                // C, E, G# (0, 4, 8)
+                'level-1': { semitoneSteps: [4, 4], label: 'Augmented Triad' }, 
+                // C, D#, F# (0, 3, 6)
+                'level-2': { semitoneSteps: [3, 3], label: 'Diminished Triad' }, 
+                // C, D, E (0, 2, 4)
+                'level-3': { semitoneSteps: [2, 2], label: 'Whole Tone Cluster' }, 
+                // C, C#, D (0, 1, 2)
+                'level-4': { semitoneSteps: [1, 1], label: 'Chromatic Cluster' } 
+            }
+        };
+        
+        // Element references
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const submitGuessBtn = document.getElementById('submit-guess-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const statusMessage = document.getElementById('status-message');
+        const scoreElement = document.getElementById('score');
+        const roundCountElement = document.getElementById('round-count');
+        const noteCountSelect = document.getElementById('note-count-select');
+        const twoNoteLevelContainer = document.getElementById('two-note-level-container');
+        const threeNoteLevelContainer = document.getElementById('three-note-level-container');
+        const noteSelectionContainer = document.getElementById('note-selection');
+        const currentNotesDisplayContainer = document.getElementById('current-notes-display-container');
+        const currentNotesDisplay = document.getElementById('current-notes-display');
+
+        // Color palette for dynamic buttons (12 colors, cycles per octave)
+        const BUTTON_COLORS = [
+            'bg-green-500', 'bg-blue-500', 'bg-red-500', 'bg-purple-500', 'bg-indigo-500', 
+            'bg-teal-500', 'bg-orange-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-cyan-500', 
+            'bg-lime-500', 'bg-sky-500'
+        ];
+
+        /**
+         * Initializes the Tone.js audio context and synth.
+         */
+        function initAudio() {
+            if (synth === null) {
+                synth = new Tone.Synth({
+                    oscillator: { type: "square" }, 
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.1,
+                        sustain: 0.8,
+                        release: 0.5
+                    }
+                }).toDestination();
+            }
+        }
+
+        /**
+         * Populates the note count selector dropdown (2 to 12 notes).
+         */
+        function initializeNoteCountSelector() {
+            let optionsHtml = '';
+            for (let i = 2; i <= 12; i++) {
+                optionsHtml += `<option value="${i}" ${i === 2 ? 'selected' : ''}>${i} Notes</option>`;
+            }
+            noteCountSelect.innerHTML = optionsHtml;
+            // Set initial state: default to 2-note mode root at C4 (index 0)
+            rootNoteIndex = 0; 
+            initializeQuizLayout();
+        }
+        
+        /**
+         * Shuffles the starting root note for the quiz.
+         */
+        function shuffleNotes() {
+            let maxRootIndex;
+            const level = parseInt(noteCountSelect.value, 10);
+            
+            // Default max index to ensure top note doesn't exceed D5 (index 14) 
+            const MAX_TOP_INDEX = 14; 
+            
+            if (level === 2) {
+                const selectedInterval = document.querySelector('input[name="interval-level-2"]:checked').value;
+                const semitones = DIFFICULTY_LEVELS['2'][selectedInterval].semitones;
+                maxRootIndex = MAX_TOP_INDEX - semitones; 
+            } else if (level === 3) {
+                const selectedPattern = document.querySelector('input[name="interval-level-3"]:checked').value;
+                const semitoneSteps = DIFFICULTY_LEVELS['3'][selectedPattern].semitoneSteps;
+                // Max span is the sum of all steps
+                const maxSpan = semitoneSteps.reduce((sum, step) => sum + step, 0); 
+                maxRootIndex = MAX_TOP_INDEX - maxSpan; 
+            } else {
+                // Multi-Note Mode (4-12 notes): chromatic sequence.
+                // Max root index ensures the last note (root + level - 1) is within range.
+                // We allow it to go up to C5 (index 12) to keep the range interesting but manageable.
+                maxRootIndex = ALL_NOTES.length - level; 
+                if (maxRootIndex > 12) {
+                    maxRootIndex = 12; 
+                }
+            }
+
+            // Safety clamp
+            if (maxRootIndex < 0) maxRootIndex = 0; 
+            
+            // Select a random index between 0 and maxRootIndex (inclusive)
+            rootNoteIndex = Math.floor(Math.random() * (maxRootIndex + 1));
+            
+            // Re-initialize the quiz layout with the new root
+            initializeQuizLayout();
+        }
+
+
+        /**
+         * Generates the quiz notes and the corresponding selection buttons based on the current level settings and root note.
+         */
+        function initializeQuizLayout() {
+            const level = parseInt(noteCountSelect.value, 10);
+            
+            // 1. Manage UI visibility (Level containers)
+            twoNoteLevelContainer.classList.add('hidden');
+            threeNoteLevelContainer.classList.add('hidden');
+            currentNotesDisplayContainer.classList.remove('hidden');
+
+            if (level === 2) {
+                twoNoteLevelContainer.classList.remove('hidden');
+                
+                const selectedInterval = document.querySelector('input[name="interval-level-2"]:checked').value;
+                const semitones = DIFFICULTY_LEVELS['2'][selectedInterval].semitones;
+
+                // Notes are calculated relative to the current rootNoteIndex
+                const noteAIndex = rootNoteIndex; 
+                const noteBIndex = rootNoteIndex + semitones; 
+
+                CURRENT_NOTES = [ALL_NOTES[noteAIndex], ALL_NOTES[noteBIndex]];
+                
+            } else if (level === 3) {
+                threeNoteLevelContainer.classList.remove('hidden');
+
+                const selectedPattern = document.querySelector('input[name="interval-level-3"]:checked').value;
+                const semitoneSteps = DIFFICULTY_LEVELS['3'][selectedPattern].semitoneSteps;
+
+                CURRENT_NOTES = [ALL_NOTES[rootNoteIndex]];
+                let currentIndex = rootNoteIndex;
+                
+                // Calculate the remaining two notes based on the semitone steps
+                semitoneSteps.forEach(step => {
+                    currentIndex += step;
+                    CURRENT_NOTES.push(ALL_NOTES[currentIndex]);
+                });
+
+            } else {
+                // Multi-Note Mode (4-12 notes): Use chromatic sequence
+                
+                // Sequence starts at the current rootNoteIndex
+                CURRENT_NOTES = ALL_NOTES.slice(rootNoteIndex, rootNoteIndex + level);
+            }
+            
+            // Update the display text for the note range
+            const startNote = CURRENT_NOTES[0].replace(/\d/, ''); 
+            const endNote = CURRENT_NOTES[CURRENT_NOTES.length - 1].replace(/\d/, '');
+            const startOctave = CURRENT_NOTES[0].slice(-1);
+            const endOctave = CURRENT_NOTES[CURRENT_NOTES.length - 1].slice(-1);
+            
+            currentNotesDisplay.textContent = `Range: ${startNote}${startOctave} to ${endNote}${endOctave} (${CURRENT_NOTES.length} notes)`;
+
+
+            // 2. Clear existing buttons and update grid styling
+            noteSelectionContainer.innerHTML = '';
+            noteSelectionContainer.setAttribute('data-notes', CURRENT_NOTES.length);
+
+            // 3. Generate new buttons
+            CURRENT_NOTES.forEach((note) => {
+                const noteName = note.replace(/\d/, ''); // Remove octave number (4 or 5)
+                
+                // Map color based on the 12-note chromatic cycle (modulo 12)
+                const colorIndex = ALL_NOTES.indexOf(note) % 12;
+                const colorClass = BUTTON_COLORS[colorIndex];
+
+                const button = document.createElement('button');
+                button.id = `btn-${noteName.toLowerCase().replace('#', 's')}`;
+                button.className = `btn-note h-20 text-xl md:text-3xl font-extrabold rounded-lg opacity-50 cursor-not-allowed ${colorClass}`;
+                button.textContent = noteName;
+                button.disabled = true;
+                
+                // Attach the event listener dynamically
+                button.onclick = () => selectGuess(note, button);
+                
+                noteSelectionContainer.appendChild(button);
+            });
+
+            // 4. Reset status
+            let currentLevelLabel = '';
+            if (level === 2) {
+                currentLevelLabel = DIFFICULTY_LEVELS['2'][document.querySelector('input[name="interval-level-2"]:checked').value].label;
+            } else if (level === 3) {
+                // For level 3, use the descriptive label from JS for the status message
+                currentLevelLabel = DIFFICULTY_LEVELS['3'][document.querySelector('input[name="interval-level-3"]:checked').value].label;
+            } else {
+                currentLevelLabel = `${CURRENT_NOTES.length}-note range`;
+            }
+
+            const statusText = isQuizActive 
+                ? `Please wait until the current round finishes.`
+                : `Ready for ${currentLevelLabel} practice. Click 'Start Quiz'.`;
+                
+            updateStatus(statusText, 'bg-blue-100', 'text-blue-700');
+            
+            // Re-enable start button after layout change
+            if (!isQuizActive) {
+                startQuizBtn.disabled = false;
+                startQuizBtn.textContent = 'Start Quiz';
+            }
+        }
+
+
+        /**
+         * Cleans up the previous round's state and resets the UI elements.
+         */
+        function cleanupRound() {
+            // Find all dynamically generated note buttons
+            const noteButtons = noteSelectionContainer.querySelectorAll('.btn-note');
+
+            noteButtons.forEach(btn => {
+                btn.classList.remove('btn-selected');
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+            userGuess = null;
+        }
+
+        /**
+         * Starts a new quiz round.
+         */
+        async function startQuiz() {
+            initAudio();
+
+            // 1. Start Audio Context if suspended 
+            if (Tone.context.state !== 'running') {
+                try {
+                    await Tone.start();
+                    console.log("Audio context started.");
+                } catch (e) {
+                    console.error("Could not start audio context:", e);
+                    updateStatus("Audio failed to start. Check browser permissions.", 'bg-red-100', 'text-red-700');
+                    return;
+                }
+            }
+            
+            // Ensure there are notes to quiz on
+            if (CURRENT_NOTES.length === 0) {
+                 updateStatus("Please select a valid note count or interval level, then click Shuffle Notes.", 'bg-yellow-100', 'text-yellow-700');
+                 return;
+            }
+
+            cleanupRound();
+
+            isQuizActive = true;
+            roundCount++;
+            roundCountElement.textContent = roundCount;
+
+            // 2. Select a random note from the CURRENT_NOTES array
+            currentNote = CURRENT_NOTES[Math.floor(Math.random() * CURRENT_NOTES.length)];
+
+            // 3. Play the note once, sustained (1.5 seconds)
+            if (Tone.context.state === 'running') {
+                synth.triggerAttackRelease(currentNote, 1.5); 
+            }
+
+            // 4. Update UI
+            startQuizBtn.disabled = true;
+            startQuizBtn.textContent = 'Note Playing...';
+            submitGuessBtn.disabled = true;
+            replayBtn.disabled = false;
+            replayBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            // Enable all note buttons
+            const noteButtons = noteSelectionContainer.querySelectorAll('.btn-note');
+            noteButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+
+            updateStatus(`Listen to the sustained note. Replay if needed, then choose one of the ${CURRENT_NOTES.length} notes.`, 'bg-blue-100', 'text-blue-700');
+        }
+
+        /**
+         * Allows the user to select their note guess and plays the selected note for comparison.
+         * @param {string} note - The guessed note (e.g., "C4", "G#4").
+         * @param {HTMLElement} button - The button element clicked.
+         */
+        function selectGuess(note, button) {
+            if (!isQuizActive) return;
+
+            // 1. Play the note associated with the button (0.4 seconds)
+            if (synth && Tone.context.state === 'running') {
+                synth.triggerAttackRelease(note, "0.4"); 
+            }
+
+            // 2. Visual Selection logic: Remove selection from all, add to current
+            const noteButtons = noteSelectionContainer.querySelectorAll('.btn-note');
+            noteButtons.forEach(b => b.classList.remove('btn-selected'));
+            
+            button.classList.add('btn-selected');
+            
+            userGuess = note;
+            submitGuessBtn.disabled = false;
+            submitGuessBtn.textContent = 'Submit Guess';
+            submitGuessBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitGuessBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+
+        }
+
+        /**
+         * Checks the user's guess and updates the score.
+         */
+        function submitGuess() {
+            if (!isQuizActive || !userGuess || !currentNote) {
+                updateStatus("Please start the quiz and select a note before submitting.", 'bg-yellow-100', 'text-yellow-700');
+                return;
+            }
+
+            isQuizActive = false;
+            
+            const isCorrect = userGuess === currentNote;
+            let message;
+            
+            // Remove octave number ('4' or '5') for display
+            const displayCurrentNote = currentNote.replace(/\d/, '');
+            const displayUserGuess = userGuess.replace(/\d/, '');
+
+            if (isCorrect) {
+                score++;
+                message = `🎉 Correct! The note was ${displayCurrentNote}.`;
+                updateStatus(message, 'bg-green-100', 'text-green-700');
+            } else {
+                message = `❌ Incorrect. The note was ${displayCurrentNote}. You guessed ${displayUserGuess}.`;
+                updateStatus(message, 'bg-red-100', 'text-red-700');
+            }
+            
+            scoreElement.textContent = score;
+
+            // Update controls for next round
+            submitGuessBtn.disabled = true;
+            submitGuessBtn.textContent = 'Guess Submitted';
+            submitGuessBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            submitGuessBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+
+            startQuizBtn.disabled = false;
+            startQuizBtn.textContent = 'Start Next Round';
+            
+            replayBtn.disabled = true;
+            replayBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Reset notes for the next round and clean up button visuals
+            currentNote = null; 
+            userGuess = null; 
+            cleanupRound(); 
+        }
+        
+        /**
+         * Replays the current (hidden) note once for the user.
+         */
+        function replayNote() {
+            if (!currentNote || !isQuizActive || !synth) return;
+            
+            // Play for 1 second
+            synth.triggerAttackRelease(currentNote, "1"); 
+            updateStatus("Replaying the original note (1 second). Listen closely!", 'bg-yellow-100', 'text-yellow-700');
+            
+            // Restore instructions after a short delay
+            setTimeout(() => {
+                updateStatus(`Replay done. Compare with the ${CURRENT_NOTES.length} note options and submit your guess.`, 'bg-blue-100', 'text-blue-700');
+            }, 1100);
+        }
+
+        /**
+         * Updates the status message with styling.
+         */
+        function updateStatus(text, bgClass, textClass) {
+            statusMessage.className = `text-center text-lg md:text-xl font-medium p-4 rounded-lg transition-all duration-300 min-h-[5rem] flex items-center justify-center mb-6 ${bgClass} ${textClass}`;
+            statusMessage.textContent = text;
+        }
+
+        // Initialize the app when the window loads
+        window.onload = initializeNoteCountSelector;
+
+    </script>
+</body>
+</html>

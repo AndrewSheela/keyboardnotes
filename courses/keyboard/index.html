@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -260,4 +261,272 @@
     });
 </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Masters Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #020617;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Gradient */
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 10% 20%, #4f46e5 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, #ec4899 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, #7c3aed 0%, transparent 50%);
+            filter: blur(100px);
+            opacity: 0.5;
+            animation: meshMove 25s ease infinite alternate;
+        }
+
+        @keyframes meshMove {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.3) translate(10%, 5%); }
+        }
+
+        /* Nav/Action Button */
+        .nav-glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+        }
+
+        .nav-glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Enhanced Lesson Card - Sized Down */
+        .lesson-card {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .lesson-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Super Colorful Glossy Button */
+        .super-glossy-btn {
+            position: relative;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: var(--btn-gradient);
+            box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(4px);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            display: block;
+            text-align: center;
+        }
+
+        .super-glossy-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transition: all 0.6s;
+        }
+
+        .super-glossy-btn:hover::before {
+            left: 100%;
+        }
+
+        .super-glossy-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 20px var(--glow-color);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .float {
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="custom-scrollbar">
+
+    <!-- ✅ GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+
+    <div class="bg-mesh"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-center md:justify-end pointer-events-none">
+        <a href="rules-and-regulations.html" class="nav-glass-btn px-6 py-2.5 rounded-full text-[10px] pointer-events-auto flex items-center gap-2">
+            <i data-lucide="scroll-text" class="w-3.5 h-3.5"></i>
+            Rules & Regulations
+        </a>
+    </nav>
+
+    <header class="pt-24 pb-12 px-6 text-center">
+        <h1 class="text-5xl md:text-7xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-2xl float">
+            PIANO MASTER
+        </h1>
+        <p class="text-indigo-200 text-sm md:text-base font-medium max-w-2xl mx-auto opacity-80 uppercase tracking-widest">
+            Level Up Your Musical Talent
+        </p>
+    </header>
+
+    <main class="container mx-auto px-6 pb-24">
+        <div id="cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Cards will be injected here -->
+        </div>
+    </main>
+
+    <footer class="py-12 text-center text-gray-500 border-t border-white/5 bg-black/20 backdrop-blur-md">
+        <p class="font-bold tracking-tighter text-xs text-gray-400 uppercase">© 2024 KEYBOARD LESSONS ACADEMY</p>
+    </footer>
+
+    <script>
+        const lessons = [
+            { title: "Musical Alphabet", desc: "The foundational notes A-G that form the language of piano music.", color: "from-blue-500 via-cyan-400 to-blue-600", glow: "rgba(6, 182, 212, 0.5)", link: "lesson-1-musical-alphabet/lesson-1-musical-alphabet.html", icon: "languages" },
+            { title: "Sharp and Flat", desc: "Mastering the accidentals and the elegant black keys on your board.", color: "from-fuchsia-600 via-purple-500 to-indigo-600", glow: "rgba(168, 85, 247, 0.5)", link: "lesson-2-sharp-and-flat/lesson-2-sharp-and-flat.html", icon: "hash" },
+            { title: "Scales Major Scales", desc: "Unlock the secrets of bright, happy melodies with Major scales.", color: "from-orange-500 via-yellow-400 to-red-500", glow: "rgba(245, 158, 11, 0.5)", link: "lesson-3-major-scales/lesson-3-major-scales.html", icon: "staircase" },
+            { title: "Major Sharp", desc: "Conquering scales that feature complex sharp key signatures.", color: "from-emerald-500 via-teal-400 to-cyan-500", glow: "rgba(20, 184, 166, 0.5)", link: "lesson-4-major-sharp-scales/lesson-4-major-sharp-scales.html", icon: "gem" },
+            { title: "Minor Scales", desc: "Dive into the moody, expressive world of Natural Minor patterns.", color: "from-rose-500 via-pink-500 to-purple-600", glow: "rgba(244, 63, 94, 0.5)", link: "lesson-5-minor-scales/lesson-5-minor-scales.html", icon: "moon" },
+            { title: "Minor Sharp", desc: "Sharpen your technique with intricate sharp-minor transitions.", color: "from-indigo-600 via-blue-500 to-sky-400", glow: "rgba(79, 70, 229, 0.5)", link: "lesson-6-minor-sharp/lesson-6-minor-sharp.html", icon: "sparkles" },
+            { title: "Relative Scales", desc: "Understand the deep connection between happy and sad keys.", color: "from-amber-400 via-orange-500 to-amber-600", glow: "rgba(251, 191, 36, 0.5)", link: "lesson-7-relative-scales/lesson-7-relative-scales.html", icon: "git-compare" },
+            { title: "Sound Match", desc: "Ear training: Match sounds to keys with precision and speed.", color: "from-lime-400 via-green-500 to-emerald-600", glow: "rgba(132, 204, 22, 0.5)", link: "lesson-8-sound-match/lesson-8-sound-match.html", icon: "ear" },
+            { title: "Major Chord Formation", desc: "Build the 1-3-5 triad foundation of every great pop song.", color: "from-violet-600 via-purple-600 to-fuchsia-600", glow: "rgba(139, 92, 246, 0.5)", link: "lesson-9-major-chord/lesson-9-major-chord.html", icon: "layers" },
+            { title: "Minor Chord Formation", desc: "Learn to add depth and emotion with the minor triad formula.", color: "from-red-600 via-rose-600 to-orange-600", glow: "rgba(220, 38, 38, 0.5)", link: "lesson-10-minor-chord/lesson-10-minor-chord.html", icon: "library" },
+            { title: "Chords Inversion", desc: "Move across the keys like a pro with seamless chord voicing.", color: "from-sky-400 via-blue-500 to-indigo-500", glow: "rgba(56, 189, 248, 0.5)", link: "lesson-11-inversions/lesson-11-inversions.html", icon: "refresh-cw" },
+            { title: "Chords Inversion Minor", desc: "Pro-level minor transitions using smooth voice leading.", color: "from-slate-600 via-gray-700 to-slate-800", glow: "rgba(100, 116, 139, 0.5)", link: "lesson-12-inversions-minor/lesson-12-inversions-minor.html", icon: "shuffle" },
+            { title: "All Other Chords", desc: "Diminished, Sus2, and Sus4: Add flavor to your sound.", color: "from-yellow-400 via-amber-500 to-orange-500", glow: "rgba(234, 179, 8, 0.5)", link: "lesson-13-other-chords/lesson-13-other-chords.html", icon: "box" },
+            { title: "Chord Progression", desc: "The flow of harmony: Creating sequences that tell a story.", color: "from-pink-500 via-purple-500 to-blue-500", glow: "rgba(236, 72, 153, 0.5)", link: "lesson-14-progression/lesson-14-progression.html", icon: "trending-up" },
+            { title: "Chord Progression Minor", desc: "The epic sound: Sequences for drama and intensity.", color: "from-indigo-900 via-purple-900 to-black", glow: "rgba(79, 70, 229, 0.3)", link: "lesson-15-progression-minor/lesson-15-progression-minor.html", icon: "waves" },
+            { title: "Syllable Identification", desc: "Solfege mastery: Sight-singing and recognizing Do-Re-Mi.", color: "from-teal-400 via-emerald-500 to-green-500", glow: "rgba(45, 212, 191, 0.5)", link: "lesson-16-syllables/lesson-16-syllables.html", icon: "mic-2" },
+            { title: "Understanding Rhythm 4/4", desc: "Feel the beat: The backbone of rock, pop, and blues.", color: "from-orange-400 via-red-500 to-pink-500", glow: "rgba(251, 146, 60, 0.5)", link: "lesson-17-rhythm-44/lesson-17-rhythm-44.html", icon: "drum" },
+            { title: "2/4 Rhythm", desc: "The steady march: Simple but powerful rhythmic patterns.", color: "from-blue-400 via-cyan-400 to-teal-400", glow: "rgba(96, 165, 250, 0.5)", link: "lesson-18-rhythm-24/lesson-18-rhythm-24.html", icon: "timer" },
+            { title: "3/4 Rhythm", desc: "The elegant waltz: Counting beats in groups of three.", color: "from-rose-400 via-pink-400 to-orange-400", glow: "rgba(251, 113, 133, 0.5)", link: "lesson-19-rhythm-34/lesson-19-rhythm-34.html", icon: "heart" },
+            { title: "6/8 Rhythm", desc: "Compound time: Mastery of the rolling triplet feel.", color: "from-violet-500 via-indigo-600 to-blue-600", glow: "rgba(139, 92, 246, 0.5)", link: "lesson-20-rhythm-68/lesson-20-rhythm-68.html", icon: "activity" },
+            { title: "7/8 Rhythm", desc: "Odd meters: Exploring unconventional rhythmic structures.", color: "from-zinc-700 via-slate-800 to-black", glow: "rgba(255, 255, 255, 0.2)", link: "lesson-21-rhythm-78/lesson-21-rhythm-78.html", icon: "target" },
+            { title: "Finding Notes for Song", desc: "The ear-musician's guide to deciphering any melody.", color: "from-amber-300 via-yellow-400 to-orange-500", glow: "rgba(253, 224, 71, 0.5)", link: "lesson-22-finding-notes/lesson-22-finding-notes.html", icon: "search" },
+            { title: "Applying Chords", desc: "Layering harmony: Creating accompaniment for vocals.", color: "from-green-400 via-emerald-500 to-teal-600", glow: "rgba(74, 222, 128, 0.5)", link: "lesson-23-applying-chords/lesson-23-applying-chords.html", icon: "layout" },
+            { title: "Intro and Interludes", desc: "Professional openings and bridges to wow your audience.", color: "from-purple-400 via-fuchsia-500 to-pink-600", glow: "rgba(192, 38, 211, 0.5)", link: "lesson-24-intros/lesson-24-intros.html", icon: "door-open" },
+            { title: "Dynamic Voicing", desc: "Expression through volume and weight on the keys.", color: "from-blue-600 via-indigo-700 to-purple-800", glow: "rgba(37, 99, 235, 0.5)", link: "lesson-25-dynamics/lesson-25-dynamics.html", icon: "volume-2" },
+            { title: "Jazz Basics", desc: "Intro to swings, 7th chords, and cool blue notes.", color: "from-orange-600 via-amber-700 to-red-800", glow: "rgba(234, 88, 12, 0.5)", link: "lesson-26-jazz/lesson-26-jazz.html", icon: "glass-water" },
+            { title: "Pedal Technique", desc: "Using the sustain pedal for a rich, ringing piano sound.", color: "from-cyan-500 via-sky-600 to-blue-700", glow: "rgba(6, 182, 212, 0.5)", link: "lesson-27-pedal/lesson-27-pedal.html", icon: "anchor" },
+            { title: "Finger Speed", desc: "Drills and exercises for rapid, clean performances.", color: "from-red-500 via-orange-500 to-yellow-500", glow: "rgba(239, 68, 68, 0.5)", link: "lesson-28-speed/lesson-28-speed.html", icon: "zap" },
+            { title: "Sight Reading II", desc: "Advanced notation reading for classical masterpieces.", color: "from-emerald-600 via-green-700 to-teal-800", glow: "rgba(5, 150, 105, 0.5)", link: "lesson-29-sight-reading/lesson-29-sight-reading.html", icon: "eye" },
+            { title: "Master Graduation", desc: "The final showcase: Combine all 30 lessons into one song.", color: "from-yellow-400 via-amber-500 to-orange-600", glow: "rgba(250, 204, 21, 0.6)", link: "lesson-30-graduation/lesson-30-graduation.html", icon: "graduation-cap" }
+        ];
+
+        const container = document.getElementById('cards-container');
+
+        lessons.forEach((lesson, index) => {
+            const card = document.createElement('div');
+            card.className = `lesson-card group p-6 rounded-3xl flex flex-col justify-between`;
+            
+            card.innerHTML = `
+                <div class="mb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${lesson.color} flex items-center justify-center text-lg font-black shadow-lg shadow-black/40">
+                            ${index + 1}
+                        </div>
+                        <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover:text-white/90 group-hover:border-white/30 transition-all">
+                            <i data-lucide="${lesson.icon}" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-black mb-2 leading-tight tracking-tight">
+                        ${lesson.title}
+                    </h3>
+                    <p class="text-gray-300 text-xs leading-relaxed opacity-70 group-hover:opacity-100 transition-opacity">
+                        ${lesson.desc}
+                    </p>
+                </div>
+                <a href="${lesson.link}" 
+                    class="super-glossy-btn group/btn" 
+                    style="--btn-gradient: linear-gradient(135deg, ${lesson.color.split(' ')[1].replace('via-', '')}, ${lesson.color.split(' ')[2].replace('to-', '')}); --glow-color: ${lesson.glow}">
+                    Open Lesson
+                </a>
+            `;
+            container.appendChild(card);
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Fetch Header
+        fetch("/header.html")
+            .then(res => res.text())
+            .then(data => {
+                const headerEl = document.getElementById("globalHeader");
+                if (headerEl) headerEl.innerHTML = data;
+            })
+            .catch(err => console.log("Header not found or error loading."));
+    </script>
+</body>
+>>>>>>> 866cef3 (home index update)
 </html>

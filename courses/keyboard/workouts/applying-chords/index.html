@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Keyboard Workout - Quiz Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chord-select {
+            width: 45px;
+            height: 28px;
+            text-align: center;
+            border: 2px solid #3b82f6;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #1e40af;
+            background-color: #eff6ff;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+            appearance: none;
+            cursor: pointer;
+            text-align-last: center;
+        }
+        @media (min-width: 640px) {
+            .chord-select {
+                width: 60px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+        }
+        .chord-select.correct {
+            border-color: #10b981 !important;
+            background-color: #ecfdf5 !important;
+            color: #065f46 !important;
+        }
+        .chord-select.wrong {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            color: #991b1b !important;
+        }
+        .note-display {
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 0.02em;
+            font-weight: 700;
+            white-space: nowrap;
+            line-height: 1;
+        }
+        .lyrics-line {
+            font-size: 0.95rem;
+            color: #374151;
+            line-height: 1;
+            margin-top: 2px;
+        }
+        .notes-container::-webkit-scrollbar {
+            height: 3px;
+        }
+        .notes-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-2 sm:p-4">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <!-- Header -->
+        <header class="bg-indigo-700 text-white p-4">
+            <h1 class="text-xl font-bold uppercase tracking-tight">Chord Quiz Workout</h1>
+            <p class="text-indigo-100 text-xs italic">Key: C Major (C, F, G)</p>
+        </header>
+
+        <!-- Status Bar -->
+        <div class="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center no-print">
+            <span id="score-display" class="text-xs font-bold text-indigo-700">Select the correct chords!</span>
+            <button onclick="resetQuiz()" class="text-indigo-700 hover:text-indigo-900 text-[10px] font-bold uppercase">
+                Reset
+            </button>
+        </div>
+
+        <!-- Song Content -->
+        <main class="p-4 sm:p-6 space-y-8">
+            
+            <div class="space-y-8">
+                <!-- Line 1: This is the day -->
+                <div class="flex flex-col">
+                    <div class="notes-container flex items-end overflow-x-auto pb-1">
+                        <!-- Spacing tip: use ml-X to move horizontal. ml-4 = 16px, ml-10 = 40px -->
+                        <div class="flex flex-col items-center flex-shrink-0 ml-5">
+                            <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">C,C,D,E</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-shrink-0 ml-10">
+                            <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">C,C,D,E </span>
+                        </div>
+                    </div>
+                    <p class="lyrics-line font-medium text-gray-800">This is the day, this is the day</p>
+                </div>
+
+                <!-- Line 2: That the Lord has made -->
+                <div class="flex flex-col">
+                    <div class="notes-container flex items-end overflow-x-auto pb-1">
+                        <div class="flex flex-col items-center flex-shrink-0 ml-10">
+                            <select class="chord-select" data-answer="G" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">F,F,E,D,D </span>
+                        </div>
+                        <div class="flex flex-col items-center flex-shrink-0 ml-16">
+                            <select class="chord-select" data-answer="G" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">F,F,E,D,D </span>
+                        </div>
+                    </div>
+                    <p class="lyrics-line font-medium text-gray-800">That the Lord has made, that the Lord has made</p>
+                </div>
+
+                <!-- Line 3: We will rejoice -->
+                <div class="flex flex-col">
+                    <div class="notes-container flex items-end overflow-x-auto pb-1">
+                        <div class="flex flex-col items-center flex-shrink-0 ml-2">
+                            <select class="chord-select" data-answer="G" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">B,B,C,D,</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-shrink-0 ml-12">
+                            <select class="chord-select" data-answer="G" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">B,B,C,D,</span>
+                        </div>
+                    </div>
+                    <p class="lyrics-line font-medium text-gray-800">We will rejoice, we will rejoice</p>
+                </div>
+
+                <!-- Line 4: And be glad in it -->
+                <div class="flex flex-col">
+                    <div class="notes-container flex items-end overflow-x-auto pb-1">
+                        <div class="flex flex-col items-center flex-shrink-0 ml-2">
+                            <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">E,F,E,D,C,</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-shrink-0 ml-10">
+                            <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                <option value="">?</option>
+                                <option value="C">C</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <span class="note-display text-sm sm:text-base mt-1 text-blue-700">E,F,E,D,C,</span>
+                        </div>
+                    </div>
+                    <p class="lyrics-line font-medium text-gray-800">And be glad in it, and be glad in it</p>
+                </div>
+
+                <!-- Chorus -->
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="flex flex-col">
+                        <div class="notes-container flex items-end overflow-x-auto pb-1">
+                            <div class="flex flex-col items-center flex-shrink-0 ml-8">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">C,A,A,A,A,A,A</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-shrink-0 ml-16">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">G,E,D,C,</span>
+                            </div>
+                           
+                        </div>
+                        <p class="lyrics-line font-bold text-indigo-900 bg-indigo-50 px-2 py-1 rounded mt-1">
+                            For this is the day that the Lord has made
+                        </p>
+                    </div>
+                       <!-- Chorus -->
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="flex flex-col">
+                        <div class="notes-container flex items-end overflow-x-auto pb-1">
+                            <div class="flex flex-col items-center flex-shrink-0 ml-8">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">A,A,A,A,A,A</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-shrink-0 ml-12">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">G,E,D,C,</span>
+                            </div>
+                           
+                        </div>
+                        <p class="lyrics-line font-bold text-indigo-900 bg-indigo-50 px-2 py-1 rounded mt-1">
+                            We Will Rejoice and be glad in it
+                        </p>
+                    </div>
+                </div>
+                  <!-- Chorus -->
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="flex flex-col">
+                        <div class="notes-container flex items-end overflow-x-auto pb-1">
+                            <div class="flex flex-col items-center flex-shrink-0 ml-8">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">C,C,D,E,</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-shrink-0 ml-12">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">C,C,D,E,</span>
+                            </div>
+                           
+                        </div>
+                        <p class="lyrics-line font-bold text-indigo-900 bg-indigo-50 px-2 py-1 rounded mt-1">
+                            This is the Day This is the Day
+                        </p>
+                    </div>
+                </div>
+                  <!-- Chorus -->
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="flex flex-col">
+                        <div class="notes-container flex items-end overflow-x-auto pb-1">
+                            <div class="flex flex-col items-center flex-shrink-0 ml-4">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">E,F,E,D,C</span>
+                            </div>
+                            <div class="flex flex-col items-center flex-shrink-0 ml-4">
+                                <select class="chord-select" data-answer="D" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">D</span>
+                            </div>
+                             <div class="flex flex-col items-center flex-shrink-0 ml-4">
+                                <select class="chord-select" data-answer="C" onchange="checkChord(this)">
+                                    <option value="">?</option>
+                                    <option value="C">C</option>
+                                    <option value="F">F</option>
+                                    <option value="G">G</option>
+                                </select>
+                                <span class="note-display text-sm sm:text-base mt-1 text-blue-700">D</span>
+                            </div>
+                           
+                        </div>
+                        <p class="lyrics-line font-bold text-indigo-900 bg-indigo-50 px-2 py-1 rounded mt-1">
+                            That the Lord &nbsp;&nbsp;&nbsp;has &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;made
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="p-4 bg-gray-50 text-[10px] text-gray-400 text-center border-t border-gray-200">
+            RH: Notes | LH: Chords
+        </footer>
+    </div>
+
+    <script>
+        function checkChord(selectElement) {
+            const correctAnswer = selectElement.getAttribute('data-answer');
+            const selectedValue = selectElement.value;
+            if (selectedValue === "") {
+                selectElement.className = "chord-select";
+            } else if (selectedValue === correctAnswer) {
+                selectElement.className = "chord-select correct";
+            } else {
+                selectElement.className = "chord-select wrong";
+            }
+            updateScore();
+        }
+
+        function updateScore() {
+            const selects = document.querySelectorAll('.chord-select');
+            let correctCount = 0;
+            let totalAnswered = 0;
+            selects.forEach(s => {
+                if (s.value !== "") totalAnswered++;
+                if (s.classList.contains('correct')) correctCount++;
+            });
+            const display = document.getElementById('score-display');
+            if (totalAnswered === selects.length) {
+                if (correctCount === selects.length) {
+                    display.innerText = "Perfect! All chords are correct! 🎉";
+                    display.className = "text-xs font-bold text-green-600";
+                } else {
+                    display.innerText = `Keep trying! ${correctCount}/${selects.length} correct.`;
+                    display.className = "text-xs font-bold text-orange-600";
+                }
+            } else {
+                display.innerText = `Progress: ${correctCount} correct so far...`;
+                display.className = "text-xs font-bold text-indigo-700";
+            }
+        }
+
+        function resetQuiz() {
+            const selects = document.querySelectorAll('.chord-select');
+            selects.forEach(s => { s.value = ""; s.className = "chord-select"; });
+            const display = document.getElementById('score-display');
+            display.innerText = "Select the correct chords!";
+            display.className = "text-xs font-bold text-indigo-700";
+        }
+    </script>
+</body>
+</html>

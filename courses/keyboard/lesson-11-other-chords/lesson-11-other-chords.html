@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Lesson 11 - Other Chords</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .lesson-nav {
+  margin-bottom: 12px; /* space below the button */
+  text-align: left;     /* change to center if you want the button centered */
+}
+
+.lesson-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #4fa3ff, #006aff);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+  transition: 0.25s ease;
+}
+
+.lesson-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(0,0,0,0.35);
+}
+    body{
+      
+      min-height:100vh;
+      background:linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%);
+      display:flex;
+      justify-content:center;
+      padding:24px;
+      margin:0;
+      font-family:'Segoe UI',system-ui,sans-serif;
+    }
+
+    .wrapper{
+      width:100%;
+      max-width:1100px;
+      background:rgba(255,255,255,0.92);
+      border-radius:22px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.18);
+      padding:20px 20px 28px;
+      backdrop-filter:blur(10px);
+    }
+
+    h1{
+      text-align:center;
+      font-size:28px;
+      margin:16px 0 8px;
+    }
+
+    .lesson-subtitle{
+      text-align:center;
+      font-size:15px;
+      color:#444;
+      margin-bottom:22px;
+    }
+
+    .video-box{
+      width:100%;
+      max-width:760px;
+      margin:0 auto 30px;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .content-section{
+      margin-top:28px;
+    }
+
+    .section-title{
+      font-size:20px;
+      font-weight:800;
+      margin-bottom:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .lesson-text{
+      font-size:15px;
+      line-height:1.7;
+      color:#333;
+    }
+
+    .practice-list{
+      margin-top:10px;
+      padding-left:18px;
+    }
+
+    .practice-list li{
+      margin-bottom:8px;
+      font-size:15px;
+    }
+
+ .download-box{
+  margin-top:30px;
+  text-align:center;
+}
+
+.download-btn{
+  padding:14px 30px; /* Bigger size */
+  border-radius:999px;
+  border:none;
+  font-size:16px; /* Bigger text */
+  font-weight:700;
+  cursor:pointer;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:#fff;
+  box-shadow:0 8px 18px rgba(0,0,0,0.25);
+  text-decoration:none;
+  display:inline-block;
+  transition:0.25s ease; /* Smooth hover animation */
+}
+
+.download-btn:hover{
+  box-shadow:0 12px 26px rgba(0,0,0,0.35);
+  filter:brightness(1.1);
+  transform:translateY(-2px); /* Slight lift effect */
+}
+
+    .section-title {
+    font-size: 28px;          /* 🔥 Increase or decrease size here */
+    font-weight: 700;
+    color: #af0f19;           /* 🎨 Change title color here */
+    margin: 20px 0 15px 0;    /* ↔️ Control top/bottom margins */
+    text-align: center;       /* 📍 Align center/left/right */
+}
+.lesson-text {
+    font-size: 20px;
+    line-height: 1.7;
+    color: #000000;
+    margin: 20px 0;
+}
+
+.highlight {
+    color: #c2910b;
+    font-weight: 600;
+}
+
+.note {
+    color: #20b3e0;
+    font-weight: 600;
+}
+
+.important {
+    color: #ff7b7b;
+    font-weight: 700;
+    text-decoration: underline;
+}
+.lesson-points ul {
+    margin-left: 40px;     /* 👉 Shift the list to the right */
+    padding-left: 15px;
+    list-style-type: none; /* Remove default bullet */
+    line-height: 1.7;
+    font-size: 18px;
+    color: #ce0606;
+}
+
+.lesson-points li {
+    margin: 4px 0;
+}
+.assignment-box {
+    background: #1f2937;
+    padding: 20px;
+    border-radius: 14px;
+    border-left: 6px solid #4fa3ff;
+    margin: 20px 0;
+    color: #e7e7e7;
+    font-size: 19px;
+    line-height: 1.7;
+}
+
+.assignment-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #7fc8ff;
+    margin-bottom: 10px;
+}
+
+.assignment-text {
+    margin-bottom: 12px;
+}
+
+.assignment-list {
+    margin-left: 25px;
+    padding-left: 10px;
+    list-style-type: none;
+}
+
+.assignment-list li {
+    margin: 6px 0;
+    font-size: 18px;
+}
+
+.highlight {
+    color: #bc9119;
+    font-weight: 600;
+}
+
+.note-range {
+    color: #8be4ff;
+    font-weight: 700;
+}
+
+.important {
+    color: #ff7a7a;
+    font-weight: 700;
+}
+
+.finger {
+    color: #9cff8f;
+    font-weight: 600;
+}
+
+.item {
+    color: #caa9ff;
+    font-weight: 600;
+}
+
+.share {
+    color: #7bfdff;
+    font-weight: 600;
+}
+/* Video Styling */
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    margin: 15px 0;
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+ .iframe-box{
+  width:100%;
+  min-height:900px;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 10px 24px rgba(0,0,0,0.2);
+}
+.iframe-box iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+@media (max-width:768px){
+  .iframe-box{
+    min-height:1200px; /* mobile needs more height */
+  }
+}
+/* ✅ BACK TO TOP BUTTON */
+#backToTop{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  background:linear-gradient(135deg,#4a00e0,#8e2de2);
+  color:#fff;
+  padding:12px 18px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  display:none;                 /* ✅ Hidden by default */
+  z-index:9999;
+  transition:all 0.3s ease;
+}
+
+#backToTop:hover{
+  transform:translateY(-4px) scale(1.05);
+  box-shadow:0 14px 30px rgba(0,0,0,0.4);
+  filter:brightness(1.1);
+}
+  </style>
+</head>
+
+<body>
+
+  <div class="wrapper">
+
+    <!-- ✅ GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+<div class="lesson-nav">
+  <a href="/courses/keyboard/index.html" class="lesson-btn">🏠 Back to All Lessons</a>
+</div>
+    <h1>🎼 Lesson 11 - Other Chords</h1>
+    <div class="lesson-subtitle">
+      Learn more chords other than major and minor.
+    </div>
+
+    <!-- ✅ VIDEO SECTION -->
+    <div class="video-box">
+      <iframe width="100%" height="380"
+        src="https://www.youtube.com/embed/TM51XT8fAG4"
+        frameborder="0"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <br></br>
+ 
+<!-- =========================
+     OTHER CHORD TYPES
+========================= -->
+<div style="
+    max-width:920px;
+    margin:40px auto;
+    background:#0b1220;
+    padding:36px;
+    border-radius:20px;
+    font-family:'Poppins', system-ui, sans-serif;
+    color:#e5e7eb;
+    line-height:1.8;
+    box-shadow:0 20px 50px rgba(0,0,0,0.45);
+">
+
+    <!-- Title -->
+    <h1 style="
+        text-align:center;
+        font-size:34px;
+        font-weight:700;
+        color:#f8fafc;
+        margin-bottom:12px;
+    ">
+        Other Chord Types
+    </h1>
+
+    <p style="
+        text-align:center;
+        font-size:19px;
+        color:#9ca3af;
+        margin-bottom:32px;
+    ">
+        Expanding harmony using <strong style="color:#38bdf8;">extended</strong>,
+        <strong style="color:#22c55e;">suspended</strong>,
+        and <strong style="color:#f472b6;">altered</strong> chords
+    </p>
+
+    <!-- Theory Intro -->
+    <div style="margin-bottom:28px;">
+        <h2 style="color:#38bdf8; font-size:24px; margin-bottom:6px;">
+            Why More Chords?
+        </h2>
+
+        <p style="font-size:18px;">
+            Basic <strong>Major</strong> and <strong>Minor</strong> chords form the foundation,
+            but music becomes richer when we add
+            <strong style="color:#facc15;">extra notes</strong>
+            or
+            <strong style="color:#facc15;">change intervals</strong>.
+        </p>
+
+        <p style="font-size:18px; margin-top:10px;">
+            These chords add
+            <strong style="color:#22c55e;">color</strong>,
+            <strong style="color:#22c55e;">tension</strong>,
+            and
+            <strong style="color:#22c55e;">movement</strong>
+            to songs.
+        </p>
+    </div>
+
+    <!-- 7th, 6th, 9th -->
+    <div style="
+        background:#020617;
+        padding:22px;
+        border-radius:14px;
+        margin-bottom:28px;
+    ">
+        <h2 style="color:#a78bfa; font-size:24px;">
+            Extended Chords
+        </h2>
+
+        <p style="font-size:18px;">
+            These chords extend beyond basic triads.
+        </p>
+
+        <p style="font-size:18px; margin-top:10px;">
+            <strong style="color:#facc15;">Major 7th</strong> → 1–3–5–7<br>
+            C Major 7 → <strong>C E G B</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong style="color:#facc15;">Dominant 7th</strong> → 1–3–5–♭7<br>
+            C7 → <strong>C E G B♭</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong style="color:#facc15;">6th Chord</strong> → 1–3–5–6<br>
+            C6 → <strong>C E G A</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong style="color:#facc15;">9th Chord</strong> → 1–3–5–♭7–9<br>
+            C9 → <strong>C E G B♭ D</strong>
+        </p>
+    </div>
+
+    <!-- Suspended Chords -->
+    <div style="
+        background:#052e1b;
+        padding:24px;
+        border-radius:16px;
+        margin-bottom:30px;
+        border-left:6px solid #22c55e;
+    ">
+        <h2 style="color:#22c55e; font-size:24px;">
+            Suspended Chords (Sus)
+        </h2>
+
+        <p style="font-size:18px;">
+            Suspended chords remove the
+            <strong style="color:#f472b6;">3rd</strong>
+            and replace it.
+        </p>
+
+        <p style="font-size:18px;">
+            <strong>Sus2</strong> → 1–2–5<br>
+            C sus2 → <strong>C D G</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong>Sus4</strong> → 1–4–5<br>
+            C sus4 → <strong>C F G</strong>
+        </p>
+
+        <p style="font-size:17px; color:#d1fae5;">
+            Suspended chords sound open and unresolved.
+        </p>
+    </div>
+
+    <!-- Diminished & Augmented -->
+    <div style="
+        background:#1e293b;
+        padding:24px;
+        border-radius:18px;
+        margin-bottom:28px;
+        border-left:6px solid #38bdf8;
+    ">
+        <h2 style="color:#38bdf8; font-size:24px;">
+            Altered Triads
+        </h2>
+
+        <p style="font-size:18px;">
+            <strong style="color:#f472b6;">Diminished</strong> → 1–♭3–♭5<br>
+            C dim → <strong>C E♭ G♭</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong style="color:#facc15;">Augmented</strong> → 1–3–♯5<br>
+            C aug → <strong>C E G♯</strong>
+        </p>
+
+        <p style="font-size:17px; color:#e0f2fe;">
+            These chords create strong tension and motion.
+        </p>
+    </div>
+
+    <!-- Flat chords -->
+    <div style="
+        background:#020617;
+        padding:24px;
+        border-radius:16px;
+        margin-bottom:30px;
+    ">
+        <h2 style="color:#a78bfa; font-size:24px;">
+            Flat & Altered Notes
+        </h2>
+
+        <p style="font-size:18px;">
+            <strong>♭5</strong> lowers the fifth (used in jazz & blues).<br>
+            Example: C7♭5 → <strong>C E G♭ B♭</strong>
+        </p>
+
+        <p style="font-size:18px;">
+            <strong>♭6</strong> adds darker color.<br>
+            Example: C♭6 → <strong>C E♭ G A♭</strong>
+        </p>
+
+        <p style="font-size:17px; color:#c7d2fe;">
+            These chords are common in jazz, gospel, and cinematic music.
+        </p>
+    </div>
+
+    <!-- Summary -->
+    <div style="
+        background:#1e293b;
+        padding:24px;
+        border-radius:18px;
+        border:2px dashed #38bdf8;
+    ">
+        <h2 style="
+            font-size:24px;
+            color:#38bdf8;
+            text-align:center;
+        ">
+            Summary
+        </h2>
+
+        <p style="font-size:18px; text-align:center;">
+            All advanced chords are created by
+            <strong style="color:#22c55e;">adding</strong>,
+            <strong style="color:#22c55e;">removing</strong>,
+            or
+            <strong style="color:#22c55e;">altering</strong>
+            notes from the Major scale.
+        </p>
+
+        <p style="font-size:17px; color:#e0f2fe; text-align:center;">
+            Understanding formulas is more important than memorizing names.
+        </p>
+    </div>
+
+</div>
+<!-- =========================
+     END OF OTHER CHORD TYPES
+========================= -->
+
+
+
+<!-- ✅ INTERACTIVE EXERCISE -->
+<div class="content-section">
+  <div class="section-title">📝 Practice Exercise: Major Chord Formation</div>
+  <div style="
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 24px rgba(0,0,0,0.2);
+    margin-top:16px;
+  ">
+    <iframe
+      src="major-chord-progression-exercise.html"
+      style="width:100%;height:100%;border:none;"
+      loading="lazy">
+    </iframe>
+  </div>
+
+ <br></br>
+
+
+    <!-- ✅ PRACTICE SECTION -->
+    <div class="content-section">
+      <div class="section-title">🎯 Practice for Today</div>
+      <ul class="practice-list">
+        <li>Play all other chords with right finger numbers.</li>
+        <li>Play chords slowly using your right hand.</li>
+        <li>Repeat the same using your left hand and both hand</li>
+      </ul>
+    </div>
+<div class="assignment-box">
+  <h2 class="assignment-title">📘 Assignment Lesson 11 Other Chords</h2>
+
+  <p class="assignment-text">
+    🎹 In this assignment, you will practice Ear Training 
+    <span class="note-range">Two Notes</span>
+  </p>
+
+  <p class="assignment-text">
+    📺 Assignment video is provided below.  
+    You will complete <span class="highlight"></span>:
+  </p>
+
+  <ul class="assignment-list">
+  </ul>
+
+  <p class="assignment-text">
+    👉 Watch the sample video here:
+  </p>
+
+  <div class="video-wrapper">
+    <iframe 
+        src="https://www.youtube.com/embed/playlist?list=PLAFg6ua8MUOhMqjFXvPBCN_4CT7AJQg-C" 
+        title="Sample Exercise Video"
+        frameborder="0" 
+        allowfullscreen>
+    </iframe>
+  </div>
+
+  <p class="assignment-text">
+    📤 After recording your practice videos, please 
+    <span class="share">share them in the WhatsApp group</span> where you are already a member.
+  </p>
+</div>
+    <!-- ✅ DOWNLOAD SECTION -->
+    <div class="download-box">
+      <a href="https://drive.google.com/drive/folders/1oivqpA49vvIQOxJMuGV_E9nJUrHa96IM?usp=drive_link"
+         target="_blank"
+         class="download-btn">
+        <i class="fa-solid fa-folder-open"></i> Download Lesson 11 Resources
+      </a>
+    </div>
+
+<!-- ✅ BACK TO TOP BUTTON -->
+<div id="backToTop">⬆ Back to Top</div>
+  </div>
+
+  <!-- ✅ LOAD SAME GLOBAL HEADER -->
+  <script>
+    fetch("../../../header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      });
+  </script>
+<script>
+const backToTop = document.getElementById("backToTop");
+
+/* ✅ SHOW/HIDE ON SCROLL */
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    backToTop.style.display = "block";
+  } else {
+    backToTop.style.display = "none";
+  }
+});
+
+/* ✅ SMOOTH SCROLL TO TOP */
+backToTop.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+});
+</script>
+</body>
+</html>
