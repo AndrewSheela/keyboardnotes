@@ -211,9 +211,11 @@ body{font-family:'Outfit',sans-serif;background:var(--app-bg);min-height:100vh;c
   .header-row3{gap:14px;}
   :root{--fs-note:12px;--fs-lyric:12px;--fs-chord:10px;--fs-bar:13px;}
 }
+.video-card { max-width: 800px; margin: 20px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); } .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; } .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 </style>
 </head>
 <body>
+  <div id="globalHeader"></div>
 <!-- TOOLBAR -->
 <div id="toolbar" style="display:flex">
   <div class="tb-inner">
@@ -276,6 +278,22 @@ body{font-family:'Outfit',sans-serif;background:var(--app-bg);min-height:100vh;c
     </div>
   </div>
 </div>
+<div style="text-align:center; margin:40px 0;">
+    <a href="/keyboard-notes/music-sheet/telugu-songs/Adbhutam-cheyumaya-ms.html" 
+       target="_blank" 
+       style="background-color:#2d89ef; color:white; padding:25px 80px; text-decoration:none; border-radius:12px; font-weight:bold; font-size:1.5rem; display:inline-block; min-width:350px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transition: transform 0.2s;">
+       🎼 Click Here For Sheet Music
+    </a>
+</div>
+<br></br>  
+<div class="video-card"><div class="video-container"><iframe src="https://www.youtube.com/embed/fiI8BW3HptQ" title="Yega Sinthaye Yega Snegame Keyboard Notes" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div>
+
+<div id="footer"></div>
+
+<script>
+fetch("/header.html").then(res => res.text()).then(data => { document.getElementById("globalHeader").innerHTML = data; }); 
+fetch("/footer.html").then(res => res.text()).then(data => { document.getElementById("footer").innerHTML = data; });
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
