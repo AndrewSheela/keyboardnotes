@@ -365,7 +365,8 @@
   </div>
 </div>
 
-<!-- ✅ LOAD HEADER -->
+<!-- ✅ LOAD HEADER & FOOTER -->
+<div id="globalFooter"></div>
 <script>
 fetch("/header.html")
   .then(res => res.text())
@@ -377,6 +378,13 @@ fetch("/header.html")
     document.body.appendChild(script);
   })
   .catch(err => console.log("Header load ignored for preview purposes."));
+
+fetch("/footer.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("globalFooter").innerHTML = data;
+  })
+  .catch(err => console.log("Footer load ignored for preview purposes."));
 </script>
 
 </body>

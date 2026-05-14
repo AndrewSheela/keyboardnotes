@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Disclaimer - Christian Songs Keyboard Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #4e54c8, #8f94fb, #ff758c);
+      --text-gradient: linear-gradient(90deg, #ff512f, #dd2476, #36d1dc, #5b86e5);
+      --accent-color: #dd2476;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      background: var(--primary-gradient);
+      background-size: 400% 400%;
+      animation: bgMove 12s ease infinite;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      color: #333;
+    }
+
+    @keyframes bgMove {
+      0% { background-position: 0% 50% }
+      50% { background-position: 100% 50% }
+      100% { background-position: 0% 50% }
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      padding: 40px;
+      box-sizing: border-box;
+      margin-bottom: 40px;
+    }
+
+    .last-updated {
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+      margin-top: -10px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 900;
+      background: var(--text-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 30px;
+      font-size: 24px;
+      color: #1a2a6c;
+      border-left: 5px solid var(--accent-color);
+      padding-left: 15px;
+      line-height: 1.2;
+    }
+
+    p, li {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #444;
+      margin-bottom: 15px;
+    }
+
+    ul {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #ff512f, #dd2476);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin: 25px 0;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(221, 36, 118, 0.3);
+    }
+
+    .content-section {
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .wrapper { padding: 20px; }
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <!-- GLOBAL HEADER -->
+    <div id="globalHeader"></div>
+
+    <h1>Disclaimer</h1>
+    <p class="last-updated">Last Updated: <span id="currentDate"></span></p>
+
+    <div class="highlight">
+      The information provided by JGeneration Ministry on <strong>jgeneration.org</strong> is for general educational and worship purposes only.
+    </div>
+
+    <section class="content-section">
+      <h2>1. Educational & Worship Purpose</h2>
+      <p>
+        All musical notations, lyrics, chords, and transcriptions provided on this website are created by ear for educational purposes, personal study, and church worship services. They represent the transcriber's interpretation of the original musical compositions.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>2. Copyright & Fair Use</h2>
+      <p>
+        JGeneration Ministry does not claim ownership over the original lyrics, melodies, or underlying musical compositions of the songs featured on this website. All original copyrights belong to their respective authors, composers, and publishers. We provide these transcriptions freely under the doctrine of Fair Use to assist musicians in learning and playing music for religious and educational contexts.
+      </p>
+      <p>
+        If you are a copyright owner and believe that any content on this site infringes upon your copyright, please contact us immediately, and we will address your concerns or remove the content.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>3. No Warranty on Accuracy</h2>
+      <p>
+        While we strive to provide accurate and high-quality notes and chords, we make no representation or warranty of any kind, express or implied, regarding the absolute accuracy, adequacy, validity, or completeness of any information on the site. Music is subjective, and interpretations may vary.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>4. External Links Disclaimer</h2>
+      <p>
+        The Site may contain (or you may be sent through the Site) links to other websites or content belonging to or originating from third parties (such as YouTube videos or Google Forms). Such external links are not investigated, monitored, or checked for accuracy, adequacy, validity, reliability, availability, or completeness by us.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>5. Affiliation Disclaimer</h2>
+      <p>
+        We are an independent Christian music ministry. We are not officially affiliated, associated, authorized, endorsed by, or in any way officially connected with any of the artists, bands, or record labels whose songs are transcribed on this website.
+      </p>
+    </section>
+
+    <!-- GLOBAL FOOTER WILL BE LOADED HERE -->
+    <div id="globalFooter"></div>
+
+  </div>
+
+  <script>
+    // Set dynamic dates
+    const now = new Date();
+    document.getElementById("currentDate").textContent = now.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+
+    // Load Global Header
+    fetch("/header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+      })
+      .catch(err => console.log("Header not found"));
+
+    // Load Global Footer
+    fetch("/footer.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalFooter").innerHTML = data;
+      })
+      .catch(err => console.log("Footer not found"));
+  </script>
+</body>
+</html>
