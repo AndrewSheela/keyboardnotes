@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Lab - Master Studio Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-indigo-500/30">
+
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-4 py-3 md:px-6 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-2.5">
+            <div class="h-2.5 w-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
+            <h1 class="text-lg font-bold tracking-wider text-slate-200">RHYTHM<span class="text-emerald-400">LAB</span></h1>
+        </div>
+        <div class="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1 rounded-full border border-slate-800">
+            Playback Engine: <span id="engine-status" class="text-slate-400 font-bold uppercase">Idle</span>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 items-start">
+        
+        <div class="space-y-4 md:space-y-6 lg:col-span-1">
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-4">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">🎵 Song Library</h2>
+                <div class="space-y-2.5">
+                    <label class="block text-xs text-slate-400">Select Practice Track</label>
+                    <select id="library-song-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 font-medium text-sm focus:outline-none focus:border-emerald-500 cursor-pointer">
+                        </select>
+                </div>
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-850 grid grid-cols-3 gap-1 text-center text-xs">
+                    <div>
+                        <span class="block text-slate-500 text-[10px] uppercase">Orig BPM</span>
+                        <span id="meta-orig-bpm" class="font-mono font-bold text-slate-300">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-slate-500 text-[10px] uppercase">Meter</span>
+                        <span id="meta-meter" class="font-mono font-bold text-indigo-400">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-slate-500 text-[10px] uppercase">Tuning</span>
+                        <span id="meta-pitch-stretch" class="font-mono font-bold text-emerald-400">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-4">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">⚙️ Control Deck</h2>
+                
+                <div class="grid grid-cols-2 gap-3.5">
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-slate-400 block">Target BPM</label>
+                        <input id="bpm" type="number" min="40" max="240" value="120" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-400 font-bold font-mono focus:outline-none focus:border-emerald-500 text-lg">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-slate-400 block">Offset Calibration</label>
+                        <input id="offset" type="number" min="-500" max="500" value="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-indigo-400 font-bold font-mono focus:outline-none focus:border-indigo-500 text-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    <button id="start-button" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg active:scale-95 transition-all text-base flex items-center justify-center space-x-2 cursor-pointer">
+                        <span>▶ PLAY</span>
+                    </button>
+                    <button id="stop-button" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all text-base flex items-center justify-center space-x-2 cursor-pointer">
+                        <span>■ STOP</span>
+                    </button>
+                </div>
+
+                <div class="border-t border-slate-800 pt-3 space-y-3.5">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-xs text-slate-400 font-bold uppercase block">A-B Loop Engine</span>
+                            <span class="text-[10px] text-slate-500">Syncs bars and beats dynamically</span>
+                        </div>
+                        <button id="ab-loop-toggle" class="bg-slate-950 text-rose-400 border border-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all">OFF</button>
+                    </div>
+                    
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-850 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 items-center">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Loop Start (A)</label>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-xs text-slate-600 font-mono">M:</span>
+                                    <input id="a-measure-input" type="number" min="1" max="200" value="1" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-slate-200">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">&nbsp;</label>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-xs text-slate-600 font-mono">B:</span>
+                                    <input id="a-beat-input" type="number" min="1" max="800" value="1" step="0.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-rose-400">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 items-center border-t border-slate-800/60 pt-2">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Loop End (B)</label>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-xs text-slate-600 font-mono">M:</span>
+                                    <input id="b-measure-input" type="number" min="1" max="200" value="2" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-slate-200">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">&nbsp;</label>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-xs text-slate-600 font-mono">B:</span>
+                                    <input id="b-beat-input" type="number" min="1" max="800" value="5" step="0.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-rose-400">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-4 md:space-y-6 w-full">
+            
+            <div class="bg-slate-900 border border-slate-850 rounded-3xl p-4 md:p-6 shadow-2xl space-y-5">
+                <div class="flex justify-between items-center w-full">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Rhythm Flow Studio</h3>
+                        <p class="text-[11px] text-slate-500">Auto-detects meter constraints natively</p>
+                    </div>
+                    <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-850 space-x-1">
+                        <button id="div-4" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer transition-all">1/4 Beats</button>
+                        <button id="div-8" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all">1/8 Notes (&)</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 rounded-2xl border border-slate-850 p-3 md:p-4 space-y-2">
+                    <canvas id="metronome-canvas" width="700" height="95" class="w-full rounded-xl block"></canvas>
+                    
+                    <div id="rhythm-pads-container" class="grid gap-2 pt-1 transition-all">
+                        </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-3">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Active Lyric Prompter</h3>
+                <div class="h-32 bg-slate-950 rounded-xl border border-slate-850 flex flex-col items-center justify-center px-4 py-6 text-center relative overflow-hidden">
+                    <div id="lyric-line-prev" class="text-xs text-slate-600 font-medium transition-all duration-300"></div>
+                    <div id="lyric-line-active" class="text-base md:text-xl font-bold text-emerald-400 transition-all duration-300 my-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.2)]">Select a track and press play...</div>
+                    <div id="lyric-line-next" class="text-xs text-slate-600 font-medium transition-all duration-300"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Track Library Array supporting multiple Time Signatures
+        const trackLibrary = [
+            {
+                id: "Song_1",
+                name: "Nandriyaal Thuthipaadu",
+                filePath: "songs/Nandriyaal-Thuthipadu.mp3",
+                nativeBpm: 96,
+                beatsPerBar: 4,  
+                lyrics: [
+                    { beat: 1.0, text: "Nandriyaal thuthipaadu Nam Yesuvai" },
+                    { beat: 9.0, text: "Naavaalae Endrum Paadu" }
+                ]
+            },
+            {
+                id: "Song_2",
+                name: "Thaen Inimaiyilum",
+                filePath: "songs/Thaen-Inimaiyilum.mp3",
+                nativeBpm: 96,
+                beatsPerBar: 4,  
+                lyrics: [
+                    { beat: 1.0, text: "Thaen Inimaiyilum Yesuvin Naamam" },
+                    { beat: 4.0, text: "Downbeat lands cleanly on Pad 1 every bar" }
+                ]
+            },
+            {
+                id: "Song_3",
+                name: "Ennalumae Thuthippai",
+                filePath: "songs/Ennalumae-Thuthippai.mp3",
+                nativeBpm: 110,
+                beatsPerBar: 3,  
+                lyrics: [
+                    { beat: 1.0, text: "Ennalumae Thuthippai" },
+                    { beat: 8.0, text: "Count: 1-2-3-4-5-6-7" }
+                ]
+            }
+        ];
+
+        // Global System Orchestration States
+        let audioCtx = null;
+        let isRunning = false;
+        let targetBpm = 96;
+        let offsetMs = 0;
+        let subdivision = 4; 
+        
+        let startBeatTime = 0;
+        let currentBeat = 1.0;
+        let totalBeatsInLoop = 800; 
+        let useLoopEngine = false;
+        let loopStartBeat = 1.0;
+        let loopEndBeat = 5.0;
+
+        let selectedTrack = trackLibrary[0];
+        let audioBuffer = null;
+        let activeAudioSource = null;
+
+        // DOM UI Mapping References
+        const selectElement = document.getElementById('library-song-select');
+        const origBpmDisplay = document.getElementById('meta-orig-bpm');
+        const meterDisplay = document.getElementById('meta-meter');
+        const stretchDisplay = document.getElementById('meta-pitch-stretch');
+        const bpmInput = document.getElementById('bpm');
+        const offsetInput = document.getElementById('offset');
+        const startBtn = document.getElementById('start-button');
+        const stopBtn = document.getElementById('stop-button');
+        const loopToggleBtn = document.getElementById('ab-loop-toggle');
+        
+        // Loop Interface Node References
+        const aMeasureInput = document.getElementById('a-measure-input');
+        const aBeatInput = document.getElementById('a-beat-input');
+        const bMeasureInput = document.getElementById('b-measure-input');
+        const bBeatInput = document.getElementById('b-beat-input');
+
+        const padsContainer = document.getElementById('rhythm-pads-container');
+        const engineStatus = document.getElementById('engine-status');
+
+        const lyricPrev = document.getElementById('lyric-line-prev');
+        const lyricActive = document.getElementById('lyric-line-active');
+        const lyricNext = document.getElementById('lyric-line-next');
+
+        const mCanvas = document.getElementById('metronome-canvas');
+        const mCtx = mCanvas.getContext('2d');
+
+        function initLibraryUI() {
+            selectElement.innerHTML = "";
+            trackLibrary.forEach(track => {
+                const opt = document.createElement('option');
+                opt.value = track.id;
+                opt.textContent = `${track.name}`;
+                selectElement.appendChild(opt);
+            });
+            loadLibraryTrack(trackLibrary[0].id);
+        }
+
+        selectElement.addEventListener('change', (e) => loadLibraryTrack(e.target.value));
+
+        function loadLibraryTrack(trackId) {
+            stopPlayback();
+            selectedTrack = trackLibrary.find(t => t.id === trackId);
+            
+            origBpmDisplay.textContent = selectedTrack.nativeBpm + " BPM";
+            meterDisplay.textContent = `${selectedTrack.beatsPerBar}/4`;
+            bpmInput.value = selectedTrack.nativeBpm;
+            targetBpm = selectedTrack.nativeBpm;
+            
+            // Explicitly requested setup parameters applied safely:
+            totalBeatsInLoop = selectedTrack.beatsPerBar * 200; 
+            aMeasureInput.value = 1;
+            aBeatInput.value = 1;
+            bMeasureInput.value = 2;
+            bBeatInput.value = selectedTrack.beatsPerBar + 1; 
+            
+            loopStartBeat = 1;
+            loopEndBeat = selectedTrack.beatsPerBar + 1;
+
+            calculateTimeStretchInfo();
+            updateLyricsDisplay(1.0);
+            
+            engineStatus.textContent = "Loading Track...";
+            engineStatus.className = "text-amber-400 font-bold uppercase animate-pulse";
+
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            fetch(selectedTrack.filePath)
+                .then(res => {
+                    if (!res.ok) throw new Error("Path not found");
+                    return res.arrayBuffer();
+                })
+                .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+                .then(decodedBuffer => {
+                    audioBuffer = decodedBuffer;
+                    engineStatus.textContent = "Ready";
+                    engineStatus.className = "text-emerald-400 font-bold uppercase";
+                })
+                .catch(err => {
+                    engineStatus.textContent = "Error Loading Path";
+                    engineStatus.className = "text-rose-400 font-bold uppercase";
+                });
+        }
+
+        // Two-Way Interactive Formula Mapping Algorithms
+        function syncFromMeasureToBeat(point) {
+            const bpb = selectedTrack.beatsPerBar;
+            if (point === 'A') {
+                let measureVal = Math.max(1, parseInt(aMeasureInput.value) || 1);
+                let calculatedBeat = ((measureVal - 1) * bpb) + 1;
+                aBeatInput.value = calculatedBeat;
+                loopStartBeat = calculatedBeat;
+            } else {
+                let measureVal = Math.max(1, parseInt(bMeasureInput.value) || 1);
+                let calculatedBeat = ((measureVal - 1) * bpb) + 1;
+                bBeatInput.value = calculatedBeat;
+                loopEndBeat = calculatedBeat;
+            }
+            if(isRunning) updateLyricsDisplay(currentBeat);
+        }
+
+        function syncFromBeatToMeasure(point) {
+            const bpb = selectedTrack.beatsPerBar;
+            if (point === 'A') {
+                let beatVal = Math.max(1, parseFloat(aBeatInput.value) || 1);
+                loopStartBeat = beatVal;
+                aMeasureInput.value = Math.floor((beatVal - 1) / bpb) + 1;
+            } else {
+                let beatVal = Math.max(1, parseFloat(bBeatInput.value) || 1);
+                loopEndBeat = beatVal;
+                bMeasureInput.value = Math.floor((beatVal - 1) / bpb) + 1;
+            }
+            if(isRunning) updateLyricsDisplay(currentBeat);
+        }
+
+        // Setup Panel Event Listeners
+        aMeasureInput.addEventListener('input', () => syncFromMeasureToBeat('A'));
+        bMeasureInput.addEventListener('input', () => syncFromMeasureToBeat('B'));
+        aBeatInput.addEventListener('input', () => syncFromBeatToMeasure('A'));
+        bBeatInput.addEventListener('input', () => syncFromBeatToMeasure('B'));
+
+        function calculateTimeStretchInfo() {
+            const ratio = targetBpm / selectedTrack.nativeBpm;
+            stretchDisplay.textContent = `${Math.round(ratio * 100)}%`;
+        }
+
+        bpmInput.addEventListener('input', () => {
+            targetBpm = Math.max(40, Math.min(240, parseInt(bpmInput.value) || 120));
+            calculateTimeStretchInfo();
+            if (isRunning) {
+                startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
+                if (activeAudioSource && audioBuffer) {
+                    activeAudioSource.playbackRate.setValueAtTime(targetBpm / selectedTrack.nativeBpm, audioCtx.currentTime);
+                }
+            }
+        });
+
+        offsetInput.addEventListener('input', () => { offsetMs = parseInt(offsetInput.value) || 0; });
+
+        function triggerAudioEngineAt(beatPosition) {
+            if (!audioBuffer || !audioCtx) return;
+            if (activeAudioSource) { try { activeAudioSource.stop(); } catch(e){} }
+
+            const secsPerBeatNative = 60 / selectedTrack.nativeBpm;
+            const nativeOffsetSeconds = (beatPosition - 1) * secsPerBeatNative;
+
+            activeAudioSource = audioCtx.createBufferSource();
+            activeAudioSource.buffer = audioBuffer;
+            activeAudioSource.connect(audioCtx.destination);
+            activeAudioSource.playbackRate.setValueAtTime(targetBpm / selectedTrack.nativeBpm, audioCtx.currentTime);
+            
+            if (nativeOffsetSeconds < audioBuffer.duration) {
+                activeAudioSource.start(audioCtx.currentTime + Math.max(0, offsetMs/1000), nativeOffsetSeconds);
+            }
+        }
+
+        function stopPlayback() {
+            isRunning = false;
+            if (activeAudioSource) {
+                try { activeAudioSource.stop(); } catch(e){}
+                activeAudioSource = null;
+            }
+            currentBeat = 1.0;
+            engineStatus.textContent = "Stopped";
+            engineStatus.className = "text-slate-400 font-bold uppercase";
+            renderPadsUI();
+            drawFlowMeter(0, 1);
+        }
+
+        const div4Btn = document.getElementById('div-4');
+        const div8Btn = document.getElementById('div-8');
+
+        function changeSubdivision(val) {
+            subdivision = val;
+            div4Btn.className = val === 4 ? "px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            div8Btn.className = val === 8 ? "px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            renderPadsUI();
+            drawFlowMeter(0, 1);
+        }
+        div4Btn.addEventListener('click', () => changeSubdivision(4));
+        div8Btn.addEventListener('click', () => changeSubdivision(8));
+
+        function renderPadsUI() {
+            padsContainer.innerHTML = "";
+            const bpb = selectedTrack.beatsPerBar;
+
+            if (subdivision === 4) {
+                padsContainer.className = `grid grid-cols-${bpb} gap-2`;
+                for (let i = 1; i <= bpb; i++) {
+                    const pad = document.createElement('div');
+                    pad.id = `r-pad-${i}`;
+                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-3.5 text-center text-base font-mono transition-all";
+                    pad.textContent = i;
+                    padsContainer.appendChild(pad);
+                }
+            } else {
+                padsContainer.className = `grid grid-cols-${bpb} sm:grid-cols-${bpb * 2} gap-1.5`;
+                let padCount = bpb * 2;
+                for (let i = 1; i <= padCount; i++) {
+                    const pad = document.createElement('div');
+                    pad.id = `r-pad-${i}`;
+                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-3 text-center text-sm font-mono transition-all";
+                    
+                    if (i % 2 !== 0) {
+                        pad.textContent = Math.floor(i / 2) + 1;
+                    } else {
+                        pad.textContent = "&";
+                    }
+                    padsContainer.appendChild(pad);
+                }
+            }
+        }
+
+        function updateLyricsDisplay(beatPosition) {
+            const list = selectedTrack.lyrics;
+            if(!list || list.length === 0) return;
+
+            let activeIdx = -1;
+            for (let i = 0; i < list.length; i++) {
+                if (beatPosition >= list[i].beat) {
+                    activeIdx = i;
+                }
+            }
+            if (activeIdx !== -1) {
+                lyricPrev.textContent = list[activeIdx - 1] ? list[activeIdx - 1].text : "";
+                lyricActive.textContent = list[activeIdx].text;
+                lyricNext.textContent = list[activeIdx + 1] ? list[activeIdx + 1].text : "";
+            } else {
+                lyricPrev.textContent = "";
+                lyricActive.textContent = "Intro Instrumental...";
+                lyricNext.textContent = list[0] ? list[0].text : "";
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!isRunning && audioBuffer) {
+                isRunning = true;
+                engineStatus.textContent = "Live";
+                engineStatus.className = "text-emerald-400 font-bold uppercase";
+                startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
+                triggerAudioEngineAt(currentBeat);
+                requestAnimationFrame(animationEngineLoop);
+            }
+        });
+
+        stopBtn.addEventListener('click', stopPlayback);
+
+        loopToggleBtn.addEventListener('click', () => {
+            useLoopEngine = !useLoopEngine;
+            loopToggleBtn.textContent = useLoopEngine ? "ON" : "OFF";
+            loopToggleBtn.className = useLoopEngine 
+                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all"
+                : "bg-slate-950 text-rose-400 border border-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all";
+            
+            // Instantly sync lyric positions when toggle adjustments occur
+            updateLyricsDisplay(currentBeat);
+        });
+
+        function animationEngineLoop() {
+            if (!isRunning) return;
+
+            const bpb = selectedTrack.beatsPerBar;
+            const secsPerBeat = 60 / targetBpm;
+            const elapsedAudioSecs = audioCtx.currentTime - startBeatTime - (offsetMs / 1000);
+            currentBeat = 1 + (elapsedAudioSecs / secsPerBeat);
+
+            // Active Loop Boundary Detection & Reset Logic
+            if (useLoopEngine && currentBeat >= loopEndBeat) {
+                currentBeat = loopStartBeat;
+                startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
+                triggerAudioEngineAt(currentBeat);
+                updateLyricsDisplay(currentBeat); // <-- Fixed! Re-calculate lyrics position immediately on jump back
+            }
+
+            if (currentBeat > totalBeatsInLoop + 1) {
+                currentBeat = useLoopEngine ? loopStartBeat : 1.0;
+                startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
+                triggerAudioEngineAt(currentBeat);
+                updateLyricsDisplay(currentBeat); // <-- Fixed! Re-calculate lyrics position immediately on track wrap
+            }
+
+            let currentBarBeatIndex = ((currentBeat - 1) % bpb); 
+            let activePadIndex = 0;
+            let phase = 0;
+            let activePadsTotal = subdivision === 4 ? bpb : bpb * 2;
+
+            if (subdivision === 4) {
+                activePadIndex = Math.floor(currentBarBeatIndex) + 1;
+                phase = currentBarBeatIndex % 1;
+            } else {
+                activePadIndex = Math.floor(currentBarBeatIndex * 2) + 1;
+                phase = (currentBarBeatIndex * 2) % 1;
+            }
+
+            for (let i = 1; i <= activePadsTotal; i++) {
+                const pad = document.getElementById(`r-pad-${i}`);
+                if (pad) {
+                    if (activePadIndex === i) {
+                        pad.className = (i === 1)
+                            ? "bg-emerald-500 border-white text-slate-950 font-black rounded-xl py-3.5 text-center font-mono shadow-lg shadow-emerald-500/20"
+                            : "bg-indigo-600 border-white text-white font-black rounded-xl py-3.5 text-center font-mono shadow-lg shadow-indigo-600/20";
+                    } else {
+                        pad.className = "bg-slate-950 border border-slate-900 text-slate-600 font-semibold rounded-xl py-3.5 text-center font-mono";
+                    }
+                }
+            }
+
+            updateLyricsDisplay(currentBeat);
+            drawFlowMeter(phase, activePadIndex);
+
+            requestAnimationFrame(animationEngineLoop);
+        }
+
+        function drawFlowMeter(phase, activePad) {
+            mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+            const w = mCanvas.width;
+            const h = mCanvas.height;
+            const bpb = selectedTrack.beatsPerBar;
+
+            const padCount = subdivision === 4 ? bpb : bpb * 2; 
+            
+            const paddingX = 16; 
+            const usableWidth = w - (paddingX * 2);
+            const stepW = usableWidth / padCount;
+
+            mCtx.strokeStyle = '#1e293b';
+            mCtx.lineWidth = 3;
+            mCtx.beginPath();
+            mCtx.moveTo(paddingX, h - 20);
+            mCtx.lineTo(w - paddingX, h - 20);
+            mCtx.stroke();
+
+            for(let i = 0; i < padCount; i++) {
+                let centerPointX = paddingX + (i * stepW) + (stepW / 2);
+                mCtx.fillStyle = (isRunning && activePad === (i + 1)) ? '#6366f1' : '#334155';
+                mCtx.beginPath();
+                mCtx.arc(centerPointX, h - 20, 4, 0, Math.PI * 2);
+                mCtx.fill();
+            }
+
+            if (isRunning) {
+                let targetIndex = activePad - 1;
+                let currentPadCenter = paddingX + (targetIndex * stepW) + (stepW / 2);
+                let nextPadCenter = paddingX + (((targetIndex + 1) % padCount) * stepW) + (stepW / 2);
+                
+                if(targetIndex === padCount - 1) {
+                    nextPadCenter = paddingX + (stepW / 2); 
+                }
+
+                let ballX;
+                if (targetIndex === padCount - 1) {
+                    ballX = currentPadCenter + ((w - paddingX - currentPadCenter + (stepW / 2)) * phase);
+                    if (ballX > w - paddingX) {
+                        ballX = paddingX + (ballX - (w - paddingX));
+                    }
+                } else {
+                    ballX = currentPadCenter + (nextPadCenter - currentPadCenter) * phase;
+                }
+
+                let ballY = (h - 20) - Math.sin(phase * Math.PI) * 45;
+
+                mCtx.shadowBlur = 16;
+                mCtx.shadowColor = (activePad === 1) ? '#34d399' : '#6366f1';
+                mCtx.fillStyle = '#ffffff';
+                mCtx.beginPath();
+                mCtx.arc(ballX, ballY, 11, 0, Math.PI * 2);
+                mCtx.fill();
+                mCtx.shadowBlur = 0;
+            } else {
+                let restX = paddingX + (stepW / 2);
+                mCtx.fillStyle = '#64748b';
+                mCtx.beginPath();
+                mCtx.arc(restX, h - 20, 10, 0, Math.PI * 2);
+                mCtx.fill();
+            }
+        }
+
+        initLibraryUI();
+    </script>
+</body>
+</html>
