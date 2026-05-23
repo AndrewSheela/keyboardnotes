@@ -6,15 +6,15 @@
     <title>Rhythm Lab - Master Studio Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-indigo-500/30">
+<body class="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-indigo-500/30 select-none">
 
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-4 py-3 md:px-6 flex justify-between items-center sticky top-0 z-50">
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-4 py-3 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center space-x-2.5">
             <div class="h-2.5 w-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
-            <h1 class="text-lg font-bold tracking-wider text-slate-200">RHYTHM<span class="text-emerald-400">LAB</span></h1>
+            <h1 class="text-base md:text-lg font-bold tracking-wider text-slate-200">RHYTHM<span class="text-emerald-400">LAB</span></h1>
         </div>
-        <div class="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1 rounded-full border border-slate-800">
-            Playback Engine: <span id="engine-status" class="text-slate-400 font-bold uppercase">Idle</span>
+        <div class="text-[10px] md:text-xs text-slate-400 font-mono bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800">
+            Engine: <span id="engine-status" class="text-slate-400 font-bold uppercase">Idle</span>
         </div>
     </header>
 
@@ -60,11 +60,11 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-1">
-                    <button id="start-button" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg active:scale-95 transition-all text-base flex items-center justify-center space-x-2 cursor-pointer">
-                        <span>▶ PLAY</span>
+                    <button id="start-button" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg active:scale-95 transition-all text-sm md:text-base flex items-center justify-center space-x-2 cursor-pointer">
+                        <span id="play-btn-text">▶ PLAY</span>
                     </button>
-                    <button id="stop-button" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all text-base flex items-center justify-center space-x-2 cursor-pointer">
-                        <span>■ STOP</span>
+                    <button id="stop-button" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 px-4 rounded-xl active:scale-95 transition-all text-sm md:text-base flex items-center justify-center space-x-2 cursor-pointer">
+                        <span>■ RESET</span>
                     </button>
                 </div>
 
@@ -100,14 +100,14 @@
                                 <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Loop End (B)</label>
                                 <div class="flex items-center space-x-1">
                                     <span class="text-xs text-slate-600 font-mono">M:</span>
-                                    <input id="b-measure-input" type="number" min="1" max="200" value="2" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-slate-200">
+                                    <input id="b-measure-input" type="number" min="1" max="200" value="5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-slate-200">
                                 </div>
                             </div>
                             <div>
                                 <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">&nbsp;</label>
                                 <div class="flex items-center space-x-1">
                                     <span class="text-xs text-slate-600 font-mono">B:</span>
-                                    <input id="b-beat-input" type="number" min="1" max="800" value="5" step="0.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-rose-400">
+                                    <input id="b-beat-input" type="number" min="1" max="800" value="17" step="0.5" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-rose-400">
                                 </div>
                             </div>
                         </div>
@@ -122,28 +122,39 @@
                 <div class="flex justify-between items-center w-full">
                     <div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Rhythm Flow Studio</h3>
-                        <p class="text-[11px] text-slate-500">Auto-detects meter constraints natively</p>
                     </div>
                     <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-850 space-x-1">
-                        <button id="div-4" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer transition-all">1/4 Beats</button>
-                        <button id="div-8" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all">1/8 Notes (&)</button>
+                        <button id="div-4" class="px-3 py-1.5 text-[11px] font-medium rounded-lg bg-indigo-600 text-white cursor-pointer transition-all">Beat</button>
+                        <button id="div-8" class="px-3 py-1.5 text-[11px] font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all">Half Beat (&)</button>
                     </div>
                 </div>
 
-                <div class="bg-slate-950 rounded-2xl border border-slate-850 p-3 md:p-4 space-y-2">
-                    <canvas id="metronome-canvas" width="700" height="95" class="w-full rounded-xl block"></canvas>
+                <div class="bg-slate-950 rounded-2xl border border-slate-850 p-2 md:p-4 space-y-2">
+                    <canvas id="metronome-canvas" width="700" height="85" class="w-full rounded-xl block"></canvas>
                     
-                    <div id="rhythm-pads-container" class="grid gap-2 pt-1 transition-all">
+                    <div id="rhythm-pads-container" class="grid gap-1.5 pt-1 transition-all">
                         </div>
                 </div>
             </div>
 
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-3">
-                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Active Lyric Prompter</h3>
-                <div class="h-32 bg-slate-950 rounded-xl border border-slate-850 flex flex-col items-center justify-center px-4 py-6 text-center relative overflow-hidden">
-                    <div id="lyric-line-prev" class="text-xs text-slate-600 font-medium transition-all duration-300"></div>
-                    <div id="lyric-line-active" class="text-base md:text-xl font-bold text-emerald-400 transition-all duration-300 my-1 drop-shadow-[0_0_8px_rgba(52,211,153,0.2)]">Select a track and press play...</div>
-                    <div id="lyric-line-next" class="text-xs text-slate-600 font-medium transition-all duration-300"></div>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Active Lyric Prompter</h3>
+                    
+                    <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex self-start sm:self-auto space-x-1">
+                        <button id="mode-work-btn" class="px-3 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">WORK MODE</button>
+                        <button id="mode-answer-btn" class="px-3 py-1 text-[11px] font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all cursor-pointer">ANSWER MODE</button>
+                    </div>
+                </div>
+
+                <div class="min-h-[12rem] bg-slate-950 rounded-xl border border-slate-850 flex flex-col items-center justify-center p-4 md:p-6 text-center relative overflow-hidden">
+                    <div id="lyric-line-prev" class="text-[10px] md:text-xs text-slate-600 font-medium transition-all duration-300 mb-2"></div>
+                    
+                    <div id="lyric-line-active" class="text-sm md:text-lg font-bold transition-all duration-300 my-2 w-full flex items-center justify-center">
+                        <span class="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.2)]">Select a track and press play...</span>
+                    </div>
+                    
+                    <div id="lyric-line-next" class="text-[10px] md:text-xs text-slate-600 font-medium transition-all duration-300 mt-2"></div>
                 </div>
             </div>
 
@@ -151,7 +162,7 @@
     </main>
 
     <script>
-        // Track Library Array supporting multiple Time Signatures
+        // Track Library: Grouped cleanly into 4-measure blocks (16 beats per segment)
         const trackLibrary = [
             {
                 id: "Song_1",
@@ -160,53 +171,75 @@
                 nativeBpm: 96,
                 beatsPerBar: 4,  
                 lyrics: [
-                    { beat: 1.0, text: "Nandriyaal thuthipaadu Nam Yesuvai" },
-                    { beat: 9.0, text: "Naavaalae Endrum Paadu" }
-                ]
-            },
-            {
-                id: "Song_2",
-                name: "Thaen Inimaiyilum",
-                filePath: "songs/Thaen-Inimaiyilum.mp3",
-                nativeBpm: 96,
-                beatsPerBar: 4,  
-                lyrics: [
-                    { beat: 1.0, text: "Thaen Inimaiyilum Yesuvin Naamam" },
-                    { beat: 4.0, text: "Downbeat lands cleanly on Pad 1 every bar" }
-                ]
-            },
-            {
-                id: "Song_3",
-                name: "Ennalumae Thuthippai",
-                filePath: "songs/Ennalumae-Thuthippai.mp3",
-                nativeBpm: 110,
-                beatsPerBar: 3,  
-                lyrics: [
-                    { beat: 1.0, text: "Ennalumae Thuthippai" },
-                    { beat: 8.0, text: "Count: 1-2-3-4-5-6-7" }
+                    { 
+                        beat: 1.0, 
+                        endBeat: 17.0, // Moves out exactly at the end of the 4th measure
+                        text: "Nandriyaal thuthipaadu Nam Yesuvai Naavaalae Endrum Paadu",
+                        syllables: [
+                            // BAR 1
+                            { b: 1.0, text: "Nan~" },
+                            { b: 1.5, text: "dri~" },
+                            { b: 2.0, text: "-" },
+                            { b: 2.5, text: "yaal " },
+                            { b: 3.0, text: "thu~" },
+                            { b: 3.5, text: "thi~" },
+                            { b: 4.0, text: "pa~" },
+                            { b: 4.5, text: "aa" },
+                            
+                            // BAR 2
+                            { b: 5.0, text: "du", newLine: true },
+                            { b: 5.5, text: "- " },
+                            { b: 6.0, text: "-" },
+                            { b: 6.5, text: "Nam " }, 
+                            { b: 7.0, text: "Ye" },
+                            { b: 7.5, text: "su " },
+                            { b: 8.0, text: "vai" },
+                            { b: 8.5, text: "-" },
+
+                            // BAR 3
+                            { b: 9.0, text: "Naa", newLine: true },
+                            { b: 9.5, text: "va" },
+                            { b: 10.0, text: "-" },
+                            { b: 10.5, text: "lae" },
+                            { b: 11.0, text: "En" },
+                            { b: 11.5, text: "drum" },
+                            { b: 12.0, text: "Pa" },
+                            { b: 12.5, text: "-" },
+
+                            // BAR 4
+                            { b: 13.0, text: "du", newLine: true },
+                            { b: 13.5, text: "-" },
+                            { b: 14.0, text: "-" },
+                            { b: 14.5, text: "-" },
+                            { b: 15.0, text: "-" },
+                            { b: 15.5, text: "-" },
+                            { b: 16.0, text: "-" },
+                            { b: 16.5, text: "-" }
+                        ]
+                    }
                 ]
             }
         ];
 
-        // Global System Orchestration States
         let audioCtx = null;
         let isRunning = false;
         let targetBpm = 96;
         let offsetMs = 0;
         let subdivision = 4; 
+        let currentPromptMode = "work"; 
         
         let startBeatTime = 0;
         let currentBeat = 1.0;
+        let pausedAtBeat = 1.0; 
         let totalBeatsInLoop = 800; 
         let useLoopEngine = false;
         let loopStartBeat = 1.0;
-        let loopEndBeat = 5.0;
+        let loopEndBeat = 17.0;
 
         let selectedTrack = trackLibrary[0];
         let audioBuffer = null;
         let activeAudioSource = null;
 
-        // DOM UI Mapping References
         const selectElement = document.getElementById('library-song-select');
         const origBpmDisplay = document.getElementById('meta-orig-bpm');
         const meterDisplay = document.getElementById('meta-meter');
@@ -214,10 +247,10 @@
         const bpmInput = document.getElementById('bpm');
         const offsetInput = document.getElementById('offset');
         const startBtn = document.getElementById('start-button');
+        const playBtnText = document.getElementById('play-btn-text');
         const stopBtn = document.getElementById('stop-button');
         const loopToggleBtn = document.getElementById('ab-loop-toggle');
         
-        // Loop Interface Node References
         const aMeasureInput = document.getElementById('a-measure-input');
         const aBeatInput = document.getElementById('a-beat-input');
         const bMeasureInput = document.getElementById('b-measure-input');
@@ -229,6 +262,9 @@
         const lyricPrev = document.getElementById('lyric-line-prev');
         const lyricActive = document.getElementById('lyric-line-active');
         const lyricNext = document.getElementById('lyric-line-next');
+
+        const modeWorkBtn = document.getElementById('mode-work-btn');
+        const modeAnswerBtn = document.getElementById('mode-answer-btn');
 
         const mCanvas = document.getElementById('metronome-canvas');
         const mCtx = mCanvas.getContext('2d');
@@ -247,7 +283,7 @@
         selectElement.addEventListener('change', (e) => loadLibraryTrack(e.target.value));
 
         function loadLibraryTrack(trackId) {
-            stopPlayback();
+            stopPlayback(); 
             selectedTrack = trackLibrary.find(t => t.id === trackId);
             
             origBpmDisplay.textContent = selectedTrack.nativeBpm + " BPM";
@@ -255,19 +291,20 @@
             bpmInput.value = selectedTrack.nativeBpm;
             targetBpm = selectedTrack.nativeBpm;
             
-            // Explicitly requested setup parameters applied safely:
             totalBeatsInLoop = selectedTrack.beatsPerBar * 200; 
             aMeasureInput.value = 1;
             aBeatInput.value = 1;
-            bMeasureInput.value = 2;
-            bBeatInput.value = selectedTrack.beatsPerBar + 1; 
+            bMeasureInput.value = 5;
+            bBeatInput.value = 17; 
             
             loopStartBeat = 1;
-            loopEndBeat = selectedTrack.beatsPerBar + 1;
+            loopEndBeat = 17;
 
             calculateTimeStretchInfo();
             updateLyricsDisplay(1.0);
-            
+            renderPadsUI(); 
+            drawFlowMeter(0, 1);
+
             engineStatus.textContent = "Loading Track...";
             engineStatus.className = "text-amber-400 font-bold uppercase animate-pulse";
 
@@ -290,7 +327,6 @@
                 });
         }
 
-        // Two-Way Interactive Formula Mapping Algorithms
         function syncFromMeasureToBeat(point) {
             const bpb = selectedTrack.beatsPerBar;
             if (point === 'A') {
@@ -304,7 +340,7 @@
                 bBeatInput.value = calculatedBeat;
                 loopEndBeat = calculatedBeat;
             }
-            if(isRunning) updateLyricsDisplay(currentBeat);
+            updateLyricsDisplay(currentBeat);
         }
 
         function syncFromBeatToMeasure(point) {
@@ -318,14 +354,27 @@
                 loopEndBeat = beatVal;
                 bMeasureInput.value = Math.floor((beatVal - 1) / bpb) + 1;
             }
-            if(isRunning) updateLyricsDisplay(currentBeat);
+            updateLyricsDisplay(currentBeat);
         }
 
-        // Setup Panel Event Listeners
         aMeasureInput.addEventListener('input', () => syncFromMeasureToBeat('A'));
         bMeasureInput.addEventListener('input', () => syncFromMeasureToBeat('B'));
         aBeatInput.addEventListener('input', () => syncFromBeatToMeasure('A'));
         bBeatInput.addEventListener('input', () => syncFromBeatToMeasure('B'));
+
+        modeWorkBtn.addEventListener('click', () => {
+            currentPromptMode = "work";
+            modeWorkBtn.className = "px-3 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 text-white cursor-pointer";
+            modeAnswerBtn.className = "px-3 py-1 text-[11px] font-bold rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            updateLyricsDisplay(currentBeat);
+        });
+
+        modeAnswerBtn.addEventListener('click', () => {
+            currentPromptMode = "answer";
+            modeAnswerBtn.className = "px-3 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 text-white cursor-pointer";
+            modeWorkBtn.className = "px-3 py-1 text-[11px] font-bold rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            updateLyricsDisplay(currentBeat);
+        });
 
         function calculateTimeStretchInfo() {
             const ratio = targetBpm / selectedTrack.nativeBpm;
@@ -347,7 +396,13 @@
 
         function triggerAudioEngineAt(beatPosition) {
             if (!audioBuffer || !audioCtx) return;
-            if (activeAudioSource) { try { activeAudioSource.stop(); } catch(e){} }
+            if (activeAudioSource) { 
+                try { 
+                    activeAudioSource.stop(); 
+                    activeAudioSource.disconnect();
+                } catch(e){} 
+                activeAudioSource = null;
+            }
 
             const secsPerBeatNative = 60 / selectedTrack.nativeBpm;
             const nativeOffsetSeconds = (beatPosition - 1) * secsPerBeatNative;
@@ -362,17 +417,45 @@
             }
         }
 
+        function pausePlayback() {
+            isRunning = false;
+            playBtnText.textContent = "▶ RESUME";
+            engineStatus.textContent = "Paused";
+            engineStatus.className = "text-amber-400 font-bold uppercase";
+            pausedAtBeat = currentBeat;
+
+            if (activeAudioSource) {
+                try { 
+                    activeAudioSource.stop(); 
+                    activeAudioSource.disconnect();
+                } catch(e){}
+                activeAudioSource = null;
+            }
+            updateLyricsDisplay(currentBeat);
+            
+            let bpb = selectedTrack.beatsPerBar;
+            let currentBarBeatIndex = ((currentBeat - 1) % bpb);
+            let activePadIndex = subdivision === 4 ? Math.floor(currentBarBeatIndex) + 1 : Math.floor(currentBarBeatIndex * 2) + 1;
+            drawFlowMeter(currentBeat % 1, activePadIndex);
+        }
+
         function stopPlayback() {
             isRunning = false;
+            playBtnText.textContent = "▶ PLAY";
             if (activeAudioSource) {
-                try { activeAudioSource.stop(); } catch(e){}
+                try { 
+                    activeAudioSource.stop(); 
+                    activeAudioSource.disconnect();
+                } catch(e){}
                 activeAudioSource = null;
             }
             currentBeat = 1.0;
+            pausedAtBeat = 1.0;
             engineStatus.textContent = "Stopped";
             engineStatus.className = "text-slate-400 font-bold uppercase";
             renderPadsUI();
             drawFlowMeter(0, 1);
+            updateLyricsDisplay(1.0);
         }
 
         const div4Btn = document.getElementById('div-4');
@@ -380,8 +463,8 @@
 
         function changeSubdivision(val) {
             subdivision = val;
-            div4Btn.className = val === 4 ? "px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
-            div8Btn.className = val === 8 ? "px-3.5 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            div4Btn.className = val === 4 ? "px-3 py-1.5 text-[11px] font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3 py-1.5 text-[11px] font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
+            div8Btn.className = val === 8 ? "px-3 py-1.5 text-[11px] font-medium rounded-lg bg-indigo-600 text-white cursor-pointer" : "px-3 py-1.5 text-[11px] font-medium rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer";
             renderPadsUI();
             drawFlowMeter(0, 1);
         }
@@ -393,77 +476,107 @@
             const bpb = selectedTrack.beatsPerBar;
 
             if (subdivision === 4) {
-                padsContainer.className = `grid grid-cols-${bpb} gap-2`;
+                padsContainer.className = `grid grid-cols-${bpb} gap-1.5`;
                 for (let i = 1; i <= bpb; i++) {
                     const pad = document.createElement('div');
                     pad.id = `r-pad-${i}`;
-                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-3.5 text-center text-base font-mono transition-all";
+                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-2.5 text-center text-sm font-mono transition-all";
                     pad.textContent = i;
                     padsContainer.appendChild(pad);
                 }
             } else {
-                padsContainer.className = `grid grid-cols-${bpb} sm:grid-cols-${bpb * 2} gap-1.5`;
+                padsContainer.className = `grid grid-cols-${bpb * 2} gap-1`;
                 let padCount = bpb * 2;
                 for (let i = 1; i <= padCount; i++) {
                     const pad = document.createElement('div');
                     pad.id = `r-pad-${i}`;
-                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-3 text-center text-sm font-mono transition-all";
-                    
-                    if (i % 2 !== 0) {
-                        pad.textContent = Math.floor(i / 2) + 1;
-                    } else {
-                        pad.textContent = "&";
-                    }
+                    pad.className = "bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl py-2 text-center text-xs font-mono transition-all";
+                    pad.textContent = (i % 2 !== 0) ? Math.floor(i / 2) + 1 : "&";
                     padsContainer.appendChild(pad);
                 }
             }
         }
 
+        // FIXED: Whole 4-measure view engine block management
         function updateLyricsDisplay(beatPosition) {
             const list = selectedTrack.lyrics;
             if(!list || list.length === 0) return;
 
             let activeIdx = -1;
             for (let i = 0; i < list.length; i++) {
-                if (beatPosition >= list[i].beat) {
+                // Lock the visual field down onto the specific active 4-bar phrase window
+                if (beatPosition >= list[i].beat && (!list[i].endBeat || beatPosition < list[i].endBeat)) {
                     activeIdx = i;
+                    break;
                 }
             }
+
+            lyricPrev.textContent = (activeIdx > 0) ? list[activeIdx - 1].text : "";
+            lyricNext.textContent = (activeIdx !== -1 && activeIdx < list.length - 1) ? list[activeIdx + 1].text : "";
+
             if (activeIdx !== -1) {
-                lyricPrev.textContent = list[activeIdx - 1] ? list[activeIdx - 1].text : "";
-                lyricActive.textContent = list[activeIdx].text;
-                lyricNext.textContent = list[activeIdx + 1] ? list[activeIdx + 1].text : "";
+                const currentLine = list[activeIdx];
+                
+                if (currentPromptMode === "work") {
+                    lyricActive.innerHTML = `<span class="text-base md:text-xl text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.2)] font-semibold px-2">${currentLine.text}</span>`;
+                } else {
+                    if (currentLine.syllables && currentLine.syllables.length > 0) {
+                        let dynamicHtmlOutput = "";
+                        const bpb = selectedTrack.beatsPerBar;
+
+                        currentLine.syllables.forEach((syl) => {
+                            if (syl.newLine) {
+                                // Forces a clean line break structure inside the flex-box layout wrapper safely
+                                dynamicHtmlOutput += `<div class="w-full h-2"></div>`;
+                            }
+
+                            let isPast = beatPosition >= (syl.b + 0.45);
+                            let isCurrentTimeWindow = beatPosition >= syl.b && beatPosition < (syl.b + 0.45);
+                            
+                            let currentAbsoluteBar = Math.floor((beatPosition - 1) / bpb) + 1;
+                            let syllableAbsoluteBar = Math.floor((syl.b - 1) / bpb) + 1;
+
+                            let shouldHighlight = false;
+                            
+                            if (subdivision === 4) {
+                                // Downbeat lock mode highlights entire current active bar accurately
+                                shouldHighlight = (currentAbsoluteBar === syllableAbsoluteBar) && (beatPosition >= syl.b);
+                                isPast = currentAbsoluteBar > syllableAbsoluteBar;
+                            } else {
+                                shouldHighlight = isCurrentTimeWindow;
+                            }
+                            
+                            // MOBILE OPTIMIZED SYLLABLE CARDS: Scaled typography padding sizes down for tiny viewports natively
+                            if (shouldHighlight) {
+                                dynamicHtmlOutput += `
+                                    <div class="px-2 md:px-3 py-1.5 mx-0.5 my-0.5 bg-emerald-500/20 border border-emerald-400 rounded-lg text-emerald-400 font-black scale-102 shadow-[0_0_8px_rgba(52,211,153,0.3)] transition-all duration-150 text-xs md:text-sm min-w-[34px] md:min-w-[40px]">
+                                        ${syl.text}
+                                    </div>`;
+                            } else if (isPast) {
+                                dynamicHtmlOutput += `
+                                    <div class="px-2 md:px-3 py-1.5 mx-0.5 my-0.5 bg-slate-900/40 border border-slate-800/60 text-slate-600 font-medium text-xs md:text-sm min-w-[34px] md:min-w-[40px]">
+                                        ${syl.text}
+                                    </div>`;
+                            } else {
+                                dynamicHtmlOutput += `
+                                    <div class="px-2 md:px-3 py-1.5 mx-0.5 my-0.5 bg-slate-900 border border-slate-800 text-slate-200 font-semibold text-xs md:text-sm min-w-[34px] md:min-w-[40px]">
+                                        ${syl.text}
+                                    </div>`;
+                            }
+                        });
+                        
+                        // flex-wrap dynamically organizes line contents securely without height constraints bugs
+                        lyricActive.innerHTML = `<div class="flex flex-wrap justify-center items-center font-mono tracking-wide w-full">${dynamicHtmlOutput}</div>`;
+                    } else {
+                        lyricActive.innerHTML = `<span class="text-amber-400 italic text-xs">No syllable mapping configured</span>`;
+                    }
+                }
             } else {
                 lyricPrev.textContent = "";
-                lyricActive.textContent = "Intro Instrumental...";
-                lyricNext.textContent = list[0] ? list[0].text : "";
+                lyricActive.innerHTML = `<span class="text-slate-500 italic text-sm">Out of range / Instrumental break</span>`;
+                lyricNext.textContent = "";
             }
         }
-
-        startBtn.addEventListener('click', () => {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            if (!isRunning && audioBuffer) {
-                isRunning = true;
-                engineStatus.textContent = "Live";
-                engineStatus.className = "text-emerald-400 font-bold uppercase";
-                startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
-                triggerAudioEngineAt(currentBeat);
-                requestAnimationFrame(animationEngineLoop);
-            }
-        });
-
-        stopBtn.addEventListener('click', stopPlayback);
-
-        loopToggleBtn.addEventListener('click', () => {
-            useLoopEngine = !useLoopEngine;
-            loopToggleBtn.textContent = useLoopEngine ? "ON" : "OFF";
-            loopToggleBtn.className = useLoopEngine 
-                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all"
-                : "bg-slate-950 text-rose-400 border border-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all";
-            
-            // Instantly sync lyric positions when toggle adjustments occur
-            updateLyricsDisplay(currentBeat);
-        });
 
         function animationEngineLoop() {
             if (!isRunning) return;
@@ -473,19 +586,16 @@
             const elapsedAudioSecs = audioCtx.currentTime - startBeatTime - (offsetMs / 1000);
             currentBeat = 1 + (elapsedAudioSecs / secsPerBeat);
 
-            // Active Loop Boundary Detection & Reset Logic
             if (useLoopEngine && currentBeat >= loopEndBeat) {
                 currentBeat = loopStartBeat;
                 startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
                 triggerAudioEngineAt(currentBeat);
-                updateLyricsDisplay(currentBeat); // <-- Fixed! Re-calculate lyrics position immediately on jump back
             }
 
             if (currentBeat > totalBeatsInLoop + 1) {
                 currentBeat = useLoopEngine ? loopStartBeat : 1.0;
                 startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
                 triggerAudioEngineAt(currentBeat);
-                updateLyricsDisplay(currentBeat); // <-- Fixed! Re-calculate lyrics position immediately on track wrap
             }
 
             let currentBarBeatIndex = ((currentBeat - 1) % bpb); 
@@ -506,10 +616,10 @@
                 if (pad) {
                     if (activePadIndex === i) {
                         pad.className = (i === 1)
-                            ? "bg-emerald-500 border-white text-slate-950 font-black rounded-xl py-3.5 text-center font-mono shadow-lg shadow-emerald-500/20"
-                            : "bg-indigo-600 border-white text-white font-black rounded-xl py-3.5 text-center font-mono shadow-lg shadow-indigo-600/20";
+                            ? "bg-emerald-500 border-white text-slate-950 font-black rounded-xl py-2.5 text-center font-mono text-xs md:text-sm shadow-md"
+                            : "bg-indigo-600 border-white text-white font-black rounded-xl py-2.5 text-center font-mono text-xs md:text-sm shadow-md";
                     } else {
-                        pad.className = "bg-slate-950 border border-slate-900 text-slate-600 font-semibold rounded-xl py-3.5 text-center font-mono";
+                        pad.className = "bg-slate-950 border border-slate-900 text-slate-600 font-semibold rounded-xl py-2.5 text-center font-mono text-xs md:text-sm";
                     }
                 }
             }
@@ -520,30 +630,61 @@
             requestAnimationFrame(animationEngineLoop);
         }
 
+        startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if (isRunning) {
+                pausePlayback();
+            } else {
+                if (audioBuffer) {
+                    isRunning = true;
+                    playBtnText.textContent = "⏸ PAUSE";
+                    engineStatus.textContent = "Live";
+                    engineStatus.className = "text-emerald-400 font-bold uppercase";
+                    
+                    currentBeat = pausedAtBeat;
+                    startBeatTime = audioCtx.currentTime - ((currentBeat - 1) * (60 / targetBpm)) - (offsetMs / 1000);
+                    
+                    triggerAudioEngineAt(currentBeat);
+                    requestAnimationFrame(animationEngineLoop);
+                }
+            }
+        });
+
+        stopBtn.addEventListener('click', stopPlayback);
+
+        loopToggleBtn.addEventListener('click', () => {
+            useLoopEngine = !useLoopEngine;
+            loopToggleBtn.textContent = useLoopEngine ? "ON" : "OFF";
+            loopToggleBtn.className = useLoopEngine 
+                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all"
+                : "bg-slate-950 text-rose-400 border border-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide cursor-pointer transition-all";
+            updateLyricsDisplay(currentBeat);
+        });
+
         function drawFlowMeter(phase, activePad) {
             mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
             const w = mCanvas.width;
             const h = mCanvas.height;
             const bpb = selectedTrack.beatsPerBar;
-
             const padCount = subdivision === 4 ? bpb : bpb * 2; 
             
-            const paddingX = 16; 
+            const paddingX = 12; 
             const usableWidth = w - (paddingX * 2);
             const stepW = usableWidth / padCount;
 
             mCtx.strokeStyle = '#1e293b';
-            mCtx.lineWidth = 3;
+            mCtx.lineWidth = 2;
             mCtx.beginPath();
-            mCtx.moveTo(paddingX, h - 20);
-            mCtx.lineTo(w - paddingX, h - 20);
+            mCtx.moveTo(paddingX, h - 15);
+            mCtx.lineTo(w - paddingX, h - 15);
             mCtx.stroke();
 
             for(let i = 0; i < padCount; i++) {
                 let centerPointX = paddingX + (i * stepW) + (stepW / 2);
                 mCtx.fillStyle = (isRunning && activePad === (i + 1)) ? '#6366f1' : '#334155';
                 mCtx.beginPath();
-                mCtx.arc(centerPointX, h - 20, 4, 0, Math.PI * 2);
+                mCtx.arc(centerPointX, h - 15, 3, 0, Math.PI * 2);
                 mCtx.fill();
             }
 
@@ -552,37 +693,36 @@
                 let currentPadCenter = paddingX + (targetIndex * stepW) + (stepW / 2);
                 let nextPadCenter = paddingX + (((targetIndex + 1) % padCount) * stepW) + (stepW / 2);
                 
-                if(targetIndex === padCount - 1) {
-                    nextPadCenter = paddingX + (stepW / 2); 
-                }
+                if(targetIndex === padCount - 1) nextPadCenter = paddingX + (stepW / 2); 
 
-                let ballX;
-                if (targetIndex === padCount - 1) {
-                    ballX = currentPadCenter + ((w - paddingX - currentPadCenter + (stepW / 2)) * phase);
-                    if (ballX > w - paddingX) {
-                        ballX = paddingX + (ballX - (w - paddingX));
-                    }
-                } else {
-                    ballX = currentPadCenter + (nextPadCenter - currentPadCenter) * phase;
-                }
+                let ballX = targetIndex === padCount - 1 
+                    ? currentPadCenter + ((w - paddingX - currentPadCenter + (stepW / 2)) * phase)
+                    : currentPadCenter + (nextPadCenter - currentPadCenter) * phase;
 
-                let ballY = (h - 20) - Math.sin(phase * Math.PI) * 45;
+                if (ballX > w - paddingX) ballX = paddingX + (ballX - (w - paddingX));
+                let ballY = (h - 15) - Math.sin(phase * Math.PI) * 35;
 
-                mCtx.shadowBlur = 16;
+                mCtx.shadowBlur = 10;
                 mCtx.shadowColor = (activePad === 1) ? '#34d399' : '#6366f1';
                 mCtx.fillStyle = '#ffffff';
                 mCtx.beginPath();
-                mCtx.arc(ballX, ballY, 11, 0, Math.PI * 2);
+                mCtx.arc(ballX, ballY, 8, 0, Math.PI * 2);
                 mCtx.fill();
                 mCtx.shadowBlur = 0;
             } else {
-                let restX = paddingX + (stepW / 2);
+                let targetIndex = activePad - 1;
+                let restX = paddingX + (targetIndex * stepW) + (stepW / 2);
                 mCtx.fillStyle = '#64748b';
                 mCtx.beginPath();
-                mCtx.arc(restX, h - 20, 10, 0, Math.PI * 2);
+                mCtx.arc(restX, h - 15, 7, 0, Math.PI * 2);
                 mCtx.fill();
             }
         }
+
+        // Set up mobile touch gestures cleanly
+        window.addEventListener('resize', () => {
+            drawFlowMeter(0, 1);
+        });
 
         initLibraryUI();
     </script>
