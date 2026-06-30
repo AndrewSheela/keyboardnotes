@@ -1194,7 +1194,12 @@ const DB = (() => {
     });
     batch.set(qRef.doc('q_sample6'), {
       type:'match', text:'Match the Italian term to its meaning:',
-      points:3, pairs:[['Forte','Loud'],['Piano','Soft'],['Allegro','Fast'],['Largo','Slow']],
+      points:3, pairs:[
+        {left:'Forte', right:'Loud'},
+        {left:'Piano', right:'Soft'},
+        {left:'Allegro', right:'Fast'},
+        {left:'Largo', right:'Slow'}
+      ],
       topic:'Lesson 05 Italian Terms', difficulty:'easy', createdAt: Date.now()
     });
     batch.set(qRef.doc('q_sample7'), {
@@ -1795,15 +1800,15 @@ const QTypes = {
   },
 
   _matchFields(q) {
-    const pairs = q?.pairs || [['',''],['',''],['','']];
+    const pairs = q?.pairs || [{left:'',right:''},{left:'',right:''},{left:'',right:''}];
     return `
     <p class="text-muted mb-16">Enter pairs. Left column = prompts, Right column = answers.</p>
     <div class="options-builder" id="match-opts">
       ${pairs.map((p,i) => `
         <div class="option-row" data-idx="${i}">
-          <input type="text" class="match-left-input" value="${Utils.esc(p[0])}" placeholder="Left ${i+1}" />
+          <input type="text" class="match-left-input" value="${Utils.esc(p.left)}" placeholder="Left ${i+1}" />
           <span style="color:var(--text3);">→</span>
-          <input type="text" class="match-right-input" value="${Utils.esc(p[1])}" placeholder="Right ${i+1}" />
+          <input type="text" class="match-right-input" value="${Utils.esc(p.right)}" placeholder="Right ${i+1}" />
           <button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>
         </div>`).join('')}
     </div>
@@ -1900,7 +1905,7 @@ const QTypes = {
       case 'match': {
         const lefts  = [...document.querySelectorAll('.match-left-input')].map(i => i.value.trim());
         const rights = [...document.querySelectorAll('.match-right-input')].map(i => i.value.trim());
-        const pairs  = lefts.map((l,i) => [l, rights[i]]).filter(p => p[0] && p[1]);
+        const pairs  = lefts.map((l,i) => ({left:l, right:rights[i]})).filter(p => p.left && p.right);
         if (pairs.length < 2) { Utils.toast('Add at least 2 pairs.','error'); return null; }
         q.pairs = pairs; break;
       }
@@ -2067,16 +2072,16 @@ const ExamEngine = (() => {
         </div>`; }
 
       case 'match': {
-        const rights   = Utils.shuffle((q.pairs||[]).map(p=>p[1]));
+        const rights   = Utils.shuffle((q.pairs||[]).map(p=>p.right));
         const savedMap = saved||{};
         return `<div class="match-wrap">${(q.pairs||[]).map(p=>`
           <div class="match-row">
-            <div class="match-left">${Utils.esc(p[0])}</div>
+            <div class="match-left">${Utils.esc(p.left)}</div>
             <span class="match-arrow">→</span>
             <div class="match-right">
-              <select data-left="${Utils.esc(p[0])}" style="flex:1">
+              <select data-left="${Utils.esc(p.left)}" style="flex:1">
                 <option value="">-- Select --</option>
-                ${rights.map(r=>`<option value="${Utils.esc(r)}" ${savedMap[p[0]]===r?'selected':''}>${Utils.esc(r)}</option>`).join('')}
+                ${rights.map(r=>`<option value="${Utils.esc(r)}" ${savedMap[p.left]===r?'selected':''}>${Utils.esc(r)}</option>`).join('')}
               </select>
             </div>
           </div>`).join('')}</div>`; }
@@ -2228,7 +2233,7 @@ const ExamEngine = (() => {
         return { correct: a===b };
       }
       case 'arrange': return { correct: (ans||[]).join('|')===(q.correctOrder||[]).join('|') };
-      case 'match':   return { correct: (q.pairs||[]).every(p=>ans[p[0]]===p[1]) };
+      case 'match':   return { correct: (q.pairs||[]).every(p=>ans[p.left]===p.right) };
       default: return { correct:false };
     }
   }
@@ -2312,7 +2317,7 @@ const ExamEngine = (() => {
       case 'fill':    return q.answer;
       case 'tick':    return (q.correctIndices||[]).map(i=>q.options?.[i]).join(', ');
       case 'arrange': return (q.correctOrder||[]).join(' → ');
-      case 'match':   return (q.pairs||[]).map(p=>`${p[0]} → ${p[1]}`).join(', ');
+      case 'match':   return (q.pairs||[]).map(p=>`${p.left} → ${p.right}`).join(', ');
       default: return '?';
     }
   }
