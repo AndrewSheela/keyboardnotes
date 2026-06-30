@@ -964,7 +964,6 @@ tbody td { padding: 10px 14px; }
         <div id="login-error" class="error-msg hidden"></div>
         <button class="btn-primary full" id="login-btn">Sign In</button>
         <p class="login-hint" id="login-hint">Enter your username &amp; password</p>
-        <button class="btn-ghost btn-sm full" id="debug-reseed-btn" style="margin-top:8px;">🔧 Force Reset Database (one-time setup)</button>
       </div>
     </div>
   </div>
@@ -3438,27 +3437,6 @@ Utils.hideLoadingOverlay = function() {
   });
   document.getElementById('login-username').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-password').focus();
-  });
-
-  // ── DEBUG: Force Reseed Button ───────────
-  document.getElementById('debug-reseed-btn').addEventListener('click', async () => {
-    const sure = confirm('This will reset the database with default teacher (andrew/156251) and sample students/exams. Continue?');
-    if (!sure) return;
-    const btn = document.getElementById('debug-reseed-btn');
-    btn.textContent = 'Resetting…';
-    btn.disabled = true;
-    try {
-      if (!fbAuth.currentUser) await fbAuth.signInAnonymously();
-      await DB.seed(true); // force overwrite
-      alert('✅ Database reset successfully! You can now login with andrew / 156251');
-      btn.textContent = '🔧 Force Reset Database (one-time setup)';
-      btn.disabled = false;
-    } catch(e) {
-      alert('❌ Reset failed: ' + e.message);
-      btn.textContent = '🔧 Force Reset Database (one-time setup)';
-      btn.disabled = false;
-      console.error(e);
-    }
   });
 
   async function doLogin() {
