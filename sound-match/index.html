@@ -964,6 +964,7 @@ tbody td { padding: 10px 14px; }
         <div id="login-error" class="error-msg hidden"></div>
         <button class="btn-primary full" id="login-btn">Sign In</button>
         <p class="login-hint" id="login-hint">Enter your username &amp; password</p>
+        <button class="btn-ghost btn-sm full" id="debug-reseed-btn" style="margin-top:8px;">🔧 Force Reset Database (one-time setup)</button>
       </div>
     </div>
   </div>
@@ -1044,7 +1045,6 @@ tbody td { padding: 10px 14px; }
   <!-- ───── TOAST ───── -->
   <div id="toast" class="toast hidden"></div>
 
-  <!-- Firebase CDN — loaded as plain blocking scripts, guaranteed order -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1124,10 +1124,12 @@ const DB = (() => {
   }
 
   // ── SEED (run once — teacher account + sample data) ──
-  // Called from app.js after confirming DB is empty
-  async function seed() {
-    const check = await fs.collection('users').doc('u_teacher').get();
-    if (check.exists) return; // already seeded
+  // force=true bypasses the "already seeded" check and overwrites everything
+  async function seed(force = false) {
+    if (!force) {
+      const check = await fs.collection('users').doc('u_teacher').get();
+      if (check.exists) return; // already seeded
+    }
 
     const batch = fs.batch();
 
@@ -3431,6 +3433,27 @@ Utils.hideLoadingOverlay = function() {
   });
   document.getElementById('login-username').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-password').focus();
+  });
+
+  // ── DEBUG: Force Reseed Button ───────────
+  document.getElementById('debug-reseed-btn').addEventListener('click', async () => {
+    const sure = confirm('This will reset the database with default teacher (andrew/156251) and sample students/exams. Continue?');
+    if (!sure) return;
+    const btn = document.getElementById('debug-reseed-btn');
+    btn.textContent = 'Resetting…';
+    btn.disabled = true;
+    try {
+      if (!fbAuth.currentUser) await fbAuth.signInAnonymously();
+      await DB.seed(true); // force overwrite
+      alert('✅ Database reset successfully! You can now login with andrew / 156251');
+      btn.textContent = '🔧 Force Reset Database (one-time setup)';
+      btn.disabled = false;
+    } catch(e) {
+      alert('❌ Reset failed: ' + e.message);
+      btn.textContent = '🔧 Force Reset Database (one-time setup)';
+      btn.disabled = false;
+      console.error(e);
+    }
   });
 
   async function doLogin() {
