@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExamHub — Music Academy</title>
+  <style>
+/* ═══════════════════════════════════════════
+   ExamHub · Main CSS
+   Dark gold theme — Andrew's Music Academy
+═══════════════════════════════════════════ */
+
+:root {
+  --gold:        #D4A017;
+  --gold-light:  #F0C040;
+  --gold-dark:   #9A7010;
+  --bg:          #0D0D0D;
+  --bg2:         #141414;
+  --bg3:         #1C1C1C;
+  --bg4:         #242424;
+  --border:      #2E2E2E;
+  --text:        #E8E8E8;
+  --text2:       #A0A0A0;
+  --text3:       #606060;
+  --success:     #2ECC71;
+  --danger:      #E74C3C;
+  --info:        #3498DB;
+  --warn:        #F39C12;
+  --radius:      10px;
+  --sidebar-w:   220px;
+  --font:        'Segoe UI', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── SCREENS ─── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ─── LOGIN ─── */
+#screen-login {
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, #1a1200 0%, var(--bg) 70%);
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.login-logo {
+  text-align: center;
+}
+.logo-icon { font-size: 52px; line-height: 1; margin-bottom: 8px; }
+.login-logo h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tagline { color: var(--text2); font-size: 0.85rem; margin-top: 4px; }
+
+.login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tab-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--bg3);
+  padding: 4px;
+  border-radius: 8px;
+}
+.tab-btn {
+  padding: 9px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: var(--font);
+}
+.tab-btn.active {
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+}
+
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group label { font-size: 0.8rem; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+.field-group input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 10px 14px;
+  outline: none;
+  font-family: var(--font);
+  transition: border .2s;
+}
+.field-group input:focus { border-color: var(--gold); }
+
+.login-hint { font-size: 0.75rem; color: var(--text3); text-align: center; }
+.login-hint b { color: var(--gold); }
+
+/* ─── APP SHELL ─── */
+.app-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--gold);
+  padding: 0 18px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  padding: 0 10px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text2);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: all .15s;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(212,160,23,.12); color: var(--gold); font-weight: 600; }
+
+.btn-logout {
+  margin: 12px 10px 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text3);
+  padding: 9px;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  transition: all .2s;
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ─── MAIN CONTENT ─── */
+.main-content {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* ─── EXAM SHELL ─── */
+#screen-exam { flex-direction: column; }
+.exam-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.exam-header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.exam-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+#exam-taking-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); }
+.exam-meta-bar { display: flex; gap: 12px; }
+.timer-badge, .progress-badge {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  color: var(--text2);
+}
+.timer-badge.warn { color: var(--warn); border-color: var(--warn); }
+.timer-badge.danger { color: var(--danger); border-color: var(--danger); }
+
+.exam-prog-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+#exam-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+.exam-body {
+  flex: 1;
+  padding: 32px 24px;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.exam-footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  bottom: 0;
+}
+.q-dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+}
+.q-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.q-dot.current { border-color: var(--gold); color: var(--gold); }
+.q-dot.answered { background: var(--gold-dark); border-color: var(--gold); color: #000; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+  width: 30px; height: 30px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.modal-close:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 0.88rem;
+  z-index: 2000;
+  max-width: 340px;
+  animation: slideUp .3s ease;
+}
+.toast.hidden { display: none; }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error   { border-color: var(--danger);  color: var(--danger);  }
+.toast.info    { border-color: var(--info);     color: var(--info);    }
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main-content { padding: 16px; }
+  :root { --sidebar-w: 0px; }
+}
+
+
+/* ═══════════════════════════════════════════
+   ExamHub · Components CSS
+═══════════════════════════════════════════ */
+
+/* ─── PAGE HEADER ─── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.page-header p { color: var(--text2); font-size: 0.88rem; margin-top: 2px; }
+
+/* ─── STAT CARDS ─── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-card .s-icon { font-size: 1.5rem; }
+.stat-card .s-val  { font-size: 1.8rem; font-weight: 800; color: var(--gold); line-height: 1; }
+.stat-card .s-label{ font-size: 0.78rem; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ─── SECTION ─── */
+.section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.section-head h3 { font-size: 0.95rem; font-weight: 700; }
+.section-body { padding: 18px; }
+
+/* ─── BUTTONS ─── */
+.btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .btn-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-family: var(--font);
+  font-weight: 600;
+  transition: all .15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary   { background: var(--gold); color: #000; }
+.btn-primary:hover { background: var(--gold-light); }
+.btn-secondary { background: var(--bg3); border: 1px solid var(--border); color: var(--text); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.btn-danger    { background: rgba(231,76,60,.15); border: 1px solid var(--danger); color: var(--danger); }
+.btn-danger:hover { background: rgba(231,76,60,.28); }
+.btn-ghost     { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text2); }
+.btn-success   { background: rgba(46,204,113,.15); border: 1px solid var(--success); color: var(--success); }
+.btn-success:hover { background: rgba(46,204,113,.28); }
+.btn-sm { padding: 5px 11px; font-size: 0.8rem; }
+.full { width: 100%; justify-content: center; }
+
+/* ─── TABLES ─── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+thead th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--bg3); }
+tbody td { padding: 10px 14px; }
+
+/* ─── BADGES ─── */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.badge-gold   { background: rgba(212,160,23,.2);  color: var(--gold);    }
+.badge-green  { background: rgba(46,204,113,.15); color: var(--success); }
+.badge-red    { background: rgba(231,76,60,.15);  color: var(--danger);  }
+.badge-blue   { background: rgba(52,152,219,.15); color: var(--info);    }
+.badge-grey   { background: var(--bg3);           color: var(--text2);   }
+
+/* ─── FORMS ─── */
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+.form-grid.cols2 { grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.span2 { grid-column: span 2; }
+.form-group label {
+  font-size: 0.78rem;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.92rem;
+  padding: 9px 13px;
+  outline: none;
+  font-family: var(--font);
+  transition: border .2s;
+  width: 100%;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { border-color: var(--gold); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group select option { background: var(--bg3); }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+/* ─── SEARCH BAR ─── */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.search-bar input, .search-bar select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 13px;
+  font-size: 0.87rem;
+  font-family: var(--font);
+  outline: none;
+}
+.search-bar input { flex: 1; min-width: 140px; }
+.search-bar input:focus, .search-bar select:focus { border-color: var(--gold); }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+}
+.empty-state .e-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.empty-state p { font-size: 0.9rem; }
+
+/* ─── ERROR MSG ─── */
+.error-msg {
+  background: rgba(231,76,60,.12);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  padding: 9px 13px;
+  font-size: 0.85rem;
+}
+
+/* ─── QUESTION CARD ─── */
+.q-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 10px;
+}
+.q-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.q-card-head .q-num {
+  background: var(--gold-dark);
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.q-card-head .q-text {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  flex: 1;
+}
+.q-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ─── QUESTION TYPES — exam taking ─── */
+
+/* MCQ */
+.mcq-options { display: flex; flex-direction: column; gap: 10px; }
+.mcq-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.mcq-option:hover { border-color: var(--gold-dark); }
+.mcq-option.selected { border-color: var(--gold); background: rgba(212,160,23,.08); }
+.mcq-option .opt-letter {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 700;
+  flex-shrink: 0;
+}
+.mcq-option.selected .opt-letter { background: var(--gold); border-color: var(--gold); color: #000; }
+
+/* Fill in the blank */
+.fill-blank-wrap { display: flex; flex-direction: column; gap: 8px; }
+.fill-blank-wrap input {
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  padding: 12px 16px;
+  outline: none;
+  font-family: var(--font);
+  transition: border .2s;
+}
+.fill-blank-wrap input:focus { border-color: var(--gold); }
+
+/* Arrange/drag */
+.arrange-wrap { display: flex; flex-direction: column; gap: 8px; }
+.arrange-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: grab;
+  user-select: none;
+  transition: all .15s;
+}
+.arrange-item:active { cursor: grabbing; opacity: .7; }
+.arrange-item.drag-over { border-color: var(--gold); background: rgba(212,160,23,.08); }
+.arrange-handle { color: var(--text3); font-size: 1.1rem; }
+.arrange-badge {
+  background: var(--gold-dark);
+  color: #000;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Long answer */
+.long-answer-wrap textarea {
+  width: 100%;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 12px 16px;
+  outline: none;
+  font-family: var(--font);
+  min-height: 120px;
+  resize: vertical;
+  transition: border .2s;
+}
+.long-answer-wrap textarea:focus { border-color: var(--gold); }
+
+/* Tick boxes (multi-select) */
+.tick-options { display: flex; flex-direction: column; gap: 9px; }
+.tick-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.tick-option:hover { border-color: var(--gold-dark); }
+.tick-option.selected { border-color: var(--gold); background: rgba(212,160,23,.08); }
+.tick-box {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  transition: all .15s;
+}
+.tick-option.selected .tick-box { background: var(--gold); border-color: var(--gold); color: #000; }
+
+/* True/False */
+.tf-wrap { display: flex; gap: 12px; }
+.tf-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font);
+}
+.tf-btn:hover { border-color: var(--gold-dark); }
+.tf-btn.selected { border-color: var(--gold); background: rgba(212,160,23,.08); color: var(--gold); }
+
+/* Match pairs */
+.match-wrap { display: flex; flex-direction: column; gap: 10px; }
+.match-row { display: flex; align-items: center; gap: 10px; }
+.match-left {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 0.9rem;
+}
+.match-arrow { color: var(--text3); }
+.match-right select {
+  flex: 1;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 11px;
+  font-family: var(--font);
+  outline: none;
+  transition: border .2s;
+}
+.match-right select:focus { border-color: var(--gold); }
+
+/* ─── RESULT CARD ─── */
+.result-hero {
+  text-align: center;
+  padding: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+.result-hero .score-ring {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 6px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  margin: 0 auto 16px;
+}
+.result-hero .score-ring .score-pct { font-size: 1.9rem; font-weight: 900; color: var(--gold); }
+.result-hero .score-ring .score-sub { font-size: 0.7rem; color: var(--text2); }
+.result-hero h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+.result-hero p  { color: var(--text2); font-size: 0.9rem; }
+
+/* ─── LEADERBOARD ─── */
+.lb-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.lb-place {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px 12px;
+  min-width: 100px;
+}
+.lb-place.p1 { order: 2; border-color: #FFD700; min-width: 120px; }
+.lb-place.p2 { order: 1; border-color: #C0C0C0; }
+.lb-place.p3 { order: 3; border-color: #CD7F32; }
+.lb-medal { font-size: 1.8rem; margin-bottom: 6px; }
+.lb-name  { font-size: 0.85rem; font-weight: 700; text-align: center; }
+.lb-score { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+.lb-batch { font-size: 0.7rem; color: var(--text3); }
+
+.lb-table-row td:first-child { font-weight: 700; text-align: center; width: 40px; }
+
+/* ─── EXAM LIST CARD ─── */
+.exam-list-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+  transition: border .15s;
+  flex-wrap: wrap;
+}
+.exam-list-card:hover { border-color: var(--gold-dark); }
+.exam-info .exam-name  { font-weight: 700; margin-bottom: 4px; }
+.exam-info .exam-meta  { font-size: 0.8rem; color: var(--text2); display: flex; gap: 14px; flex-wrap: wrap; }
+.exam-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+
+/* ─── QUESTION BUILDER ─── */
+.qb-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.qb-type-btn {
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font);
+  color: var(--text);
+}
+.qb-type-btn:hover, .qb-type-btn.selected { border-color: var(--gold); background: rgba(212,160,23,.08); color: var(--gold); }
+.qb-type-btn .type-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+.qb-type-btn .type-name { font-size: 0.78rem; font-weight: 600; }
+
+/* options builder */
+.options-builder { display: flex; flex-direction: column; gap: 8px; }
+.option-row { display: flex; gap: 8px; align-items: center; }
+.option-row input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 8px 11px;
+  font-family: var(--font);
+  outline: none;
+}
+.option-row input:focus { border-color: var(--gold); }
+.option-row .btn-ghost { padding: 7px 10px; }
+.correct-radio {
+  accent-color: var(--gold);
+  width: 16px; height: 16px;
+  cursor: pointer;
+}
+
+/* ─── PILL TABS ─── */
+.pill-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.pill-tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+}
+.pill-tab.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+
+/* ─── REVIEW ─── */
+.review-q {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+}
+.review-q .rq-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.review-q .rq-icon { font-size: 1.1rem; }
+.review-q .rq-text { font-weight: 600; font-size: 0.95rem; }
+.review-answer { font-size: 0.85rem; margin-top: 6px; }
+.review-answer .ra-label { color: var(--text2); font-size: 0.75rem; text-transform: uppercase; }
+.review-answer .ra-val   { color: var(--text); }
+.review-answer .ra-val.correct { color: var(--success); }
+.review-answer .ra-val.wrong   { color: var(--danger); }
+
+/* ─── MISC ─── */
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+.text-gold { color: var(--gold); }
+.text-muted { color: var(--text2); font-size: 0.85rem; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+
+/* score colors */
+.score-excellent { color: #2ECC71; }
+.score-good      { color: #F39C12; }
+.score-fail      { color: #E74C3C; }
+
+/* ─── PAGINATION ─── */
+.pagination {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.page-btn {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  transition: all .15s;
+}
+.page-btn:hover { border-color: var(--gold); color: var(--gold); }
+.page-btn.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+
+  </style>
+</head>
+<body>
+<!-- ───── LOADING SPLASH ───── -->
+  <div id="screen-loading" class="screen active" style="align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+    <div style="font-size:3rem;">🎹</div>
+    <div style="font-size:1.2rem;font-weight:800;color:var(--gold);">ExamHub</div>
+    <div class="spinner"></div>
+    <div id="loading-msg" style="color:var(--text2);font-size:0.85rem;">Connecting…</div>
+  </div>
+
+  <!-- ───── LOGIN SCREEN ───── -->
+  <div id="screen-login" class="screen">
+    <div class="login-wrap">
+      <div class="login-logo">
+        <div class="logo-icon">🎹</div>
+        <h1>ExamHub</h1>
+        <p class="tagline">Music Academy · Examination Portal</p>
+      </div>
+      <div class="login-card">
+        <div class="tab-row">
+          <button class="tab-btn active" data-role="student">Student</button>
+          <button class="tab-btn" data-role="teacher">Teacher</button>
+        </div>
+        <div class="field-group">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" />
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+        </div>
+        <div id="login-error" class="error-msg hidden"></div>
+        <button class="btn-primary full" id="login-btn">Sign In</button>
+        <p class="login-hint" id="login-hint">Students: enter your username &amp; password</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── STUDENT DASHBOARD ───── -->
+  <div id="screen-student" class="screen">
+    <div class="app-shell">
+      <aside class="sidebar" id="student-sidebar">
+        <div class="sidebar-brand">🎹 ExamHub</div>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item active" data-view="s-dashboard">🏠 Dashboard</a>
+          <a href="#" class="nav-item" data-view="s-exams">📝 My Exams</a>
+          <a href="#" class="nav-item" data-view="s-results">📊 My Results</a>
+          <a href="#" class="nav-item" data-view="s-leaderboard">🏆 Leaderboard</a>
+        </nav>
+        <div style="padding:10px 10px 0;font-size:0.75rem;color:var(--text3);" id="student-name-tag"></div>
+        <button class="btn-logout" id="student-logout">Sign Out</button>
+      </aside>
+      <main class="main-content" id="student-main">
+        <div class="flex-center" style="height:60vh;"><div class="spinner"></div></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ───── TEACHER DASHBOARD ───── -->
+  <div id="screen-teacher" class="screen">
+    <div class="app-shell">
+      <aside class="sidebar" id="teacher-sidebar">
+        <div class="sidebar-brand">🎹 ExamHub</div>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item active" data-view="t-dashboard">🏠 Dashboard</a>
+          <a href="#" class="nav-item" data-view="t-batches">👥 Batches</a>
+          <a href="#" class="nav-item" data-view="t-students">🎓 Students</a>
+          <a href="#" class="nav-item" data-view="t-exams">📋 Exams</a>
+          <a href="#" class="nav-item" data-view="t-questions">❓ Question Bank</a>
+          <a href="#" class="nav-item" data-view="t-results">📊 Results</a>
+          <a href="#" class="nav-item" data-view="t-leaderboard">🏆 Leaderboard</a>
+        </nav>
+        <div style="padding:10px 10px 0;font-size:0.75rem;color:var(--text3);">👨‍🏫 Andrew</div>
+        <button class="btn-logout" id="teacher-logout">Sign Out</button>
+      </aside>
+      <main class="main-content" id="teacher-main">
+        <div class="flex-center" style="height:60vh;"><div class="spinner"></div></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ───── EXAM TAKING SCREEN ───── -->
+  <div id="screen-exam" class="screen">
+    <div class="exam-shell">
+      <header class="exam-header">
+        <div class="exam-title-bar">
+          <span id="exam-taking-title">Exam</span>
+          <div class="exam-meta-bar">
+            <span class="timer-badge" id="exam-timer">⏱ 00:00</span>
+            <span class="progress-badge" id="exam-progress">Q 1 / 1</span>
+          </div>
+        </div>
+        <div class="exam-prog-bar"><div id="exam-prog-fill"></div></div>
+      </header>
+      <div class="exam-body" id="exam-body"></div>
+      <footer class="exam-footer">
+        <button class="btn-secondary" id="exam-prev">← Prev</button>
+        <div id="exam-q-dots" class="q-dots"></div>
+        <button class="btn-primary" id="exam-next">Next →</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ───── MODAL ───── -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-box" id="modal-box">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ───── TOAST ───── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Firebase CDN — loaded as plain blocking scripts, guaranteed order -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    if (typeof firebase === 'undefined') {
+      document.getElementById('loading-msg').textContent = '❌ Firebase SDK failed to load. Check your internet connection.';
+      document.getElementById('loading-msg').style.color = '#E74C3C';
+      throw new Error('Firebase SDK not loaded');
+    }
+  </script>
+
+  <script>
+/* ═══════════════════════════════════════════
+   firebase-init.js
+   Initialize Firebase with your project config
+═══════════════════════════════════════════ */
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain:        "sample-6eb3e.firebaseapp.com",
+  projectId:         "sample-6eb3e",
+  storageBucket:     "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId:             "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId:     "G-6XPPZ9N78G"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// Global handles used everywhere
+const firestore = firebase.firestore();
+const fbAuth    = firebase.auth();
+
+// ── Spinner CSS injected here so it's always available ──
+const spinnerStyle = document.createElement('style');
+spinnerStyle.textContent = `
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;flex-direction:column;gap:12px;
+}
+.loading-overlay p { color:var(--text2);font-size:.85rem; }
+`;
+document.head.appendChild(spinnerStyle);
+
+  </script>
+
+  <script>
+/* ═══════════════════════════════════════════
+   db.js — Firestore Database Layer
+   Collections: users, batches, questions, exams, attempts
+═══════════════════════════════════════════ */
+
+const DB = (() => {
+
+  const fs = firestore; // shorthand
+
+  // ── helpers ─────────────────────────────
+  function uid() { return fs.collection('_').doc().id; }
+
+  // Convert Firestore doc → plain object with id
+  function docToObj(doc) {
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
+  }
+  function snapToArr(snap) {
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  // ── SEED (run once — teacher account + sample data) ──
+  // Called from app.js after confirming DB is empty
+  async function seed() {
+    const check = await fs.collection('users').doc('u_teacher').get();
+    if (check.exists) return; // already seeded
+
+    const batch = fs.batch();
+
+    // Teacher — password 156251 SHA-256
+    batch.set(fs.collection('users').doc('u_teacher'), {
+      role: 'teacher', username: 'andrew',
+      passwordHash: 'df3a573aa2c715e2ca89c038edfde35b09a7c3230cc9b2da0f2fc73e45ebc77b',
+      name: 'Andrew', email: 'andrew@musicacademy.com', createdAt: Date.now()
+    });
+
+    // Sample students
+    // sara → sara123
+    batch.set(fs.collection('users').doc('u_sara'), {
+      role: 'student', username: 'sara',
+      passwordHash: '926b4b8a00cfab44b758450fa6bf188d4bf8541c2fd6b3d9b93d152d43a99f64',
+      name: 'Sara Joseph', batchId: 'b_batch1', email: 'sara@example.com', createdAt: Date.now()
+    });
+    // john → john456
+    batch.set(fs.collection('users').doc('u_john'), {
+      role: 'student', username: 'john',
+      passwordHash: 'd0332416fc1950287f10133a6001dcf91470dd9638bfb418d4c8ed266508b7ba',
+      name: 'John Thomas', batchId: 'b_batch2', email: 'john@example.com', createdAt: Date.now()
+    });
+
+    // Batches
+    batch.set(fs.collection('batches').doc('b_batch1'), {
+      name: 'Batch A — Morning', description: 'Keyboard Beginners · Mon/Wed/Fri 9am',
+      course: 'Electronic Keyboard', level: 'Beginner', createdAt: Date.now()
+    });
+    batch.set(fs.collection('batches').doc('b_batch2'), {
+      name: 'Batch B — Evening', description: 'Keyboard Intermediate · Tue/Thu 5pm',
+      course: 'Electronic Keyboard', level: 'Intermediate', createdAt: Date.now()
+    });
+
+    // Sample questions
+    const qRef = fs.collection('questions');
+    batch.set(qRef.doc('q_sample1'), {
+      type:'mcq', text:'How many white keys are on a standard 88-key piano?',
+      points:2, options:['52','36','88','44'], correctIndex:0,
+      topic:'Lesson 01 Musical Alphabet', difficulty:'easy', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample2'), {
+      type:'fill', text:'The musical note after "Do" in solfège is ___.',
+      points:2, answer:'Re', variants:['ray','RE'],
+      topic:'Lesson 01 Musical Alphabet', difficulty:'easy', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample3'), {
+      type:'tf', text:'A sharp (#) raises a note by one half-step.',
+      points:2, correct:true,
+      topic:'Lesson 02 Sharps and Flats', difficulty:'easy', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample4'), {
+      type:'arrange', text:'Arrange the C major scale in ascending order:',
+      points:3, correctOrder:['C','D','E','F','G','A','B'], items:['C','D','E','F','G','A','B'],
+      topic:'Lesson 03 Major Scale', difficulty:'medium', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample5'), {
+      type:'tick', text:'Which of the following are major chords? (Select all)',
+      points:3, options:['C Major','A Minor','G Major','D Minor','F Major'],
+      correctIndices:[0,2,4],
+      topic:'Lesson 04 Chords', difficulty:'medium', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample6'), {
+      type:'match', text:'Match the Italian term to its meaning:',
+      points:3, pairs:[['Forte','Loud'],['Piano','Soft'],['Allegro','Fast'],['Largo','Slow']],
+      topic:'Lesson 05 Italian Terms', difficulty:'easy', createdAt: Date.now()
+    });
+    batch.set(qRef.doc('q_sample7'), {
+      type:'long', text:'Explain the difference between a major and a minor scale in your own words.',
+      points:6, sampleAnswer:'A major scale sounds happy/bright; a minor scale sounds sad/dark. They differ in the 3rd, 6th, and 7th scale degrees.',
+      rubric:'2pts concept, 2pts example, 2pts clarity', manualGrade:true,
+      topic:'Lesson 03 Major Scale', difficulty:'hard', createdAt: Date.now()
+    });
+
+    // Sample exam
+    batch.set(fs.collection('exams').doc('ex_sample'), {
+      title: 'Keyboard Basics — Module 1 Quiz',
+      description: 'Covers notes, scales, and hand positions.',
+      batchId: 'b_batch1', duration: 30, totalMarks: 21, passMark: 10,
+      questionIds: ['q_sample1','q_sample2','q_sample3','q_sample4','q_sample5','q_sample6','q_sample7'],
+      shuffle: false, showResultImmediately: true,
+      status: 'published', createdAt: Date.now()
+    });
+
+    await batch.commit();
+    console.log('✅ ExamHub seeded successfully');
+  }
+
+  // ══ USERS ════════════════════════════════
+  const Users = {
+    async all() {
+      const snap = await fs.collection('users').get();
+      return snapToArr(snap);
+    },
+    async byId(id) {
+      const doc = await fs.collection('users').doc(id).get();
+      return docToObj(doc);
+    },
+    async byUsername(username) {
+      const snap = await fs.collection('users')
+        .where('username','==', username.trim().toLowerCase()).limit(1).get();
+      return snap.empty ? null : docToObj(snap.docs[0]);
+    },
+    async students() {
+      const snap = await fs.collection('users').where('role','==','student').get();
+      return snapToArr(snap);
+    },
+    async inBatch(batchId) {
+      const snap = await fs.collection('users')
+        .where('role','==','student').where('batchId','==',batchId).get();
+      return snapToArr(snap);
+    },
+    async save(user) {
+      const { id, ...data } = user;
+      if (id) {
+        await fs.collection('users').doc(id).set(data, { merge: true });
+        return id;
+      } else {
+        const ref = await fs.collection('users').add({ ...data, createdAt: Date.now() });
+        return ref.id;
+      }
+    },
+    async delete(id) {
+      await fs.collection('users').doc(id).delete();
+    },
+  };
+
+  // ══ BATCHES ══════════════════════════════
+  const Batches = {
+    async all() {
+      const snap = await fs.collection('batches').orderBy('createdAt').get();
+      return snapToArr(snap);
+    },
+    async byId(id) {
+      const doc = await fs.collection('batches').doc(id).get();
+      return docToObj(doc);
+    },
+    async save(b) {
+      const { id, ...data } = b;
+      if (id) {
+        await fs.collection('batches').doc(id).set(data, { merge: true });
+        return id;
+      } else {
+        const ref = await fs.collection('batches').add({ ...data, createdAt: Date.now() });
+        return ref.id;
+      }
+    },
+    async delete(id) {
+      await fs.collection('batches').doc(id).delete();
+    },
+  };
+
+  // ══ QUESTIONS ════════════════════════════
+  const Questions = {
+    async all() {
+      const snap = await fs.collection('questions').orderBy('createdAt').get();
+      return snapToArr(snap);
+    },
+    async byId(id) {
+      const doc = await fs.collection('questions').doc(id).get();
+      return docToObj(doc);
+    },
+    async byIds(ids) {
+      if (!ids || !ids.length) return [];
+      // Firestore 'in' supports max 30 per query
+      const chunks = [];
+      for (let i = 0; i < ids.length; i += 30) chunks.push(ids.slice(i, i+30));
+      const results = [];
+      for (const chunk of chunks) {
+        const snap = await fs.collection('questions').where(firebase.firestore.FieldPath.documentId(),'in',chunk).get();
+        snapToArr(snap).forEach(q => results.push(q));
+      }
+      // Return in original order
+      return ids.map(id => results.find(q => q.id === id)).filter(Boolean);
+    },
+    async topics() {
+      const snap = await fs.collection('questions').get();
+      const topics = [...new Set(snap.docs.map(d => d.data().topic).filter(Boolean))];
+      return topics.sort();
+    },
+    async byTopic(topic) {
+      const snap = await fs.collection('questions').where('topic','==',topic).get();
+      return snapToArr(snap);
+    },
+    async save(q) {
+      const { id, ...data } = q;
+      if (id) {
+        await fs.collection('questions').doc(id).set(data, { merge: true });
+        return id;
+      } else {
+        const ref = await fs.collection('questions').add({ ...data, createdAt: Date.now() });
+        return ref.id;
+      }
+    },
+    async delete(id) {
+      await fs.collection('questions').doc(id).delete();
+    },
+  };
+
+  // ══ EXAMS ════════════════════════════════
+  const Exams = {
+    async all() {
+      const snap = await fs.collection('exams').orderBy('createdAt','desc').get();
+      return snapToArr(snap);
+    },
+    async byId(id) {
+      const doc = await fs.collection('exams').doc(id).get();
+      return docToObj(doc);
+    },
+    async forBatch(batchId) {
+      // Exams for specific batch OR all batches
+      const [specific, all] = await Promise.all([
+        fs.collection('exams').where('batchId','==',batchId).get(),
+        fs.collection('exams').where('batchId','==','all').get(),
+      ]);
+      const map = {};
+      [...snapToArr(specific), ...snapToArr(all)].forEach(e => map[e.id] = e);
+      return Object.values(map).sort((a,b) => b.createdAt - a.createdAt);
+    },
+    async save(e) {
+      const { id, ...data } = e;
+      if (id) {
+        await fs.collection('exams').doc(id).set(data, { merge: true });
+        return id;
+      } else {
+        const ref = await fs.collection('exams').add({ ...data, createdAt: Date.now() });
+        return ref.id;
+      }
+    },
+    async delete(id) {
+      await fs.collection('exams').doc(id).delete();
+    },
+  };
+
+  // ══ ATTEMPTS ═════════════════════════════
+  const Attempts = {
+    async all() {
+      const snap = await fs.collection('attempts').get();
+      return snapToArr(snap);
+    },
+    async byId(id) {
+      const doc = await fs.collection('attempts').doc(id).get();
+      return docToObj(doc);
+    },
+    async byStudent(studentId) {
+      const snap = await fs.collection('attempts').where('studentId','==',studentId).get();
+      return snapToArr(snap);
+    },
+    async byExam(examId) {
+      const snap = await fs.collection('attempts').where('examId','==',examId).get();
+      return snapToArr(snap);
+    },
+    async byStudentExam(studentId, examId) {
+      const snap = await fs.collection('attempts')
+        .where('studentId','==',studentId).where('examId','==',examId).get();
+      return snapToArr(snap);
+    },
+    async save(a) {
+      const { id, ...data } = a;
+      if (id) {
+        await fs.collection('attempts').doc(id).set(data, { merge: true });
+        return id;
+      } else {
+        const ref = await fs.collection('attempts').add(data);
+        return ref.id;
+      }
+    },
+
+    // Best attempt per student for one exam — sorted by score
+    async leaderboard(examId) {
+      const attempts = (await Attempts.byExam(examId)).filter(a => a.status === 'submitted');
+      const best = {};
+      attempts.forEach(a => {
+        if (!best[a.studentId] || a.score > best[a.studentId].score) best[a.studentId] = a;
+      });
+      const rows = Object.values(best).sort((a,b) => b.score - a.score || a.timeTaken - b.timeTaken);
+      // Fetch students
+      const students = await Promise.all(rows.map(a => Users.byId(a.studentId)));
+      return rows.map((a,i) => ({ rank: i+1, attempt: a, student: students[i] }));
+    },
+
+    // Global: total score per student across all exams
+    async globalLeaderboard() {
+      const all = (await Attempts.all()).filter(a => a.status === 'submitted');
+      const totals = {};
+      all.forEach(a => {
+        if (!totals[a.studentId]) totals[a.studentId] = { total:0, count:0, studentId: a.studentId };
+        totals[a.studentId].total += (a.score||0);
+        totals[a.studentId].count++;
+      });
+      const rows = Object.values(totals).sort((a,b) => b.total - a.total);
+      const students = await Promise.all(rows.map(r => Users.byId(r.studentId)));
+      return rows.map((r,i) => ({ rank:i+1, ...r, student: students[i] }));
+    },
+  };
+
+  return { seed, uid, Users, Batches, Questions, Exams, Attempts };
+})();
+
+
+/* ═══════════════════════════════════════════
+   auth.js — Authentication
+   Strategy: store username+passwordHash in Firestore,
+   use Firebase Anonymous Auth as session carrier.
+   (No email needed — username-based login)
+═══════════════════════════════════════════ */
+
+const Auth = (() => {
+
+  let _currentUser = null; // cached { id, role, name, username, batchId, ... }
+
+  // SHA-256 via SubtleCrypto
+  async function sha256(str) {
+    const buf  = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function login(username, password, expectedRole) {
+    const hash = await sha256(password);
+    const user = await DB.Users.byUsername(username);
+    if (!user)                       return { ok:false, msg:'Username not found.' };
+    if (user.passwordHash !== hash)  return { ok:false, msg:'Incorrect password.' };
+    if (user.role !== expectedRole)  return { ok:false, msg:`This account is not a ${expectedRole}.` };
+
+    // Sign in anonymously with Firebase Auth to get a persistent session
+    await fbAuth.signInAnonymously();
+
+    // Store our app user in sessionStorage for fast access
+    sessionStorage.setItem('examhub_user', JSON.stringify(user));
+    _currentUser = user;
+    return { ok:true, user };
+  }
+
+  async function logout() {
+    await fbAuth.signOut();
+    sessionStorage.removeItem('examhub_user');
+    _currentUser = null;
+  }
+
+  function current() {
+    if (_currentUser) return _currentUser;
+    try {
+      const s = sessionStorage.getItem('examhub_user');
+      if (s) { _currentUser = JSON.parse(s); return _currentUser; }
+    } catch {}
+    return null;
+  }
+
+  // Reload user from Firestore (after edits by teacher)
+  async function refresh() {
+    const u = current();
+    if (!u) return null;
+    const fresh = await DB.Users.byId(u.id);
+    if (fresh) {
+      _currentUser = fresh;
+      sessionStorage.setItem('examhub_user', JSON.stringify(fresh));
+    }
+    return fresh;
+  }
+
+  async function changePassword(userId, newPassword) {
+    const hash = await sha256(newPassword);
+    await DB.Users.save({ id: userId, passwordHash: hash });
+    return true;
+  }
+
+  function requireRole(role) {
+    const u = current();
+    return u && u.role === role ? u : null;
+  }
+
+  return { login, logout, current, refresh, requireRole, sha256, changePassword };
+})();
+
+
+/* ═══════════════════════════════════════════
+   utils.js — Shared Utilities
+═══════════════════════════════════════════ */
+
+const Utils = (() => {
+
+  // ── TOAST ───────────────────────────────
+  let toastTimer;
+  function toast(msg, type = 'info', ms = 3000) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `toast ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.add('hidden'), ms);
+  }
+
+  // ── MODAL ───────────────────────────────
+  function modal(html, wide = false) {
+    const box = document.getElementById('modal-box');
+    box.style.maxWidth = wide ? '900px' : '700px';
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.remove('hidden');
+  }
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+    document.getElementById('modal-content').innerHTML = '';
+  }
+
+  // ── SCREENS ─────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── RENDER VIEW ─────────────────────────
+  function renderIn(containerId, html) {
+    document.getElementById(containerId).innerHTML = html;
+  }
+
+  // ── ACTIVE NAV ──────────────────────────
+  function setActiveNav(scope, view) {
+    document.querySelectorAll(`#${scope}-sidebar .nav-item`).forEach(a => {
+      a.classList.toggle('active', a.dataset.view === view);
+    });
+  }
+
+  // ── FORMAT HELPERS ───────────────────────
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    return new Date(ts).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function fmtTime(secs) {
+    const m = Math.floor(secs / 60).toString().padStart(2,'0');
+    const s = (secs % 60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  }
+  function scoreColor(pct) {
+    if (pct >= 80) return 'score-excellent';
+    if (pct >= 50) return 'score-good';
+    return 'score-fail';
+  }
+  function pct(score, total) {
+    if (!total) return 0;
+    return Math.round((score / total) * 100);
+  }
+  function grade(pctVal) {
+    if (pctVal >= 90) return 'A+';
+    if (pctVal >= 80) return 'A';
+    if (pctVal >= 70) return 'B';
+    if (pctVal >= 60) return 'C';
+    if (pctVal >= 50) return 'D';
+    return 'F';
+  }
+
+  // ── SANITIZE ─────────────────────────────
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── SHUFFLE ──────────────────────────────
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ── CONFIRM DIALOG ───────────────────────
+  function confirm(msg, onYes) {
+    modal(`
+      <h3 style="margin-bottom:14px;">Confirm</h3>
+      <p style="color:var(--text2);margin-bottom:22px;">${esc(msg)}</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-danger" id="confirm-yes">Confirm</button>
+      </div>
+    `);
+    document.getElementById('confirm-yes').onclick = () => { closeModal(); onYes(); };
+  }
+
+  // ── EMPTY STATE ───────────────────────────
+  function empty(icon, msg) {
+    return `<div class="empty-state"><div class="e-icon">${icon}</div><p>${msg}</p></div>`;
+  }
+
+  return { toast, modal, closeModal, showScreen, renderIn, setActiveNav,
+           fmtDate, fmtTime, scoreColor, pct, grade, esc, shuffle, confirm, empty };
+})();
+
+
+/* ═══════════════════════════════════════════
+   questions.js — Question Builder & Bank UI
+   Types: mcq, fill, arrange, long, tick, tf, match
+═══════════════════════════════════════════ */
+
+const QTypes = {
+  list: [
+    { id:'mcq',    icon:'🔘', name:'Multiple Choice',   desc:'One correct answer' },
+    { id:'fill',   icon:'✏️', name:'Fill in the Blank', desc:'Short text answer' },
+    { id:'tick',   icon:'☑️', name:'Tick All Correct',  desc:'Multiple correct answers' },
+    { id:'tf',     icon:'✅', name:'True / False',       desc:'Binary choice' },
+    { id:'arrange',icon:'🔢', name:'Arrange in Order',  desc:'Drag to correct order' },
+    { id:'match',  icon:'🔗', name:'Match the Pairs',   desc:'Connect two columns' },
+    { id:'long',   icon:'📝', name:'Written Answer',    desc:'Free text, manual grade' },
+  ],
+
+  label(type) {
+    const t = QTypes.list.find(q => q.id === type);
+    return t ? `${t.icon} ${t.name}` : type;
+  },
+
+  // ─── BUILDER FORM ────────────────────────
+  builderForm(q = null, topics = []) {
+    const type = q?.type || 'mcq';
+    const topicOpts = topics.map(t => `<option value="${Utils.esc(t)}" ${q?.topic===t?'selected':''}>${Utils.esc(t)}</option>`).join('');
+    return `
+    <h3 style="margin-bottom:18px;">${q?.id ? 'Edit Question' : 'Add Question'}</h3>
+
+    <!-- Type selector -->
+    <div class="form-group mb-16">
+      <label>Question Type</label>
+      <div class="qb-type-grid" id="qb-type-grid">
+        ${QTypes.list.map(t => `
+          <button class="qb-type-btn${type===t.id?' selected':''}" data-qtype="${t.id}" onclick="QTypes.selectType('${t.id}')">
+            <span class="type-icon">${t.icon}</span>
+            <span class="type-name">${t.name}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="form-grid cols2">
+      <div class="form-group span2">
+        <label>Question Text *</label>
+        <textarea id="qb-text" rows="3" placeholder="Enter your question...">${Utils.esc(q?.text||'')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Topic / Lesson</label>
+        <input list="topic-list" id="qb-topic" value="${Utils.esc(q?.topic||'')}" placeholder="e.g. Music Theory" />
+        <datalist id="topic-list">${topicOpts}</datalist>
+      </div>
+      <div class="form-group">
+        <label>Difficulty</label>
+        <select id="qb-difficulty">
+          <option value="easy"   ${q?.difficulty==='easy'  ?'selected':''}>Easy</option>
+          <option value="medium" ${q?.difficulty==='medium'?'selected':''}>Medium</option>
+          <option value="hard"   ${q?.difficulty==='hard'  ?'selected':''}>Hard</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Points</label>
+        <input type="number" id="qb-points" value="${q?.points||2}" min="1" max="20" />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div id="qb-type-fields"></div>
+
+    <div class="form-actions mt-16">
+      <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="QTypes.saveQuestion('${q?.id||''}')">
+        ${q?.id ? '💾 Save Changes' : '➕ Add Question'}
+      </button>
+    </div>
+    `;
+  },
+
+  selectType(type) {
+    document.querySelectorAll('.qb-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.qtype === type));
+    QTypes.renderTypeFields(type);
+  },
+
+  renderTypeFields(type, q = null) {
+    const el = document.getElementById('qb-type-fields');
+    if (!el) return;
+    el.innerHTML = QTypes._fieldsHTML(type, q);
+    QTypes._bindArrange();
+    QTypes._bindMatchPairs();
+  },
+
+  _fieldsHTML(type, q) {
+    switch(type) {
+      case 'mcq': return QTypes._mcqFields(q);
+      case 'fill': return QTypes._fillFields(q);
+      case 'tick': return QTypes._tickFields(q);
+      case 'tf':   return QTypes._tfFields(q);
+      case 'arrange': return QTypes._arrangeFields(q);
+      case 'match':   return QTypes._matchFields(q);
+      case 'long':    return QTypes._longFields(q);
+      default: return '';
+    }
+  },
+
+  _mcqFields(q) {
+    const opts = q?.options || ['','','',''];
+    return `
+    <p class="text-muted mb-16">Add answer options. Select the radio button next to the correct answer.</p>
+    <div class="options-builder" id="mcq-opts">
+      ${opts.map((o,i) => `
+        <div class="option-row" data-idx="${i}">
+          <input type="radio" name="mcq-correct" class="correct-radio" value="${i}" ${q?.correctIndex===i?'checked':''} title="Mark as correct" />
+          <input type="text" class="mcq-opt-input" value="${Utils.esc(o)}" placeholder="Option ${String.fromCharCode(65+i)}" />
+          <button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>
+        </div>`).join('')}
+    </div>
+    <button class="btn-ghost btn-sm mt-16" onclick="QTypes.addMcqOpt()">+ Add Option</button>`;
+  },
+
+  _fillFields(q) {
+    return `
+    <div class="form-group">
+      <label>Correct Answer *</label>
+      <input id="fill-answer" value="${Utils.esc(q?.answer||'')}" placeholder="Enter the exact correct answer..." />
+    </div>
+    <div class="form-group mt-16">
+      <label>Accept Variations? (comma-separated)</label>
+      <input id="fill-variants" value="${Utils.esc((q?.variants||[]).join(', '))}" placeholder="e.g. Re, ray, RAY" />
+    </div>`;
+  },
+
+  _tickFields(q) {
+    const opts = q?.options || ['','','',''];
+    const corr = q?.correctIndices || [];
+    return `
+    <p class="text-muted mb-16">Check ALL correct answers.</p>
+    <div class="options-builder" id="tick-opts">
+      ${opts.map((o,i) => `
+        <div class="option-row" data-idx="${i}">
+          <input type="checkbox" class="correct-radio" style="accent-color:var(--gold);width:16px;height:16px;" ${corr.includes(i)?'checked':''} title="Correct" />
+          <input type="text" class="tick-opt-input" value="${Utils.esc(o)}" placeholder="Option ${String.fromCharCode(65+i)}" />
+          <button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>
+        </div>`).join('')}
+    </div>
+    <button class="btn-ghost btn-sm mt-16" onclick="QTypes.addTickOpt()">+ Add Option</button>`;
+  },
+
+  _tfFields(q) {
+    return `
+    <div class="form-group">
+      <label>Correct Answer</label>
+      <select id="tf-answer">
+        <option value="true"  ${q?.correct===true ?'selected':''}>True</option>
+        <option value="false" ${q?.correct===false?'selected':''}>False</option>
+      </select>
+    </div>`;
+  },
+
+  _arrangeFields(q) {
+    const items = q?.correctOrder || ['','','',''];
+    return `
+    <p class="text-muted mb-16">Enter items in the CORRECT order. Students will see them shuffled.</p>
+    <div class="options-builder" id="arrange-opts">
+      ${items.map((item,i) => `
+        <div class="option-row" data-idx="${i}">
+          <span style="color:var(--gold);font-weight:700;min-width:20px;">${i+1}.</span>
+          <input type="text" class="arr-item-input" value="${Utils.esc(item)}" placeholder="Item ${i+1}" />
+          <button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>
+        </div>`).join('')}
+    </div>
+    <button class="btn-ghost btn-sm mt-16" onclick="QTypes.addArrOpt()">+ Add Item</button>`;
+  },
+
+  _matchFields(q) {
+    const pairs = q?.pairs || [['',''],['',''],['','']];
+    return `
+    <p class="text-muted mb-16">Enter pairs. Left column = prompts, Right column = answers.</p>
+    <div class="options-builder" id="match-opts">
+      ${pairs.map((p,i) => `
+        <div class="option-row" data-idx="${i}">
+          <input type="text" class="match-left-input" value="${Utils.esc(p[0])}" placeholder="Left ${i+1}" />
+          <span style="color:var(--text3);">→</span>
+          <input type="text" class="match-right-input" value="${Utils.esc(p[1])}" placeholder="Right ${i+1}" />
+          <button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>
+        </div>`).join('')}
+    </div>
+    <button class="btn-ghost btn-sm mt-16" onclick="QTypes.addMatchPair()">+ Add Pair</button>`;
+  },
+
+  _longFields(q) {
+    return `
+    <div class="form-group">
+      <label>Sample / Model Answer (for teacher reference)</label>
+      <textarea id="long-sample" rows="4" placeholder="Enter a sample answer for grading reference...">${Utils.esc(q?.sampleAnswer||'')}</textarea>
+    </div>
+    <div class="form-group mt-16">
+      <label>Grading Note (shown to teacher when marking)</label>
+      <input id="long-rubric" value="${Utils.esc(q?.rubric||'')}" placeholder="e.g. Award 2pts for concept, 2pts for example..." />
+    </div>
+    <p class="text-muted mt-16">⚠️ Written answers require manual grading by the teacher.</p>`;
+  },
+
+  // Option add/remove helpers
+  removeOpt(btn) { btn.closest('.option-row').remove(); },
+  addMcqOpt() {
+    const c = document.getElementById('mcq-opts').children.length;
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `<input type="radio" name="mcq-correct" class="correct-radio" value="${c}" title="Mark as correct" /><input type="text" class="mcq-opt-input" placeholder="Option ${String.fromCharCode(65+c)}" /><button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>`;
+    document.getElementById('mcq-opts').appendChild(row);
+  },
+  addTickOpt() {
+    const c = document.getElementById('tick-opts').children.length;
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `<input type="checkbox" class="correct-radio" style="accent-color:var(--gold);width:16px;height:16px;" /><input type="text" class="tick-opt-input" placeholder="Option ${String.fromCharCode(65+c)}" /><button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>`;
+    document.getElementById('tick-opts').appendChild(row);
+  },
+  addArrOpt() {
+    const c = document.getElementById('arrange-opts').children.length;
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `<span style="color:var(--gold);font-weight:700;min-width:20px;">${c+1}.</span><input type="text" class="arr-item-input" placeholder="Item ${c+1}" /><button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>`;
+    document.getElementById('arrange-opts').appendChild(row);
+  },
+  addMatchPair() {
+    const c = document.getElementById('match-opts').children.length;
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `<input type="text" class="match-left-input" placeholder="Left ${c+1}" /><span style="color:var(--text3);">→</span><input type="text" class="match-right-input" placeholder="Right ${c+1}" /><button class="btn-ghost btn-sm" onclick="QTypes.removeOpt(this)">✕</button>`;
+    document.getElementById('match-opts').appendChild(row);
+  },
+  _bindArrange() {},
+  _bindMatchPairs() {},
+
+  // ─── COLLECT FORM DATA ───────────────────
+  collectQuestion(existingId) {
+    const type  = document.querySelector('.qb-type-btn.selected')?.dataset.qtype || 'mcq';
+    const text  = document.getElementById('qb-text')?.value.trim();
+    const topic = document.getElementById('qb-topic')?.value.trim();
+    const diff  = document.getElementById('qb-difficulty')?.value;
+    const pts   = parseInt(document.getElementById('qb-points')?.value) || 2;
+
+    if (!text) { Utils.toast('Question text is required.','error'); return null; }
+
+    const q = { id: existingId||'', type, text, topic, difficulty:diff, points:pts };
+
+    switch(type) {
+      case 'mcq': {
+        const opts = [...document.querySelectorAll('.mcq-opt-input')].map(i => i.value.trim());
+        const corr = document.querySelector('input[name="mcq-correct"]:checked');
+        if (opts.length < 2) { Utils.toast('Add at least 2 options.','error'); return null; }
+        if (!corr) { Utils.toast('Select the correct answer.','error'); return null; }
+        q.options = opts; q.correctIndex = parseInt(corr.value); break;
+      }
+      case 'fill': {
+        const ans = document.getElementById('fill-answer')?.value.trim();
+        if (!ans) { Utils.toast('Enter the correct answer.','error'); return null; }
+        const vars = document.getElementById('fill-variants')?.value.split(',').map(s=>s.trim()).filter(Boolean);
+        q.answer = ans; q.variants = vars; break;
+      }
+      case 'tick': {
+        const opts = [...document.querySelectorAll('.tick-opt-input')].map(i => i.value.trim());
+        const corr = [...document.querySelectorAll('#tick-opts .correct-radio')].map((c,i) => c.checked?i:-1).filter(i=>i>=0);
+        if (opts.length < 2) { Utils.toast('Add at least 2 options.','error'); return null; }
+        if (!corr.length) { Utils.toast('Check at least one correct answer.','error'); return null; }
+        q.options = opts; q.correctIndices = corr; break;
+      }
+      case 'tf': {
+        q.correct = document.getElementById('tf-answer')?.value === 'true'; break;
+      }
+      case 'arrange': {
+        const items = [...document.querySelectorAll('.arr-item-input')].map(i => i.value.trim()).filter(Boolean);
+        if (items.length < 2) { Utils.toast('Add at least 2 items.','error'); return null; }
+        q.correctOrder = items; q.items = [...items]; break;
+      }
+      case 'match': {
+        const lefts  = [...document.querySelectorAll('.match-left-input')].map(i => i.value.trim());
+        const rights = [...document.querySelectorAll('.match-right-input')].map(i => i.value.trim());
+        const pairs  = lefts.map((l,i) => [l, rights[i]]).filter(p => p[0] && p[1]);
+        if (pairs.length < 2) { Utils.toast('Add at least 2 pairs.','error'); return null; }
+        q.pairs = pairs; break;
+      }
+      case 'long': {
+        q.sampleAnswer = document.getElementById('long-sample')?.value.trim();
+        q.rubric       = document.getElementById('long-rubric')?.value.trim();
+        q.manualGrade  = true; break;
+      }
+    }
+    return q;
+  },
+
+  saveQuestion(existingId) {
+    const q = QTypes.collectQuestion(existingId);
+    if (!q) return;
+    DB.Questions.save(q);
+    Utils.closeModal();
+    Utils.toast('Question saved!','success');
+    // refresh question bank view if open
+    if (typeof TeacherViews !== 'undefined') TeacherViews.refresh();
+  },
+};
+
+
+/* ═══════════════════════════════════════════
+   exam-engine.js — Exam Taking & Auto-Scoring
+   Async version for Firestore
+═══════════════════════════════════════════ */
+
+const ExamEngine = (() => {
+
+  let state = null;
+
+  // ─── START EXAM ──────────────────────────
+  async function start(examId, studentId) {
+    Utils.showLoadingOverlay('Loading exam…');
+    try {
+      const exam = await DB.Exams.byId(examId);
+      if (!exam) { Utils.toast('Exam not found.','error'); return; }
+
+      // Check already submitted
+      const prevAtts = await DB.Attempts.byStudentExam(studentId, examId);
+      const prev     = prevAtts.find(a => a.status === 'submitted');
+      if (prev) { Utils.hideLoadingOverlay(); showResult(prev.id); return; }
+
+      // Load questions
+      let qs = await DB.Questions.byIds(exam.questionIds);
+      if (exam.shuffle) qs = Utils.shuffle(qs);
+
+      // Resume or create attempt
+      let attempt = prevAtts.find(a => a.status === 'in-progress');
+      if (!attempt) {
+        const newAtt = { examId, studentId, answers:{}, startAt: Date.now(), status:'in-progress', timeTaken:0 };
+        const newId  = await DB.Attempts.save(newAtt);
+        attempt = { ...newAtt, id: newId };
+      }
+
+      state = {
+        exam, questions: qs, attempt,
+        currentIdx: 0,
+        timerSecs: exam.duration ? exam.duration * 60 : null,
+        timerInterval: null,
+      };
+
+      Utils.hideLoadingOverlay();
+      Utils.showScreen('screen-exam');
+      renderQuestion();
+      startTimer();
+    } catch(e) {
+      Utils.hideLoadingOverlay();
+      Utils.toast('Failed to load exam: ' + e.message, 'error');
+    }
+  }
+
+  // ─── TIMER ───────────────────────────────
+  function startTimer() {
+    if (!state.timerSecs) {
+      document.getElementById('exam-timer').textContent = '⏱ No Limit';
+      return;
+    }
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+      state.timerSecs--;
+      updateTimerUI();
+      if (state.timerSecs <= 0) { clearInterval(state.timerInterval); submitExam(); }
+    }, 1000);
+  }
+  function updateTimerUI() {
+    const el = document.getElementById('exam-timer');
+    if (!el) return;
+    el.textContent = '⏱ ' + Utils.fmtTime(state.timerSecs);
+    el.className = 'timer-badge' + (state.timerSecs < 60 ? ' danger' : state.timerSecs < 180 ? ' warn' : '');
+  }
+
+  // ─── RENDER QUESTION ─────────────────────
+  function renderQuestion() {
+    const { questions, currentIdx, attempt, exam } = state;
+    const q     = questions[currentIdx];
+    const total = questions.length;
+    const saved = attempt.answers[q.id];
+
+    document.getElementById('exam-taking-title').textContent = exam.title;
+    document.getElementById('exam-progress').textContent     = `Q ${currentIdx+1} / ${total}`;
+    document.getElementById('exam-prog-fill').style.width    = `${((currentIdx+1)/total)*100}%`;
+
+    // dots
+    document.getElementById('exam-q-dots').innerHTML = questions.map((qq,i) => `
+      <div class="q-dot ${i===currentIdx?'current':''} ${attempt.answers[qq.id]!==undefined?'answered':''}"
+           onclick="ExamEngine.goTo(${i})">${i+1}</div>`).join('');
+
+    document.getElementById('exam-prev').disabled    = currentIdx === 0;
+    document.getElementById('exam-next').textContent = currentIdx === total-1 ? '✅ Submit' : 'Next →';
+
+    document.getElementById('exam-body').innerHTML = `
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-num">Q${currentIdx+1} · ${q.points} pt${q.points>1?'s':''}</span>
+          <span class="q-text">${Utils.esc(q.text)}</span>
+        </div>
+        <div class="divider"></div>
+        ${renderWidget(q, saved)}
+      </div>`;
+
+    bindEvents(q);
+  }
+
+  function renderWidget(q, saved) {
+    switch(q.type) {
+      case 'mcq': return `<div class="mcq-options">${(q.options||[]).map((opt,i)=>`
+        <div class="mcq-option${saved===i?' selected':''}" data-idx="${i}">
+          <div class="opt-letter">${String.fromCharCode(65+i)}</div>
+          <div>${Utils.esc(opt)}</div>
+        </div>`).join('')}</div>`;
+
+      case 'fill': return `<div class="fill-blank-wrap">
+        <input id="fill-inp" type="text" value="${Utils.esc(saved||'')}" placeholder="Type your answer here…" />
+        </div>`;
+
+      case 'tick': {
+        const sel = saved||[];
+        return `<p class="text-muted mb-16" style="font-size:.8rem;">Select ALL correct answers</p>
+        <div class="tick-options">${(q.options||[]).map((opt,i)=>`
+          <div class="tick-option${sel.includes(i)?' selected':''}" data-idx="${i}">
+            <div class="tick-box">${sel.includes(i)?'✓':''}</div>
+            <div>${Utils.esc(opt)}</div>
+          </div>`).join('')}</div>`; }
+
+      case 'tf': return `<div class="tf-wrap">
+        <button class="tf-btn${saved===true?' selected':''}" data-val="true">✅ True</button>
+        <button class="tf-btn${saved===false?' selected':''}" data-val="false">❌ False</button>
+        </div>`;
+
+      case 'arrange': {
+        const order = saved || Utils.shuffle([...(q.correctOrder||[])]);
+        if (!saved) saveAnswer(q.id, order);
+        return `<p class="text-muted mb-16" style="font-size:.8rem;">Drag to arrange in the correct order</p>
+        <div class="arrange-wrap" id="arrange-list">
+          ${order.map((item,i)=>`
+            <div class="arrange-item" draggable="true" data-item="${Utils.esc(item)}">
+              <span class="arrange-handle">⠿</span>
+              <span class="arrange-badge">${i+1}</span>
+              <span>${Utils.esc(item)}</span>
+            </div>`).join('')}
+        </div>`; }
+
+      case 'match': {
+        const rights   = Utils.shuffle((q.pairs||[]).map(p=>p[1]));
+        const savedMap = saved||{};
+        return `<div class="match-wrap">${(q.pairs||[]).map(p=>`
+          <div class="match-row">
+            <div class="match-left">${Utils.esc(p[0])}</div>
+            <span class="match-arrow">→</span>
+            <div class="match-right">
+              <select data-left="${Utils.esc(p[0])}" style="flex:1">
+                <option value="">-- Select --</option>
+                ${rights.map(r=>`<option value="${Utils.esc(r)}" ${savedMap[p[0]]===r?'selected':''}>${Utils.esc(r)}</option>`).join('')}
+              </select>
+            </div>
+          </div>`).join('')}</div>`; }
+
+      case 'long': return `<div class="long-answer-wrap">
+        <textarea id="long-inp" placeholder="Write your answer here…">${Utils.esc(saved||'')}</textarea>
+        </div>`;
+
+      default: return '<p>Unknown question type</p>';
+    }
+  }
+
+  function bindEvents(q) {
+    switch(q.type) {
+      case 'mcq':
+        document.querySelectorAll('.mcq-option').forEach(el => {
+          el.addEventListener('click', () => {
+            document.querySelectorAll('.mcq-option').forEach(x=>x.classList.remove('selected'));
+            el.classList.add('selected');
+            saveAnswer(q.id, parseInt(el.dataset.idx));
+          });
+        }); break;
+      case 'fill':
+        document.getElementById('fill-inp')?.addEventListener('input', e => saveAnswer(q.id, e.target.value)); break;
+      case 'tick':
+        document.querySelectorAll('.tick-option').forEach(el => {
+          el.addEventListener('click', () => {
+            el.classList.toggle('selected');
+            el.querySelector('.tick-box').textContent = el.classList.contains('selected')?'✓':'';
+            const sel = [...document.querySelectorAll('.tick-option.selected')].map(x=>parseInt(x.dataset.idx));
+            saveAnswer(q.id, sel);
+          });
+        }); break;
+      case 'tf':
+        document.querySelectorAll('.tf-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tf-btn').forEach(x=>x.classList.remove('selected'));
+            btn.classList.add('selected');
+            saveAnswer(q.id, btn.dataset.val==='true');
+          });
+        }); break;
+      case 'arrange': bindDragDrop(q); break;
+      case 'match':
+        document.querySelectorAll('.match-right select').forEach(sel => {
+          sel.addEventListener('change', () => {
+            const map = {};
+            document.querySelectorAll('.match-right select').forEach(s=>{ map[s.dataset.left]=s.value; });
+            saveAnswer(q.id, map);
+          });
+        }); break;
+      case 'long':
+        document.getElementById('long-inp')?.addEventListener('input', e => saveAnswer(q.id, e.target.value)); break;
+    }
+  }
+
+  function bindDragDrop(q) {
+    const list = document.getElementById('arrange-list');
+    if (!list) return;
+    let dragEl = null;
+    list.querySelectorAll('.arrange-item').forEach(item => {
+      item.addEventListener('dragstart', ()=>{ dragEl=item; item.style.opacity='.4'; });
+      item.addEventListener('dragend',   ()=>{ item.style.opacity='1'; dragEl=null; updateBadges(); });
+      item.addEventListener('dragover',  e=>{ e.preventDefault(); item.classList.add('drag-over'); });
+      item.addEventListener('dragleave', ()=>item.classList.remove('drag-over'));
+      item.addEventListener('drop', e=>{
+        e.preventDefault(); item.classList.remove('drag-over');
+        if (dragEl && dragEl!==item) list.insertBefore(dragEl,item);
+        const order=[...list.querySelectorAll('.arrange-item')].map(i=>i.dataset.item);
+        saveAnswer(q.id, order); updateBadges();
+      });
+    });
+  }
+  function updateBadges() {
+    document.querySelectorAll('#arrange-list .arrange-badge').forEach((b,i)=>b.textContent=i+1);
+  }
+
+  // ─── SAVE ANSWER (local state + Firestore) ──
+  async function saveAnswer(qId, value) {
+    state.attempt.answers[qId] = value;
+    // Update dot immediately
+    document.querySelectorAll('.q-dot').forEach((dot,i) => {
+      const qq = state.questions[i];
+      if (qq) dot.classList.toggle('answered', state.attempt.answers[qq.id] !== undefined);
+    });
+    // Persist to Firestore (fire and forget — don't await UI)
+    DB.Attempts.save({ id: state.attempt.id, answers: state.attempt.answers });
+  }
+
+  // ─── NAV ─────────────────────────────────
+  function next() {
+    const { questions, currentIdx } = state;
+    if (currentIdx < questions.length-1) { state.currentIdx++; renderQuestion(); }
+    else promptSubmit();
+  }
+  function prev() { if (state.currentIdx>0){ state.currentIdx--; renderQuestion(); } }
+  function goTo(idx) { state.currentIdx=idx; renderQuestion(); }
+
+  function promptSubmit() {
+    const unanswered = state.questions.filter(q => state.attempt.answers[q.id]===undefined).length;
+    Utils.modal(`
+      <h3 style="margin-bottom:14px;">Submit Exam?</h3>
+      ${unanswered ? `<p class="error-msg" style="margin-bottom:14px;">⚠️ ${unanswered} unanswered question${unanswered>1?'s':''}.</p>`:'' }
+      <p style="color:var(--text2);margin-bottom:22px;">Once submitted, you cannot change your answers.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Keep Reviewing</button>
+        <button class="btn-primary" onclick="Utils.closeModal();ExamEngine.submitExam()">Submit Exam</button>
+      </div>`);
+  }
+
+  // ─── SUBMIT & SCORE ──────────────────────
+  async function submitExam() {
+    clearInterval(state.timerInterval);
+    Utils.showLoadingOverlay('Submitting…');
+    const { exam, questions, attempt } = state;
+    const timeTaken = Math.round((Date.now() - attempt.startAt)/1000);
+
+    let autoScore = 0;
+    const results = {};
+    questions.forEach(q => {
+      if (q.manualGrade) { results[q.id]={ manualGrade:true, score:0 }; return; }
+      const { correct } = gradeQ(q, attempt.answers[q.id]);
+      results[q.id] = { correct };
+      if (correct) autoScore += q.points;
+    });
+
+    const maxScore = questions.reduce((s,q)=>s+q.points,0);
+    const updated  = {
+      ...attempt,
+      status:'submitted', timeTaken, score:autoScore,
+      maxScore, results, submittedAt: Date.now()
+    };
+    await DB.Attempts.save(updated);
+    state.attempt = updated;
+    Utils.hideLoadingOverlay();
+    showResult(attempt.id);
+  }
+
+  function gradeQ(q, ans) {
+    if (ans===undefined||ans===null||ans==='') return { correct:false };
+    switch(q.type) {
+      case 'mcq': return { correct: ans===q.correctIndex };
+      case 'tf':  return { correct: ans===q.correct };
+      case 'fill': {
+        const norm = s=>String(s).trim().toLowerCase();
+        return { correct: [q.answer,...(q.variants||[])].map(norm).includes(norm(ans)) };
+      }
+      case 'tick': {
+        const a=[...(ans||[])].sort().join(','), b=[...(q.correctIndices||[])].sort().join(',');
+        return { correct: a===b };
+      }
+      case 'arrange': return { correct: (ans||[]).join('|')===(q.correctOrder||[]).join('|') };
+      case 'match':   return { correct: (q.pairs||[]).every(p=>ans[p[0]]===p[1]) };
+      default: return { correct:false };
+    }
+  }
+
+  // ─── SHOW RESULT ─────────────────────────
+  async function showResult(attemptId) {
+    clearInterval(state?.timerInterval);
+    Utils.showLoadingOverlay('Loading results…');
+    try {
+      const attempt = await DB.Attempts.byId(attemptId);
+      const exam    = await DB.Exams.byId(attempt.examId);
+      const qs      = await DB.Questions.byIds(exam.questionIds);
+      const p       = Utils.pct(attempt.score, attempt.maxScore);
+      const passed  = attempt.score >= (exam.passMark||0);
+      const g       = Utils.grade(p);
+
+      const reviewHTML = qs.map((q,i) => {
+        if (q.manualGrade) return `
+          <div class="review-q">
+            <div class="rq-head"><span class="rq-icon">📝</span><span class="rq-text">Q${i+1}. ${Utils.esc(q.text)}</span></div>
+            <div class="review-answer">
+              <div class="ra-label">Your Answer</div>
+              <div class="ra-val">${Utils.esc(attempt.answers?.[q.id]||'(No answer)')}</div>
+              <div class="ra-label" style="margin-top:8px;color:var(--warn);">⏳ Awaiting manual grading</div>
+            </div>
+          </div>`;
+        const res  = attempt.results?.[q.id];
+        const icon = res?.correct?'✅':'❌';
+        return `
+          <div class="review-q">
+            <div class="rq-head"><span class="rq-icon">${icon}</span><span class="rq-text">Q${i+1}. ${Utils.esc(q.text)}</span></div>
+            <div class="review-answer">
+              <div class="ra-label">Your Answer</div>
+              <div class="ra-val ${res?.correct?'correct':'wrong'}">${fmtAns(q,attempt.answers?.[q.id])}</div>
+              ${!res?.correct?`<div class="ra-label" style="margin-top:6px;">Correct Answer</div><div class="ra-val correct">${fmtCorrect(q)}</div>`:''}
+            </div>
+          </div>`;
+      }).join('');
+
+      Utils.hideLoadingOverlay();
+      Utils.showScreen('screen-student');
+      Utils.renderIn('student-main',`
+        <div class="result-hero">
+          <div class="score-ring">
+            <span class="score-pct">${p}%</span>
+            <span class="score-sub">${attempt.score}/${attempt.maxScore}</span>
+          </div>
+          <h3>${passed?'🎉 Passed!':'😔 Not Passed'}</h3>
+          <p>${Utils.esc(exam.title)}</p>
+          <p style="margin-top:8px;">Grade: <b>${g}</b> &nbsp;|&nbsp; Time: ${Utils.fmtTime(attempt.timeTaken)} &nbsp;|&nbsp; ${passed?'✅ Passed':'❌ Failed'}</p>
+        </div>
+        <div class="section">
+          <div class="section-head"><h3>Question Review</h3></div>
+          <div class="section-body">${reviewHTML}</div>
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn-secondary" onclick="StudentViews.show('s-dashboard')">← Back to Dashboard</button>
+        </div>`);
+    } catch(e) {
+      Utils.hideLoadingOverlay();
+      Utils.toast('Could not load results: '+e.message,'error');
+    }
+  }
+
+  function fmtAns(q,ans) {
+    if (ans===undefined||ans===null) return '(No answer)';
+    switch(q.type) {
+      case 'mcq':     return q.options?.[ans]||ans;
+      case 'tf':      return ans?'True':'False';
+      case 'fill':    return ans;
+      case 'tick':    return (ans||[]).map(i=>q.options?.[i]).filter(Boolean).join(', ')||'(None)';
+      case 'arrange': return (ans||[]).join(' → ');
+      case 'match':   return Object.entries(ans||{}).map(([l,r])=>`${l} → ${r}`).join(', ');
+      default: return String(ans);
+    }
+  }
+  function fmtCorrect(q) {
+    switch(q.type) {
+      case 'mcq':     return q.options?.[q.correctIndex]||'?';
+      case 'tf':      return q.correct?'True':'False';
+      case 'fill':    return q.answer;
+      case 'tick':    return (q.correctIndices||[]).map(i=>q.options?.[i]).join(', ');
+      case 'arrange': return (q.correctOrder||[]).join(' → ');
+      case 'match':   return (q.pairs||[]).map(p=>`${p[0]} → ${p[1]}`).join(', ');
+      default: return '?';
+    }
+  }
+
+  return { start, next, prev, goTo, submitExam, showResult };
+})();
+
+
+/* ═══════════════════════════════════════════
+   views-teacher.js — All Teacher UI Views (async Firestore)
+═══════════════════════════════════════════ */
+
+const TeacherViews = (() => {
+
+  let _currentView = 't-dashboard';
+  let _qFilter = { topic:'', type:'', search:'' };
+  let _qPage   = 1;
+  const Q_PER  = 15;
+
+  function show(view) {
+    _currentView = view;
+    Utils.setActiveNav('teacher', view);
+    switch(view) {
+      case 't-dashboard':   renderDashboard();   break;
+      case 't-batches':     renderBatches();     break;
+      case 't-students':    renderStudents();    break;
+      case 't-exams':       renderExams();       break;
+      case 't-questions':   renderQBank();       break;
+      case 't-results':     renderResults();     break;
+      case 't-leaderboard': renderLeaderboard(); break;
+    }
+  }
+
+  function refresh() { show(_currentView); }
+
+  function loading() {
+    Utils.renderIn('teacher-main','<div class="flex-center" style="height:60vh;"><div class="spinner"></div></div>');
+  }
+
+  // ── DASHBOARD ────────────────────────────
+  async function renderDashboard() {
+    loading();
+    const [batches, students, exams, attempts, questions] = await Promise.all([
+      DB.Batches.all(), DB.Users.students(), DB.Exams.all(), DB.Attempts.all(), DB.Questions.all()
+    ]);
+    const submitted = attempts.filter(a=>a.status==='submitted');
+    const recent    = [...submitted].sort((a,b)=>b.submittedAt-a.submittedAt).slice(0,5);
+
+    // fetch student+exam names for recent
+    const recentRows = await Promise.all(recent.map(async a => ({
+      a,
+      s: await DB.Users.byId(a.studentId),
+      e: await DB.Exams.byId(a.examId),
+    })));
+
+    Utils.renderIn('teacher-main',`
+      <div class="page-header"><div><h2>Welcome back, Andrew 👋</h2><p>Music Academy Exam Portal</p></div></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="s-icon">👥</div><div class="s-val">${batches.length}</div><div class="s-label">Batches</div></div>
+        <div class="stat-card"><div class="s-icon">🎓</div><div class="s-val">${students.length}</div><div class="s-label">Students</div></div>
+        <div class="stat-card"><div class="s-icon">📋</div><div class="s-val">${exams.length}</div><div class="s-label">Exams</div></div>
+        <div class="stat-card"><div class="s-icon">❓</div><div class="s-val">${questions.length}</div><div class="s-label">Questions</div></div>
+        <div class="stat-card"><div class="s-icon">📊</div><div class="s-val">${submitted.length}</div><div class="s-label">Submissions</div></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Recent Submissions</h3></div>
+        <div class="section-body">
+          ${recentRows.length?`<div class="tbl-wrap"><table>
+            <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>%</th><th>Date</th></tr></thead>
+            <tbody>${recentRows.map(({a,s,e})=>{
+              const p=Utils.pct(a.score,a.maxScore);
+              return `<tr>
+                <td>${Utils.esc(s?.name||'?')}</td>
+                <td>${Utils.esc(e?.title||'?')}</td>
+                <td>${a.score}/${a.maxScore}</td>
+                <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+                <td>${Utils.fmtDate(a.submittedAt)}</td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table></div>`:Utils.empty('📭','No submissions yet.')}
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Batches Overview</h3></div>
+        <div class="section-body">
+          ${batches.length?`<div class="tbl-wrap"><table>
+            <thead><tr><th>Batch</th><th>Course</th><th>Level</th><th>Students</th></tr></thead>
+            <tbody>${batches.map(b=>{
+              const cnt=students.filter(s=>s.batchId===b.id).length;
+              return `<tr>
+                <td><b>${Utils.esc(b.name)}</b></td>
+                <td>${Utils.esc(b.course||'—')}</td>
+                <td><span class="badge badge-blue">${Utils.esc(b.level||'—')}</span></td>
+                <td>${cnt}</td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table></div>`:Utils.empty('👥','No batches yet.')}
+        </div>
+      </div>`);
+  }
+
+  // ── BATCHES ──────────────────────────────
+  async function renderBatches() {
+    loading();
+    const batches  = await DB.Batches.all();
+    const students = await DB.Users.students();
+    Utils.renderIn('teacher-main',`
+      <div class="page-header">
+        <div><h2>Batches</h2><p>Manage your student groups</p></div>
+        <button class="btn-primary" onclick="TeacherViews.modalBatch()">+ New Batch</button>
+      </div>
+      ${batches.length?`<div class="section"><div class="section-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Batch Name</th><th>Course</th><th>Level</th><th>Students</th><th>Actions</th></tr></thead>
+          <tbody>${batches.map(b=>{
+            const cnt=students.filter(s=>s.batchId===b.id).length;
+            return `<tr>
+              <td><b>${Utils.esc(b.name)}</b><br><span class="text-muted">${Utils.esc(b.description||'')}</span></td>
+              <td>${Utils.esc(b.course||'—')}</td>
+              <td><span class="badge badge-blue">${Utils.esc(b.level||'—')}</span></td>
+              <td>${cnt}</td>
+              <td>
+                <button class="btn-ghost btn-sm" onclick="TeacherViews.modalBatch('${b.id}')">Edit</button>
+                <button class="btn-danger btn-sm" onclick="TeacherViews.deleteBatch('${b.id}')">Delete</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>
+      </div></div>`:Utils.empty('👥','No batches yet.')}`);
+  }
+
+  async function modalBatch(id) {
+    const b = id ? await DB.Batches.byId(id) : null;
+    Utils.modal(`
+      <h3 style="margin-bottom:18px;">${b?'Edit Batch':'New Batch'}</h3>
+      <div class="form-grid cols2">
+        <div class="form-group span2"><label>Batch Name *</label><input id="b-name" value="${Utils.esc(b?.name||'')}" placeholder="e.g. Batch A — Morning"/></div>
+        <div class="form-group span2"><label>Description</label><input id="b-desc" value="${Utils.esc(b?.description||'')}" placeholder="Schedule, details…"/></div>
+        <div class="form-group"><label>Course</label>
+          <select id="b-course">
+            ${['Electronic Keyboard','Music Theory','Ear Training','Music Production'].map(c=>`<option ${b?.course===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Level</label>
+          <select id="b-level">
+            ${['Beginner','Intermediate','Advanced'].map(l=>`<option ${b?.level===l?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-actions mt-16">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="TeacherViews.saveBatch('${b?.id||''}')">Save Batch</button>
+      </div>`);
+  }
+  async function saveBatch(id) {
+    const name=document.getElementById('b-name').value.trim();
+    if (!name){Utils.toast('Batch name required','error');return;}
+    await DB.Batches.save({ id:id||'', name, description:document.getElementById('b-desc').value.trim(),
+      course:document.getElementById('b-course').value, level:document.getElementById('b-level').value });
+    Utils.closeModal(); Utils.toast('Batch saved!','success'); renderBatches();
+  }
+  async function deleteBatch(id) {
+    Utils.confirm('Delete this batch?',async()=>{
+      await DB.Batches.delete(id); Utils.toast('Deleted','info'); renderBatches();
+    });
+  }
+
+  // ── STUDENTS ─────────────────────────────
+  async function renderStudents() {
+    loading();
+    const [students, batches] = await Promise.all([DB.Users.students(), DB.Batches.all()]);
+    const bMap = Object.fromEntries(batches.map(b=>[b.id,b.name]));
+    Utils.renderIn('teacher-main',`
+      <div class="page-header">
+        <div><h2>Students</h2><p>${students.length} enrolled</p></div>
+        <button class="btn-primary" onclick="TeacherViews.modalStudent()">+ Add Student</button>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <div class="search-bar">
+            <input id="stu-search" placeholder="Search name or username…" oninput="TeacherViews.filterStudents()" />
+            <select id="stu-batch" onchange="TeacherViews.filterStudents()">
+              <option value="">All Batches</option>
+              ${batches.map(b=>`<option value="${b.id}">${Utils.esc(b.name)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="section-body" id="stu-table">
+          ${renderStudentTable(students, bMap)}
+        </div>
+      </div>`);
+    // Store for filter
+    window._allStudents = students;
+    window._batchMap    = bMap;
+  }
+
+  function renderStudentTable(students, bMap) {
+    if (!students.length) return Utils.empty('🎓','No students found.');
+    return `<div class="tbl-wrap"><table>
+      <thead><tr><th>Name</th><th>Username</th><th>Batch</th><th>Actions</th></tr></thead>
+      <tbody>${students.map(s=>`<tr>
+        <td><b>${Utils.esc(s.name)}</b></td>
+        <td><span class="badge badge-grey">${Utils.esc(s.username)}</span></td>
+        <td>${Utils.esc(bMap?.[s.batchId]||'—')}</td>
+        <td>
+          <button class="btn-ghost btn-sm" onclick="TeacherViews.modalStudent('${s.id}')">Edit</button>
+          <button class="btn-ghost btn-sm" onclick="TeacherViews.studentReport('${s.id}')">Report</button>
+          <button class="btn-danger btn-sm" onclick="TeacherViews.deleteStudent('${s.id}')">Delete</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  function filterStudents() {
+    const q   = document.getElementById('stu-search').value.toLowerCase();
+    const bid = document.getElementById('stu-batch').value;
+    let list  = window._allStudents || [];
+    if (q)   list = list.filter(s=>s.name.toLowerCase().includes(q)||s.username.toLowerCase().includes(q));
+    if (bid) list = list.filter(s=>s.batchId===bid);
+    document.getElementById('stu-table').innerHTML = renderStudentTable(list, window._batchMap||{});
+  }
+
+  async function modalStudent(id) {
+    const [s, batches] = await Promise.all([id?DB.Users.byId(id):null, DB.Batches.all()]);
+    Utils.modal(`
+      <h3 style="margin-bottom:18px;">${s?'Edit Student':'Add Student'}</h3>
+      <div class="form-grid cols2">
+        <div class="form-group"><label>Full Name *</label><input id="s-name" value="${Utils.esc(s?.name||'')}" placeholder="Full name"/></div>
+        <div class="form-group"><label>Username *</label><input id="s-uname" value="${Utils.esc(s?.username||'')}" placeholder="login username"/></div>
+        <div class="form-group"><label>${s?'New Password (blank = keep)':'Password *'}</label><input type="password" id="s-pass" placeholder="Password"/></div>
+        <div class="form-group"><label>Batch</label>
+          <select id="s-batch">
+            <option value="">— No Batch —</option>
+            ${batches.map(b=>`<option value="${b.id}" ${s?.batchId===b.id?'selected':''}>${Utils.esc(b.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group span2"><label>Email</label><input id="s-email" value="${Utils.esc(s?.email||'')}" placeholder="optional"/></div>
+      </div>
+      <div class="form-actions mt-16">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="TeacherViews.saveStudent('${s?.id||''}')">Save</button>
+      </div>`);
+  }
+
+  async function saveStudent(id) {
+    const name  = document.getElementById('s-name').value.trim();
+    const uname = document.getElementById('s-uname').value.trim().toLowerCase();
+    const pass  = document.getElementById('s-pass').value;
+    const batch = document.getElementById('s-batch').value;
+    const email = document.getElementById('s-email').value.trim();
+    if (!name||!uname){Utils.toast('Name and username required','error');return;}
+    if (!id&&!pass){Utils.toast('Password required for new student','error');return;}
+    const existing = await DB.Users.byUsername(uname);
+    if (existing&&existing.id!==id){Utils.toast('Username already taken','error');return;}
+    const user = (id?await DB.Users.byId(id):null)||{role:'student'};
+    user.name=name; user.username=uname; user.batchId=batch; user.email=email;
+    if (id) user.id=id;
+    if (pass) user.passwordHash=await Auth.sha256(pass);
+    await DB.Users.save(user);
+    Utils.closeModal(); Utils.toast('Student saved!','success'); renderStudents();
+  }
+
+  async function deleteStudent(id) {
+    Utils.confirm('Delete this student?',async()=>{
+      await DB.Users.delete(id); Utils.toast('Deleted','info'); renderStudents();
+    });
+  }
+
+  async function studentReport(sid) {
+    Utils.modal('<div class="flex-center" style="height:200px;"><div class="spinner"></div></div>');
+    const [s, attempts] = await Promise.all([DB.Users.byId(sid), DB.Attempts.byStudent(sid)]);
+    const submitted = attempts.filter(a=>a.status==='submitted');
+    const rows = await Promise.all(submitted.map(async a=>({ a, e:await DB.Exams.byId(a.examId) })));
+    Utils.modal(`
+      <h3 style="margin-bottom:16px;">📊 ${Utils.esc(s?.name||'Student')} — Report</h3>
+      ${rows.length?`<div class="tbl-wrap"><table>
+        <thead><tr><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Date</th></tr></thead>
+        <tbody>${rows.sort((a,b)=>b.a.submittedAt-a.a.submittedAt).map(({a,e})=>{
+          const p=Utils.pct(a.score,a.maxScore);
+          return `<tr>
+            <td>${Utils.esc(e?.title||'?')}</td>
+            <td>${a.score}/${a.maxScore}</td>
+            <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+            <td>${Utils.grade(p)}</td>
+            <td>${Utils.fmtDate(a.submittedAt)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`:Utils.empty('📭','No attempts yet.')}`);
+  }
+
+  // ── EXAMS ────────────────────────────────
+  async function renderExams() {
+    loading();
+    const [exams, batches] = await Promise.all([DB.Exams.all(), DB.Batches.all()]);
+    const bMap = Object.fromEntries(batches.map(b=>[b.id,b.name]));
+    Utils.renderIn('teacher-main',`
+      <div class="page-header">
+        <div><h2>Exams</h2><p>${exams.length} total</p></div>
+        <button class="btn-primary" onclick="TeacherViews.modalExam()">+ New Exam</button>
+      </div>
+      ${exams.length?exams.map(e=>`
+        <div class="exam-list-card">
+          <div class="exam-info">
+            <div class="exam-name">${Utils.esc(e.title)}</div>
+            <div class="exam-meta">
+              <span>👥 ${Utils.esc(bMap[e.batchId]||'All Batches')}</span>
+              <span>❓ ${e.questionIds?.length||0} questions</span>
+              <span>⏱ ${e.duration||'—'} min</span>
+              <span>🎯 Pass: ${e.passMark||0}/${e.totalMarks||'?'}</span>
+              <span class="badge ${e.status==='published'?'badge-green':'badge-grey'}">${e.status}</span>
+            </div>
+          </div>
+          <div class="exam-actions">
+            <button class="btn-ghost btn-sm" onclick="TeacherViews.modalExam('${e.id}')">Edit</button>
+            <button class="btn-ghost btn-sm" onclick="TeacherViews.manageQs('${e.id}')">Questions</button>
+            <button class="btn-ghost btn-sm" onclick="TeacherViews.togglePublish('${e.id}')">${e.status==='published'?'Unpublish':'Publish'}</button>
+            <button class="btn-danger btn-sm" onclick="TeacherViews.deleteExam('${e.id}')">Delete</button>
+          </div>
+        </div>`).join(''):Utils.empty('📋','No exams yet.')}`);
+  }
+
+  async function modalExam(id) {
+    const [e, batches] = await Promise.all([id?DB.Exams.byId(id):null, DB.Batches.all()]);
+    Utils.modal(`
+      <h3 style="margin-bottom:18px;">${e?'Edit Exam':'New Exam'}</h3>
+      <div class="form-grid cols2">
+        <div class="form-group span2"><label>Exam Title *</label><input id="ex-title" value="${Utils.esc(e?.title||'')}" placeholder="e.g. Module 1 Quiz"/></div>
+        <div class="form-group span2"><label>Description</label><textarea id="ex-desc" rows="2">${Utils.esc(e?.description||'')}</textarea></div>
+        <div class="form-group"><label>Assign to Batch</label>
+          <select id="ex-batch">
+            <option value="all">All Batches</option>
+            ${batches.map(b=>`<option value="${b.id}" ${e?.batchId===b.id?'selected':''}>${Utils.esc(b.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Duration (min, 0=no limit)</label><input type="number" id="ex-dur" value="${e?.duration||30}" min="0"/></div>
+        <div class="form-group"><label>Total Marks</label><input type="number" id="ex-total" value="${e?.totalMarks||20}" min="1"/></div>
+        <div class="form-group"><label>Pass Mark</label><input type="number" id="ex-pass" value="${e?.passMark||10}" min="0"/></div>
+        <div class="form-group"><label>Shuffle Questions</label>
+          <select id="ex-shuffle"><option value="0">No</option><option value="1" ${e?.shuffle?'selected':''}>Yes</option></select>
+        </div>
+        <div class="form-group"><label>Show Result Immediately</label>
+          <select id="ex-result"><option value="1" ${e?.showResultImmediately!==false?'selected':''}>Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+      <div class="form-actions mt-16">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="TeacherViews.saveExam('${e?.id||''}')">Save Exam</button>
+      </div>`,true);
+  }
+
+  async function saveExam(id) {
+    const title=document.getElementById('ex-title').value.trim();
+    if (!title){Utils.toast('Title required','error');return;}
+    const base = id?await DB.Exams.byId(id):{questionIds:[]};
+    await DB.Exams.save({ ...base, id:id||'', title,
+      description: document.getElementById('ex-desc').value.trim(),
+      batchId:     document.getElementById('ex-batch').value,
+      duration:    parseInt(document.getElementById('ex-dur').value)||0,
+      totalMarks:  parseInt(document.getElementById('ex-total').value)||20,
+      passMark:    parseInt(document.getElementById('ex-pass').value)||0,
+      shuffle:     document.getElementById('ex-shuffle').value==='1',
+      showResultImmediately: document.getElementById('ex-result').value==='1',
+      status:      base?.status||'draft',
+    });
+    Utils.closeModal(); Utils.toast('Exam saved!','success'); renderExams();
+  }
+
+  async function togglePublish(id) {
+    const e=await DB.Exams.byId(id);
+    e.status=e.status==='published'?'draft':'published';
+    await DB.Exams.save(e);
+    Utils.toast(`Exam ${e.status}!`,'success'); renderExams();
+  }
+
+  async function deleteExam(id) {
+    Utils.confirm('Delete this exam and all attempts?',async()=>{
+      await DB.Exams.delete(id); Utils.toast('Deleted','info'); renderExams();
+    });
+  }
+
+  async function manageQs(examId) {
+    Utils.modal('<div class="flex-center" style="height:300px;"><div class="spinner"></div></div>',true);
+    const [exam, allQs] = await Promise.all([DB.Exams.byId(examId), DB.Questions.all()]);
+    const inExam = new Set(exam.questionIds||[]);
+
+    Utils.modal(`
+      <h3 style="margin-bottom:6px;">Questions — ${Utils.esc(exam.title)}</h3>
+      <p class="text-muted mb-16">Tick questions to include. Changes save instantly.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>✓</th><th>Type</th><th>Question</th><th>Topic</th><th>Pts</th></tr></thead>
+        <tbody>${allQs.map(q=>`<tr>
+          <td><input type="checkbox" ${inExam.has(q.id)?'checked':''}
+              onchange="TeacherViews.toggleExamQ('${q.id}','${examId}',this.checked)"
+              style="accent-color:var(--gold);width:16px;height:16px;"/></td>
+          <td style="white-space:nowrap;">${Utils.esc(QTypes.label(q.type))}</td>
+          <td>${Utils.esc(q.text.substring(0,55))}${q.text.length>55?'…':''}</td>
+          <td>${Utils.esc(q.topic||'—')}</td>
+          <td>${q.points}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <div class="form-actions mt-16">
+        <button class="btn-primary" onclick="Utils.closeModal()">Done</button>
+      </div>`,true);
+  }
+
+  async function toggleExamQ(qId, examId, checked) {
+    const exam = await DB.Exams.byId(examId);
+    const ids  = new Set(exam.questionIds||[]);
+    checked ? ids.add(qId) : ids.delete(qId);
+    exam.questionIds = [...ids];
+    await DB.Exams.save(exam);
+  }
+
+  // ── QUESTION BANK ────────────────────────
+  async function renderQBank() {
+    loading();
+    const [allQs, topics] = await Promise.all([DB.Questions.all(), DB.Questions.topics()]);
+    window._allQs = allQs;
+    _qPage = 1;
+
+    Utils.renderIn('teacher-main',`
+      <div class="page-header">
+        <div><h2>Question Bank</h2><p>${allQs.length} questions</p></div>
+        <button class="btn-primary" onclick="TeacherViews.openAddQ()">+ Add Question</button>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <div class="search-bar">
+            <input id="q-search" placeholder="Search questions…" oninput="TeacherViews.filterQs()" style="flex:2;"/>
+            <select id="q-type" onchange="TeacherViews.filterQs()">
+              <option value="">All Types</option>
+              ${QTypes.list.map(t=>`<option value="${t.id}">${t.icon} ${t.name}</option>`).join('')}
+            </select>
+            <select id="q-topic" onchange="TeacherViews.filterQs()">
+              <option value="">All Topics</option>
+              ${topics.map(t=>`<option value="${Utils.esc(t)}">${Utils.esc(t)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="section-body" id="q-list">${renderQList(allQs,1)}</div>
+      </div>`);
+  }
+
+  function renderQList(qs, page) {
+    if (!qs.length) return Utils.empty('❓','No questions match your filter.');
+    const pages = Math.ceil(qs.length/Q_PER);
+    const slice = qs.slice((page-1)*Q_PER, page*Q_PER);
+    const cards = slice.map(q=>`
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-num">${Utils.esc(QTypes.label(q.type))} · ${q.points} pts</span>
+          <span class="q-text">${Utils.esc(q.text)}</span>
+          <div class="q-card-actions">
+            <button class="btn-ghost btn-sm" onclick="TeacherViews.editQ('${q.id}')">✏️ Edit</button>
+            <button class="btn-danger btn-sm" onclick="TeacherViews.deleteQ('${q.id}')">🗑</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${q.topic?`<span class="badge badge-blue">${Utils.esc(q.topic)}</span>`:''}
+          <span class="badge badge-grey">${q.difficulty||'—'}</span>
+        </div>
+      </div>`).join('');
+    const pager = pages>1?`<div class="pagination">${Array.from({length:pages},(_,i)=>`
+      <button class="page-btn${i+1===page?' active':''}" onclick="TeacherViews.goQPage(${i+1})">${i+1}</button>`).join('')}</div>`:'';
+    return cards+pager;
+  }
+
+  function filterQs() {
+    _qFilter.search = document.getElementById('q-search').value.toLowerCase();
+    _qFilter.type   = document.getElementById('q-type').value;
+    _qFilter.topic  = document.getElementById('q-topic').value;
+    _qPage = 1; updateQList();
+  }
+  function updateQList() {
+    let qs = window._allQs||[];
+    if (_qFilter.search) qs=qs.filter(q=>q.text.toLowerCase().includes(_qFilter.search)||(q.topic||'').toLowerCase().includes(_qFilter.search));
+    if (_qFilter.type)  qs=qs.filter(q=>q.type===_qFilter.type);
+    if (_qFilter.topic) qs=qs.filter(q=>q.topic===_qFilter.topic);
+    document.getElementById('q-list').innerHTML = renderQList(qs,_qPage);
+  }
+  function goQPage(p){ _qPage=p; updateQList(); }
+
+  async function openAddQ() {
+    const topics = await DB.Questions.topics();
+    Utils.modal(QTypes.builderForm(null,topics),true);
+    QTypes.renderTypeFields('mcq');
+  }
+  async function editQ(id) {
+    const [q, topics] = await Promise.all([DB.Questions.byId(id), DB.Questions.topics()]);
+    Utils.modal(QTypes.builderForm(q,topics),true);
+    QTypes.renderTypeFields(q.type,q);
+  }
+  async function deleteQ(id) {
+    Utils.confirm('Delete this question?',async()=>{
+      await DB.Questions.delete(id);
+      window._allQs=(window._allQs||[]).filter(q=>q.id!==id);
+      Utils.toast('Deleted','info'); updateQList();
+    });
+  }
+
+  // ── RESULTS ─────────────────────────────
+  async function renderResults() {
+    loading();
+    const [exams, batches, attempts] = await Promise.all([DB.Exams.all(), DB.Batches.all(), DB.Attempts.all()]);
+    const submitted = attempts.filter(a=>a.status==='submitted');
+    window._allAttempts = submitted;
+    window._allExams    = exams;
+    window._allBatches  = batches;
+
+    // Fetch all students needed
+    const sIds = [...new Set(submitted.map(a=>a.studentId))];
+    const studs = await Promise.all(sIds.map(id=>DB.Users.byId(id)));
+    window._studentMap = Object.fromEntries(studs.map(s=>[s?.id,s]).filter(([k])=>k));
+
+    const bMap = Object.fromEntries(batches.map(b=>[b.id,b.name]));
+    const eMap = Object.fromEntries(exams.map(e=>[e.id,e.title]));
+
+    Utils.renderIn('teacher-main',`
+      <div class="page-header"><div><h2>Results</h2><p>${submitted.length} submissions</p></div></div>
+      <div class="section">
+        <div class="section-head">
+          <div class="search-bar">
+            <select id="res-exam" onchange="TeacherViews.filterResults()">
+              <option value="">All Exams</option>
+              ${exams.map(e=>`<option value="${e.id}">${Utils.esc(e.title)}</option>`).join('')}
+            </select>
+            <select id="res-batch" onchange="TeacherViews.filterResults()">
+              <option value="">All Batches</option>
+              ${batches.map(b=>`<option value="${b.id}">${Utils.esc(b.name)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="section-body" id="results-body">
+          ${renderResultsTable(submitted, window._studentMap, bMap, eMap)}
+        </div>
+      </div>`);
+  }
+
+  function renderResultsTable(attempts, sMap, bMap, eMap) {
+    if (!attempts.length) return Utils.empty('📊','No submissions yet.');
+    return `<div class="tbl-wrap"><table>
+      <thead><tr><th>Student</th><th>Batch</th><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Time</th><th>Date</th><th></th></tr></thead>
+      <tbody>${attempts.sort((a,b)=>b.submittedAt-a.submittedAt).map(a=>{
+        const s=sMap[a.studentId]; const p=Utils.pct(a.score,a.maxScore);
+        return `<tr>
+          <td>${Utils.esc(s?.name||'?')}</td>
+          <td>${Utils.esc(bMap?.[s?.batchId]||'—')}</td>
+          <td>${Utils.esc(eMap?.[a.examId]||'?')}</td>
+          <td>${a.score}/${a.maxScore}</td>
+          <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+          <td>${Utils.grade(p)}</td>
+          <td>${Utils.fmtTime(a.timeTaken)}</td>
+          <td>${Utils.fmtDate(a.submittedAt)}</td>
+          <td><button class="btn-ghost btn-sm" onclick="TeacherViews.manualGrade('${a.id}')">Grade</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }
+
+  function filterResults() {
+    const eid=document.getElementById('res-exam').value;
+    const bid=document.getElementById('res-batch').value;
+    let list=window._allAttempts||[];
+    if (eid) list=list.filter(a=>a.examId===eid);
+    if (bid) list=list.filter(a=>window._studentMap?.[a.studentId]?.batchId===bid);
+    const bMap=Object.fromEntries((window._allBatches||[]).map(b=>[b.id,b.name]));
+    const eMap=Object.fromEntries((window._allExams||[]).map(e=>[e.id,e.title]));
+    document.getElementById('results-body').innerHTML=renderResultsTable(list,window._studentMap||{},bMap,eMap);
+  }
+
+  async function manualGrade(attemptId) {
+    Utils.modal('<div class="flex-center" style="height:200px;"><div class="spinner"></div></div>',true);
+    const attempt = await DB.Attempts.byId(attemptId);
+    const exam    = await DB.Exams.byId(attempt.examId);
+    const allQs   = await DB.Questions.byIds(exam.questionIds);
+    const manualQs= allQs.filter(q=>q.manualGrade);
+    if (!manualQs.length){Utils.modal('<p style="padding:20px;">No manual grading needed.</p>');return;}
+    Utils.modal(`
+      <h3 style="margin-bottom:14px;">✍️ Manual Grading</h3>
+      ${manualQs.map(q=>`
+        <div class="review-q" style="margin-bottom:12px;">
+          <div class="rq-head"><span class="rq-icon">📝</span><span class="rq-text">${Utils.esc(q.text)}</span></div>
+          <div class="review-answer">
+            <div class="ra-label">Student's Answer</div>
+            <div class="ra-val">${Utils.esc(attempt.answers?.[q.id]||'(No answer)')}</div>
+            ${q.sampleAnswer?`<div class="ra-label" style="margin-top:6px;">Sample Answer</div><div class="ra-val" style="color:var(--text2);">${Utils.esc(q.sampleAnswer)}</div>`:''}
+            ${q.rubric?`<div class="ra-label" style="margin-top:6px;">Rubric</div><div class="ra-val" style="color:var(--info);">${Utils.esc(q.rubric)}</div>`:''}
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+              <label class="ra-label">Score (0–${q.points})</label>
+              <input type="number" id="mg-${q.id}" min="0" max="${q.points}" value="${attempt.results?.[q.id]?.score||0}"
+                style="width:70px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 9px;font-family:var(--font);"/>
+            </div>
+          </div>
+        </div>`).join('')}
+      <div class="form-actions mt-16">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="TeacherViews.saveGrades('${attemptId}',${JSON.stringify(manualQs.map(q=>({id:q.id,pts:q.points})))})">Save Grades</button>
+      </div>`,true);
+  }
+
+  async function saveGrades(attemptId, qMeta) {
+    const attempt = await DB.Attempts.byId(attemptId);
+    const exam    = await DB.Exams.byId(attempt.examId);
+    const allQs   = await DB.Questions.byIds(exam.questionIds);
+    if (!attempt.results) attempt.results={};
+    qMeta.forEach(({id})=>{
+      const score=parseInt(document.getElementById('mg-'+id)?.value)||0;
+      attempt.results[id]={manualGrade:true,score};
+    });
+    // Recalculate total
+    let total=0;
+    allQs.forEach(q=>{
+      if (q.manualGrade) total+=(attempt.results?.[q.id]?.score||0);
+      else if (attempt.results?.[q.id]?.correct) total+=q.points;
+    });
+    attempt.score=total;
+    await DB.Attempts.save(attempt);
+    Utils.closeModal(); Utils.toast('Grades saved!','success'); renderResults();
+  }
+
+  // ── LEADERBOARD ─────────────────────────
+  async function renderLeaderboard() {
+    loading();
+    const [exams, batches] = await Promise.all([DB.Exams.all(), DB.Batches.all()]);
+    Utils.renderIn('teacher-main',`
+      <div class="page-header"><div><h2>🏆 Leaderboard</h2><p>Top performers</p></div></div>
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="TeacherViews.lbTab('overall',this)">🌟 Overall</button>
+        ${exams.map(e=>`<button class="pill-tab" onclick="TeacherViews.lbTab('exam:${e.id}',this)">${Utils.esc(e.title.substring(0,22))}</button>`).join('')}
+        ${batches.map(b=>`<button class="pill-tab" onclick="TeacherViews.lbTab('batch:${b.id}',this)">${Utils.esc(b.name.substring(0,18))}</button>`).join('')}
+      </div>
+      <div id="lb-content"><div class="flex-center" style="height:200px;"><div class="spinner"></div></div></div>`);
+    await lbTab('overall', document.querySelector('.pill-tab'));
+  }
+
+  async function lbTab(key, btn) {
+    document.querySelectorAll('.pill-tab').forEach(b=>b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const el=document.getElementById('lb-content');
+    if (!el) return;
+    el.innerHTML='<div class="flex-center" style="height:200px;"><div class="spinner"></div></div>';
+    if (key==='overall') { el.innerHTML=await renderLbOverall(); return; }
+    const [type,id]=key.split(':');
+    if (type==='exam')  el.innerHTML=await renderLbExam(id);
+    if (type==='batch') el.innerHTML=await renderLbBatch(id);
+  }
+
+  function podium(top3) {
+    const medals=['🥇','🥈','🥉'], cls=['p1','p2','p3'];
+    return `<div class="lb-podium">${top3.map((e,i)=>e?`
+      <div class="lb-place ${cls[i]}">
+        <div class="lb-medal">${medals[i]}</div>
+        <div class="lb-name">${Utils.esc(e.name)}</div>
+        <div class="lb-score">${Utils.esc(e.score)}</div>
+      </div>`:'').join('')}</div>`;
+  }
+
+  async function renderLbOverall() {
+    const rows=await DB.Attempts.globalLeaderboard();
+    if (!rows.length) return Utils.empty('🏆','No data yet.');
+    const top3=rows.slice(0,3).map(r=>r.student?{name:r.student.name,score:`${r.total} pts`}:null);
+    return podium(top3)+`<div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Student</th><th>Batch</th><th>Exams</th><th>Total Score</th></tr></thead>
+      <tbody>${await Promise.all(rows.map(async r=>{
+        const b=await DB.Batches.byId(r.student?.batchId);
+        return `<tr>
+          <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+          <td><b>${Utils.esc(r.student?.name||'?')}</b></td>
+          <td>${Utils.esc(b?.name||'—')}</td>
+          <td>${r.count}</td>
+          <td><b class="${Utils.scoreColor(r.total/Math.max(r.count,1))}">${r.total}</b></td>
+        </tr>`;
+      })).then(r=>r.join(''))}</tbody>
+    </table></div></div></div>`;
+  }
+
+  async function renderLbExam(examId) {
+    const [exam, rows]=await Promise.all([DB.Exams.byId(examId), DB.Attempts.leaderboard(examId)]);
+    if (!rows.length) return Utils.empty('🏆','No submissions for this exam.');
+    const top3=rows.slice(0,3).map(r=>r.student?{name:r.student.name,score:`${Utils.pct(r.attempt.score,r.attempt.maxScore)}%`}:null);
+    return `<h3 style="margin-bottom:16px;">${Utils.esc(exam?.title||'')}</h3>`+podium(top3)+`
+      <div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Student</th><th>Score</th><th>%</th><th>Time</th></tr></thead>
+        <tbody>${rows.map(r=>{const p=Utils.pct(r.attempt.score,r.attempt.maxScore);return`<tr>
+          <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+          <td><b>${Utils.esc(r.student?.name||'?')}</b></td>
+          <td>${r.attempt.score}/${r.attempt.maxScore}</td>
+          <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+          <td>${Utils.fmtTime(r.attempt.timeTaken)}</td>
+        </tr>`;}).join('')}</tbody>
+      </table></div></div></div>`;
+  }
+
+  async function renderLbBatch(batchId) {
+    const [batch, students]=await Promise.all([DB.Batches.byId(batchId), DB.Users.inBatch(batchId)]);
+    const rows=await Promise.all(students.map(async s=>{
+      const atts=(await DB.Attempts.byStudent(s.id)).filter(a=>a.status==='submitted');
+      return {student:s,total:atts.reduce((sum,a)=>sum+a.score,0),count:atts.length};
+    }));
+    const sorted=rows.sort((a,b)=>b.total-a.total).map((r,i)=>({...r,rank:i+1}));
+    if (!sorted.length) return Utils.empty('🏆','No data for this batch.');
+    const top3=sorted.slice(0,3).map(r=>({name:r.student.name,score:`${r.total} pts`}));
+    return `<h3 style="margin-bottom:16px;">${Utils.esc(batch?.name||'')}</h3>`+podium(top3)+`
+      <div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Student</th><th>Exams</th><th>Total Score</th></tr></thead>
+        <tbody>${sorted.map(r=>`<tr>
+          <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+          <td><b>${Utils.esc(r.student.name)}</b></td>
+          <td>${r.count}</td>
+          <td><b>${r.total}</b></td>
+        </tr>`).join('')}</tbody>
+      </table></div></div></div>`;
+  }
+
+  return {
+    show, refresh,
+    modalBatch, saveBatch, deleteBatch,
+    modalStudent, saveStudent, deleteStudent, filterStudents, studentReport,
+    modalExam, saveExam, togglePublish, deleteExam, manageQs, toggleExamQ,
+    renderQBank, filterQs, goQPage, openAddQ, editQ, deleteQ,
+    filterResults, manualGrade, saveGrades,
+    lbTab,
+  };
+})();
+
+
+/* ═══════════════════════════════════════════
+   views-student.js — All Student UI Views (async Firestore)
+═══════════════════════════════════════════ */
+
+const StudentViews = (() => {
+
+  let _currentView = 's-dashboard';
+
+  function show(view) {
+    _currentView = view;
+    Utils.setActiveNav('student', view);
+    switch(view) {
+      case 's-dashboard':   renderDashboard();   break;
+      case 's-exams':       renderExams();       break;
+      case 's-results':     renderResults();     break;
+      case 's-leaderboard': renderLeaderboard(); break;
+    }
+  }
+
+  function loading() {
+    Utils.renderIn('student-main','<div class="flex-center" style="height:60vh;"><div class="spinner"></div></div>');
+  }
+
+  // ── DASHBOARD ────────────────────────────
+  async function renderDashboard() {
+    loading();
+    const user = Auth.current();
+    const [batch, allExams, attempts] = await Promise.all([
+      DB.Batches.byId(user.batchId),
+      DB.Exams.forBatch(user.batchId),
+      DB.Attempts.byStudent(user.id),
+    ]);
+
+    const published      = allExams.filter(e => e.status === 'published');
+    const submitted      = attempts.filter(a => a.status === 'submitted');
+    const submittedEids  = new Set(submitted.map(a => a.examId));
+    const pending        = published.filter(e => !submittedEids.has(e.id));
+
+    const avg  = submitted.length ? Math.round(submitted.reduce((s,a) => s + Utils.pct(a.score,a.maxScore), 0) / submitted.length) : null;
+    const best = submitted.length ? Math.max(...submitted.map(a => Utils.pct(a.score,a.maxScore))) : null;
+
+    // Recent 5 results with exam names
+    const recent = [...submitted].sort((a,b) => b.submittedAt - a.submittedAt).slice(0,5);
+    const recentWithExam = await Promise.all(recent.map(async a => ({ a, e: await DB.Exams.byId(a.examId) })));
+
+    Utils.renderIn('student-main', `
+      <div class="page-header">
+        <div>
+          <h2>Hello, ${Utils.esc(user.name)} 👋</h2>
+          <p>${Utils.esc(batch?.name || 'Music Academy')} · ${Utils.esc(batch?.course || '')}</p>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="s-icon">📋</div><div class="s-val">${published.length}</div><div class="s-label">Available Exams</div></div>
+        <div class="stat-card"><div class="s-icon">⏳</div><div class="s-val">${pending.length}</div><div class="s-label">Pending</div></div>
+        <div class="stat-card"><div class="s-icon">✅</div><div class="s-val">${submitted.length}</div><div class="s-label">Completed</div></div>
+        <div class="stat-card"><div class="s-icon">📊</div><div class="s-val">${avg !== null ? avg+'%' : '—'}</div><div class="s-label">Avg Score</div></div>
+        <div class="stat-card"><div class="s-icon">🏆</div><div class="s-val">${best !== null ? best+'%' : '—'}</div><div class="s-label">Best Score</div></div>
+      </div>
+
+      ${pending.length ? `
+      <div class="section">
+        <div class="section-head"><h3>📝 Pending Exams</h3></div>
+        <div class="section-body">
+          ${pending.map(e => `
+            <div class="exam-list-card">
+              <div class="exam-info">
+                <div class="exam-name">${Utils.esc(e.title)}</div>
+                <div class="exam-meta">
+                  <span>❓ ${e.questionIds?.length||0} questions</span>
+                  <span>⏱ ${e.duration ? e.duration+' min' : 'No limit'}</span>
+                  <span>🎯 Pass: ${e.passMark||0}/${e.totalMarks||'?'}</span>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="StudentViews.promptStart('${e.id}')">Start Exam →</button>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${recentWithExam.length ? `
+      <div class="section">
+        <div class="section-head"><h3>📊 Recent Results</h3></div>
+        <div class="section-body">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              ${recentWithExam.map(({a,e}) => {
+                const p = Utils.pct(a.score, a.maxScore);
+                return `<tr>
+                  <td>${Utils.esc(e?.title||'?')}</td>
+                  <td>${a.score}/${a.maxScore}</td>
+                  <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+                  <td>${Utils.grade(p)}</td>
+                  <td>${Utils.fmtDate(a.submittedAt)}</td>
+                  <td><button class="btn-ghost btn-sm" onclick="ExamEngine.showResult('${a.id}')">Review</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table></div>
+        </div>
+      </div>` : ''}
+
+      ${!pending.length && !submitted.length ? `
+      <div class="section"><div class="section-body">
+        ${Utils.empty('🎹','No exams available yet. Check back soon!')}
+      </div></div>` : ''}
+    `);
+  }
+
+  // ── EXAMS ────────────────────────────────
+  async function renderExams() {
+    loading();
+    const user    = Auth.current();
+    const [allExams, attempts] = await Promise.all([
+      DB.Exams.forBatch(user.batchId),
+      DB.Attempts.byStudent(user.id),
+    ]);
+
+    const published     = allExams.filter(e => e.status === 'published');
+    const submittedMap  = {};
+    attempts.filter(a => a.status === 'submitted').forEach(a => submittedMap[a.examId] = a);
+
+    Utils.renderIn('student-main', `
+      <div class="page-header"><div><h2>My Exams</h2><p>All exams assigned to your batch</p></div></div>
+      ${published.length ? published.map(e => {
+        const done    = !!submittedMap[e.id];
+        const attempt = submittedMap[e.id];
+        const p       = attempt ? Utils.pct(attempt.score, attempt.maxScore) : null;
+        return `
+        <div class="exam-list-card">
+          <div class="exam-info">
+            <div class="exam-name">${Utils.esc(e.title)}</div>
+            <div class="exam-meta">
+              <span>❓ ${e.questionIds?.length||0} questions</span>
+              <span>⏱ ${e.duration ? e.duration+' min' : 'No time limit'}</span>
+              <span>🎯 Pass: ${e.passMark||0}/${e.totalMarks||'?'}</span>
+              ${done ? `<span class="${Utils.scoreColor(p)}">${p}% · ${Utils.grade(p)}</span>` : ''}
+              <span class="badge ${done?'badge-green':'badge-gold'}">${done?'Completed':'Pending'}</span>
+            </div>
+          </div>
+          <div class="exam-actions">
+            ${done
+              ? `<button class="btn-secondary btn-sm" onclick="ExamEngine.showResult('${attempt.id}')">📊 Review</button>`
+              : `<button class="btn-primary" onclick="StudentViews.promptStart('${e.id}')">Start Exam →</button>`
+            }
+          </div>
+        </div>`;
+      }).join('') : `
+      <div class="section"><div class="section-body">
+        ${Utils.empty('📋','No exams available yet.')}
+      </div></div>`}
+    `);
+  }
+
+  // ── RESULTS ─────────────────────────────
+  async function renderResults() {
+    loading();
+    const user     = Auth.current();
+    const attempts = (await DB.Attempts.byStudent(user.id)).filter(a => a.status === 'submitted');
+    const withExam = await Promise.all(attempts.map(async a => ({ a, e: await DB.Exams.byId(a.examId) })));
+
+    Utils.renderIn('student-main', `
+      <div class="page-header"><div><h2>My Results</h2><p>Your exam history</p></div></div>
+      ${withExam.length ? `
+      <div class="section"><div class="section-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Pass/Fail</th><th>Time</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            ${withExam.sort((a,b) => b.a.submittedAt - a.a.submittedAt).map(({a,e}) => {
+              const p    = Utils.pct(a.score, a.maxScore);
+              const pass = a.score >= (e?.passMark||0);
+              return `<tr>
+                <td><b>${Utils.esc(e?.title||'?')}</b></td>
+                <td>${a.score}/${a.maxScore}</td>
+                <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+                <td><b>${Utils.grade(p)}</b></td>
+                <td><span class="badge ${pass?'badge-green':'badge-red'}">${pass?'Passed':'Failed'}</span></td>
+                <td>${Utils.fmtTime(a.timeTaken)}</td>
+                <td>${Utils.fmtDate(a.submittedAt)}</td>
+                <td><button class="btn-ghost btn-sm" onclick="ExamEngine.showResult('${a.id}')">Review</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table></div>
+      </div></div>` :
+      `<div class="section"><div class="section-body">${Utils.empty('📊','No completed exams yet.')}</div></div>`}
+    `);
+  }
+
+  // ── LEADERBOARD ─────────────────────────
+  async function renderLeaderboard() {
+    loading();
+    const user  = Auth.current();
+    const [batch, exams] = await Promise.all([
+      DB.Batches.byId(user.batchId),
+      DB.Exams.forBatch(user.batchId),
+    ]);
+    const published = exams.filter(e => e.status === 'published');
+
+    Utils.renderIn('student-main', `
+      <div class="page-header"><div><h2>🏆 Leaderboard</h2><p>Top performers</p></div></div>
+      <div class="pill-tabs">
+        <button class="pill-tab active" onclick="StudentViews.lbTab('overall',this)">🌟 Overall</button>
+        ${batch ? `<button class="pill-tab" onclick="StudentViews.lbTab('batch:${user.batchId}',this)">👥 ${Utils.esc(batch.name)}</button>` : ''}
+        ${published.map(e=>`<button class="pill-tab" onclick="StudentViews.lbTab('exam:${e.id}',this)">${Utils.esc(e.title.substring(0,22))}</button>`).join('')}
+      </div>
+      <div id="s-lb-content"><div class="flex-center" style="height:200px;"><div class="spinner"></div></div></div>
+    `);
+    await lbTab('overall', document.querySelector('.pill-tab'));
+  }
+
+  async function lbTab(key, btn) {
+    document.querySelectorAll('.pill-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const el   = document.getElementById('s-lb-content');
+    const user = Auth.current();
+    if (!el) return;
+    el.innerHTML = '<div class="flex-center" style="height:200px;"><div class="spinner"></div></div>';
+    if (key === 'overall') { el.innerHTML = await renderLbOverall(user.id); return; }
+    const [type, id] = key.split(':');
+    if (type === 'exam')  el.innerHTML = await renderLbExam(id, user.id);
+    if (type === 'batch') el.innerHTML = await renderLbBatch(id, user.id);
+  }
+
+  function podiumHTML(top3) {
+    const medals  = ['🥇','🥈','🥉'];
+    const classes = ['p1','p2','p3'];
+    return `<div class="lb-podium">
+      ${top3.map((e,i) => e ? `
+        <div class="lb-place ${classes[i]}">
+          <div class="lb-medal">${medals[i]}</div>
+          <div class="lb-name">${Utils.esc(e.name)}</div>
+          <div class="lb-score">${Utils.esc(e.scoreLabel)}</div>
+        </div>` : '').join('')}
+    </div>`;
+  }
+
+  async function renderLbOverall(myId) {
+    const rows = await DB.Attempts.globalLeaderboard();
+    if (!rows.length) return Utils.empty('🏆','No data yet. Take some exams!');
+    const top3 = rows.slice(0,3).map(r => r.student ? { name: r.student.name, scoreLabel: `${r.total} pts` } : null);
+    return podiumHTML(top3) + `
+    <div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Student</th><th>Exams</th><th>Total Score</th></tr></thead>
+      <tbody>${rows.map(r => `<tr style="${r.student?.id===myId?'background:rgba(212,160,23,.07);':''}">
+        <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+        <td><b>${Utils.esc(r.student?.name||'?')}</b> ${r.student?.id===myId?'<span class="badge badge-gold">You</span>':''}</td>
+        <td>${r.count}</td>
+        <td><b>${r.total}</b></td>
+      </tr>`).join('')}</tbody>
+    </table></div></div></div>`;
+  }
+
+  async function renderLbExam(examId, myId) {
+    const [exam, rows] = await Promise.all([DB.Exams.byId(examId), DB.Attempts.leaderboard(examId)]);
+    if (!rows.length) return Utils.empty('🏆','No submissions for this exam yet.');
+    const top3 = rows.slice(0,3).map(r => r.student
+      ? { name: r.student.name, scoreLabel: `${Utils.pct(r.attempt.score,r.attempt.maxScore)}%` } : null);
+    return `<h3 style="margin-bottom:16px;">${Utils.esc(exam?.title||'')}</h3>` +
+    podiumHTML(top3) + `
+    <div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Student</th><th>Score</th><th>%</th><th>Time</th></tr></thead>
+      <tbody>${rows.map(r => {
+        const p = Utils.pct(r.attempt.score, r.attempt.maxScore);
+        return `<tr style="${r.student?.id===myId?'background:rgba(212,160,23,.07);':''}">
+          <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+          <td><b>${Utils.esc(r.student?.name||'?')}</b> ${r.student?.id===myId?'<span class="badge badge-gold">You</span>':''}</td>
+          <td>${r.attempt.score}/${r.attempt.maxScore}</td>
+          <td><span class="${Utils.scoreColor(p)}">${p}%</span></td>
+          <td>${Utils.fmtTime(r.attempt.timeTaken)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div></div></div>`;
+  }
+
+  async function renderLbBatch(batchId, myId) {
+    const [batch, students] = await Promise.all([DB.Batches.byId(batchId), DB.Users.inBatch(batchId)]);
+    const rows = await Promise.all(students.map(async s => {
+      const atts  = (await DB.Attempts.byStudent(s.id)).filter(a => a.status==='submitted');
+      const total = atts.reduce((sum,a) => sum+a.score, 0);
+      return { student:s, total, count:atts.length };
+    }));
+    const sorted = rows.sort((a,b) => b.total-a.total).map((r,i) => ({...r,rank:i+1}));
+    if (!sorted.length) return Utils.empty('🏆','No data for this batch yet.');
+    const top3 = sorted.slice(0,3).map(r => ({ name:r.student.name, scoreLabel:`${r.total} pts` }));
+    return `<h3 style="margin-bottom:16px;">${Utils.esc(batch?.name||'')}</h3>` +
+    podiumHTML(top3) + `
+    <div class="section"><div class="section-body"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Student</th><th>Exams</th><th>Total Score</th></tr></thead>
+      <tbody>${sorted.map(r => `<tr style="${r.student.id===myId?'background:rgba(212,160,23,.07);':''}">
+        <td style="font-weight:700;text-align:center;">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:r.rank}</td>
+        <td><b>${Utils.esc(r.student.name)}</b> ${r.student.id===myId?'<span class="badge badge-gold">You</span>':''}</td>
+        <td>${r.count}</td>
+        <td><b>${r.total}</b></td>
+      </tr>`).join('')}</tbody>
+    </table></div></div></div>`;
+  }
+
+  // ── PROMPT START ────────────────────────
+  async function promptStart(examId) {
+    const exam = await DB.Exams.byId(examId);
+    if (!exam) { Utils.toast('Exam not found','error'); return; }
+    Utils.modal(`
+      <h3 style="margin-bottom:10px;">${Utils.esc(exam.title)}</h3>
+      <p style="color:var(--text2);margin-bottom:18px;">${Utils.esc(exam.description||'')}</p>
+      <div class="stat-grid" style="margin-bottom:18px;">
+        <div class="stat-card"><div class="s-icon">❓</div><div class="s-val">${exam.questionIds?.length||0}</div><div class="s-label">Questions</div></div>
+        <div class="stat-card"><div class="s-icon">⏱</div><div class="s-val">${exam.duration||'∞'}</div><div class="s-label">Minutes</div></div>
+        <div class="stat-card"><div class="s-icon">🎯</div><div class="s-val">${exam.passMark||0}</div><div class="s-label">Pass Mark</div></div>
+        <div class="stat-card"><div class="s-icon">📊</div><div class="s-val">${exam.totalMarks||'?'}</div><div class="s-label">Total Marks</div></div>
+      </div>
+      <p style="color:var(--text3);font-size:0.82rem;margin-bottom:18px;">
+        ⚠️ Once you start, the timer begins. Submit before time runs out.
+      </p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="Utils.closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="Utils.closeModal();ExamEngine.start('${examId}','${Auth.current().id}')">🚀 Begin Exam</button>
+      </div>`);
+  }
+
+  return { show, promptStart, lbTab };
+})();
+
+
+/* ═══════════════════════════════════════════
+   app.js — Bootstrap & Event Wiring (Firebase)
+═══════════════════════════════════════════ */
+
+// Add loading overlay helpers to Utils
+Utils.showLoadingOverlay = function(msg = 'Loading…') {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.className = 'loading-overlay';
+    el.innerHTML = `<div class="spinner"></div><p id="loading-overlay-msg"></p>`;
+    document.body.appendChild(el);
+  }
+  document.getElementById('loading-overlay-msg').textContent = msg;
+  el.style.display = 'flex';
+};
+Utils.hideLoadingOverlay = function() {
+  const el = document.getElementById('loading-overlay');
+  if (el) el.style.display = 'none';
+};
+
+// ── BOOTSTRAP ───────────────────────────────
+// Note: DOM is already ready by the time this runs (scripts load dynamically after page load)
+(async () => {
+
+  document.getElementById('loading-msg').textContent = 'Connecting to Firebase…';
+
+  try {
+    // Seed sample data (only runs if DB is empty)
+    await DB.seed();
+    document.getElementById('loading-msg').textContent = 'Ready!';
+  } catch(e) {
+    document.getElementById('loading-msg').textContent = 'Connection error — check Firebase rules.';
+    console.error('Firebase seed error:', e);
+  }
+
+  // Check existing session (page refresh)
+  const user = Auth.current();
+  if (user) {
+    if (user.role === 'teacher') enterTeacher();
+    else enterStudent(user);
+  } else {
+    Utils.showScreen('screen-login');
+  }
+
+  // ── LOGIN ─────────────────────────────────
+  let loginRole = 'student';
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loginRole = btn.dataset.role;
+      document.getElementById('login-hint').innerHTML =
+        loginRole === 'student'
+          ? 'Students: enter your username &amp; password'
+          : 'Teacher: <b>andrew</b> / 156251';
+      document.getElementById('login-error').classList.add('hidden');
+    });
+  });
+
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('login-username').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('login-password').focus();
+  });
+
+  async function doLogin() {
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('login-btn');
+
+    if (!username || !password) {
+      errEl.textContent = 'Please enter username and password.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    btn.textContent = 'Signing in…';
+    btn.disabled    = true;
+
+    try {
+      const result = await Auth.login(username, password, loginRole);
+      btn.textContent = 'Sign In';
+      btn.disabled    = false;
+
+      if (!result.ok) {
+        errEl.textContent = result.msg;
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      document.getElementById('login-password').value = '';
+
+      if (result.user.role === 'teacher') enterTeacher();
+      else enterStudent(result.user);
+
+    } catch(e) {
+      btn.textContent = 'Sign In';
+      btn.disabled    = false;
+      errEl.textContent = 'Login failed: ' + e.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  function enterTeacher() {
+    Utils.showScreen('screen-teacher');
+    TeacherViews.show('t-dashboard');
+  }
+
+  function enterStudent(user) {
+    document.getElementById('student-name-tag').textContent = '🎓 ' + (user.name || user.username);
+    Utils.showScreen('screen-student');
+    StudentViews.show('s-dashboard');
+  }
+
+  // ── LOGOUTS ──────────────────────────────
+  document.getElementById('student-logout').addEventListener('click', async () => {
+    await Auth.logout();
+    Utils.showScreen('screen-login');
+    document.getElementById('login-username').value = '';
+  });
+
+  document.getElementById('teacher-logout').addEventListener('click', async () => {
+    await Auth.logout();
+    Utils.showScreen('screen-login');
+    document.getElementById('login-username').value = '';
+  });
+
+  // ── SIDEBAR NAV ──────────────────────────
+  document.getElementById('student-sidebar').addEventListener('click', e => {
+    const item = e.target.closest('.nav-item');
+    if (item?.dataset.view) StudentViews.show(item.dataset.view);
+  });
+
+  document.getElementById('teacher-sidebar').addEventListener('click', e => {
+    const item = e.target.closest('.nav-item');
+    if (item?.dataset.view) TeacherViews.show(item.dataset.view);
+  });
+
+  // ── EXAM NAVIGATION ──────────────────────
+  document.getElementById('exam-next').addEventListener('click', () => ExamEngine.next());
+  document.getElementById('exam-prev').addEventListener('click', () => ExamEngine.prev());
+
+  // ── MODAL ────────────────────────────────
+  document.getElementById('modal-close').addEventListener('click', Utils.closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) Utils.closeModal();
+  });
+
+  // ── KEYBOARD ─────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') Utils.closeModal();
+  });
+
+  // Also patch QTypes.saveQuestion to be async-aware
+  QTypes.saveQuestion = async function(existingId) {
+    const q = QTypes.collectQuestion(existingId);
+    if (!q) return;
+    const savedId = await DB.Questions.save(q);
+    // Update cache
+    if (window._allQs) {
+      const idx = window._allQs.findIndex(x => x.id === savedId);
+      const saved = { ...q, id: savedId };
+      if (idx >= 0) window._allQs[idx] = saved;
+      else window._allQs.push(saved);
+    }
+    Utils.closeModal();
+    Utils.toast('Question saved!','success');
+    TeacherViews.refresh();
+  };
+
+})();
+
+  </script>
+
+</body>
+</html>
