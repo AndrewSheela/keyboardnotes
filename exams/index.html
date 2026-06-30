@@ -1402,6 +1402,20 @@ const DB = (() => {
       }
     },
 
+    // Delete all attempts belonging to a student (used when deleting a student)
+    async deleteByStudent(studentId) {
+      const attempts = await Attempts.byStudent(studentId);
+      await Promise.all(attempts.map(a => fs.collection('attempts').doc(a.id).delete()));
+      return attempts.length;
+    },
+
+    // Delete all attempts belonging to an exam (used when deleting an exam)
+    async deleteByExam(examId) {
+      const attempts = await Attempts.byExam(examId);
+      await Promise.all(attempts.map(a => fs.collection('attempts').doc(a.id).delete()));
+      return attempts.length;
+    },
+
     // Best attempt per student for one exam — sorted by score
     async leaderboard(examId) {
       const attempts = (await Attempts.byExam(examId)).filter(a => a.status === 'submitted');
@@ -2580,9 +2594,22 @@ const TeacherViews = (() => {
   }
 
   async function deleteStudent(id) {
-    Utils.confirm('Delete this student?',async()=>{
-      await DB.Users.delete(id); Utils.toast('Deleted','info'); renderStudents();
-    });
+    const student = await DB.Users.byId(id);
+    const attempts = await DB.Attempts.byStudent(id);
+    const examCount = attempts.length;
+
+    Utils.confirm(
+      examCount > 0
+        ? `Delete ${student?.name||'this student'}? This will also permanently delete their ${examCount} exam attempt${examCount>1?'s':''} and scores.`
+        : `Delete ${student?.name||'this student'}?`,
+      async () => {
+        // Delete all their attempts first, then the student record
+        await DB.Attempts.deleteByStudent(id);
+        await DB.Users.delete(id);
+        Utils.toast('Student and all their exam data deleted', 'info');
+        renderStudents();
+      }
+    );
   }
 
   async function studentReport(sid) {
@@ -2692,9 +2719,20 @@ const TeacherViews = (() => {
   }
 
   async function deleteExam(id) {
-    Utils.confirm('Delete this exam and all attempts?',async()=>{
-      await DB.Exams.delete(id); Utils.toast('Deleted','info'); renderExams();
-    });
+    const exam = await DB.Exams.byId(id);
+    const attempts = await DB.Attempts.byExam(id);
+    const count = attempts.length;
+    Utils.confirm(
+      count > 0
+        ? `Delete "${exam?.title||'this exam'}"? This will also permanently delete ${count} student attempt${count>1?'s':''} and scores.`
+        : `Delete "${exam?.title||'this exam'}"?`,
+      async () => {
+        await DB.Attempts.deleteByExam(id);
+        await DB.Exams.delete(id);
+        Utils.toast('Exam and all attempts deleted','info');
+        renderExams();
+      }
+    );
   }
 
   async function manageQs(examId) {
