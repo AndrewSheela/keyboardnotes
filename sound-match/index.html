@@ -963,7 +963,7 @@ tbody td { padding: 10px 14px; }
         </div>
         <div id="login-error" class="error-msg hidden"></div>
         <button class="btn-primary full" id="login-btn">Sign In</button>
-        <p class="login-hint" id="login-hint">Students: enter your username &amp; password</p>
+        <p class="login-hint" id="login-hint">Enter your username &amp; password</p>
       </div>
     </div>
   </div>
@@ -1447,14 +1447,17 @@ const Auth = (() => {
   }
 
   async function login(username, password, expectedRole) {
+    // Must authenticate FIRST — Firestore rules require request.auth != null
+    // for ANY read, including the username lookup itself.
+    if (!fbAuth.currentUser) {
+      await fbAuth.signInAnonymously();
+    }
+
     const hash = await sha256(password);
     const user = await DB.Users.byUsername(username);
     if (!user)                       return { ok:false, msg:'Username not found.' };
     if (user.passwordHash !== hash)  return { ok:false, msg:'Incorrect password.' };
     if (user.role !== expectedRole)  return { ok:false, msg:`This account is not a ${expectedRole}.` };
-
-    // Sign in anonymously with Firebase Auth to get a persistent session
-    await fbAuth.signInAnonymously();
 
     // Store our app user in sessionStorage for fast access
     sessionStorage.setItem('examhub_user', JSON.stringify(user));
@@ -3388,6 +3391,10 @@ Utils.hideLoadingOverlay = function() {
   document.getElementById('loading-msg').textContent = 'Connecting to Firebase…';
 
   try {
+    // Must be authenticated before ANY Firestore read/write (rules require it)
+    if (!fbAuth.currentUser) {
+      await fbAuth.signInAnonymously();
+    }
     // Seed sample data (only runs if DB is empty)
     await DB.seed();
     document.getElementById('loading-msg').textContent = 'Ready!';
@@ -3413,10 +3420,7 @@ Utils.hideLoadingOverlay = function() {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       loginRole = btn.dataset.role;
-      document.getElementById('login-hint').innerHTML =
-        loginRole === 'student'
-          ? 'Students: enter your username &amp; password'
-          : 'Teacher: <b>andrew</b> / 156251';
+      document.getElementById('login-hint').innerHTML = 'Enter your username &amp; password';
       document.getElementById('login-error').classList.add('hidden');
     });
   });
