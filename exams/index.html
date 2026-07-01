@@ -2737,27 +2737,93 @@ const TeacherViews = (() => {
 
   async function manageQs(examId) {
     Utils.modal('<div class="flex-center" style="height:300px;"><div class="spinner"></div></div>',true);
-    const [exam, allQs] = await Promise.all([DB.Exams.byId(examId), DB.Questions.all()]);
+    const [exam, allQs, topics] = await Promise.all([
+      DB.Exams.byId(examId),
+      DB.Questions.all(),
+      DB.Questions.topics()
+    ]);
     const inExam = new Set(exam.questionIds||[]);
+
+    // Store for filtering
+    window._manageQs     = allQs;
+    window._manageExamId = examId;
+    window._manageInExam = inExam;
 
     Utils.modal(`
       <h3 style="margin-bottom:6px;">Questions — ${Utils.esc(exam.title)}</h3>
-      <p class="text-muted mb-16">Tick questions to include. Changes save instantly.</p>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>✓</th><th>Type</th><th>Question</th><th>Topic</th><th>Pts</th></tr></thead>
-        <tbody>${allQs.map(q=>`<tr>
-          <td><input type="checkbox" ${inExam.has(q.id)?'checked':''}
-              onchange="TeacherViews.toggleExamQ('${q.id}','${examId}',this.checked)"
-              style="accent-color:var(--gold);width:16px;height:16px;"/></td>
-          <td style="white-space:nowrap;">${Utils.esc(QTypes.label(q.type))}</td>
-          <td>${Utils.esc(q.text.substring(0,55))}${q.text.length>55?'…':''}</td>
-          <td>${Utils.esc(q.topic||'—')}</td>
-          <td>${q.points}</td>
-        </tr>`).join('')}</tbody>
-      </table></div>
+      <p class="text-muted mb-16">Filter by topic or search, then tick to include in this exam.</p>
+
+      <div class="search-bar mb-16" style="margin-bottom:14px;">
+        <input id="mq-search" placeholder="Search questions…"
+               oninput="TeacherViews.filterManageQs()" style="flex:2;" />
+        <select id="mq-topic" onchange="TeacherViews.filterManageQs()">
+          <option value="">All Topics</option>
+          ${topics.map(t=>`<option value="${Utils.esc(t)}">${Utils.esc(t)}</option>`).join('')}
+        </select>
+        <select id="mq-type" onchange="TeacherViews.filterManageQs()">
+          <option value="">All Types</option>
+          ${QTypes.list.map(t=>`<option value="${t.id}">${t.icon} ${t.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div style="font-size:0.78rem;color:var(--text3);margin-bottom:10px;">
+        <span id="mq-count">${allQs.length} questions</span> &nbsp;·&nbsp;
+        <span style="color:var(--gold);" id="mq-selected-count">${inExam.size} selected</span>
+      </div>
+
+      <div id="mq-table">${renderManageQTable(allQs, inExam)}</div>
+
       <div class="form-actions mt-16">
-        <button class="btn-primary" onclick="Utils.closeModal()">Done</button>
-      </div>`,true);
+        <button class="btn-primary" onclick="Utils.closeModal()">✅ Done</button>
+      </div>
+    `,true);
+  }
+
+  function renderManageQTable(qs, inExam) {
+    if (!qs.length) return Utils.empty('❓','No questions match your filter.');
+    return `<div class="tbl-wrap"><table>
+      <thead><tr>
+        <th><input type="checkbox" id="mq-check-all" title="Select all visible"
+            onchange="TeacherViews.toggleAllVisible(this.checked)"
+            style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" /></th>
+        <th>Type</th><th>Question</th><th>Topic</th><th>Pts</th>
+      </tr></thead>
+      <tbody>${qs.map(q=>`<tr id="mq-row-${q.id}">
+        <td><input type="checkbox" class="mq-cb" data-qid="${q.id}"
+            ${inExam.has(q.id)?'checked':''}
+            onchange="TeacherViews.toggleExamQ('${q.id}','${window._manageExamId}',this.checked)"
+            style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" /></td>
+        <td style="white-space:nowrap;font-size:0.8rem;">${Utils.esc(QTypes.label(q.type))}</td>
+        <td style="font-size:0.85rem;">${Utils.esc(q.text.substring(0,60))}${q.text.length>60?'…':''}</td>
+        <td style="font-size:0.8rem;color:var(--text2);">${Utils.esc(q.topic||'—')}</td>
+        <td>${q.points}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  function filterManageQs() {
+    const search = document.getElementById('mq-search')?.value.toLowerCase()||'';
+    const topic  = document.getElementById('mq-topic')?.value||'';
+    const type   = document.getElementById('mq-type')?.value||'';
+    let qs = window._manageQs||[];
+    if (search) qs = qs.filter(q => q.text.toLowerCase().includes(search)||(q.topic||'').toLowerCase().includes(search));
+    if (topic)  qs = qs.filter(q => q.topic === topic);
+    if (type)   qs = qs.filter(q => q.type === type);
+    document.getElementById('mq-table').innerHTML = renderManageQTable(qs, window._manageInExam);
+    document.getElementById('mq-count').textContent = `${qs.length} question${qs.length!==1?'s':''}`;
+    // Reset select-all checkbox
+    const allCb = document.getElementById('mq-check-all');
+    if (allCb) allCb.checked = false;
+  }
+
+  async function toggleAllVisible(checked) {
+    const cbs = document.querySelectorAll('.mq-cb');
+    for (const cb of cbs) {
+      if (cb.checked !== checked) {
+        cb.checked = checked;
+        await toggleExamQ(cb.dataset.qid, window._manageExamId, checked);
+      }
+    }
   }
 
   async function toggleExamQ(qId, examId, checked) {
@@ -2766,6 +2832,13 @@ const TeacherViews = (() => {
     checked ? ids.add(qId) : ids.delete(qId);
     exam.questionIds = [...ids];
     await DB.Exams.save(exam);
+    // Sync local set
+    if (window._manageInExam) {
+      checked ? window._manageInExam.add(qId) : window._manageInExam.delete(qId);
+    }
+    // Update selected count
+    const countEl = document.getElementById('mq-selected-count');
+    if (countEl) countEl.textContent = `${window._manageInExam?.size||0} selected`;
   }
 
   // ── QUESTION BANK ────────────────────────
@@ -3074,6 +3147,7 @@ const TeacherViews = (() => {
     modalBatch, saveBatch, deleteBatch,
     modalStudent, saveStudent, deleteStudent, filterStudents, studentReport,
     modalExam, saveExam, togglePublish, deleteExam, manageQs, toggleExamQ,
+    filterManageQs, toggleAllVisible,
     renderQBank, filterQs, goQPage, openAddQ, editQ, deleteQ,
     filterResults, manualGrade, saveGrades,
     lbTab,
