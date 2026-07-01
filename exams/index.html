@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ExamHub — Music Academy</title>
   <style>
 /* ═══════════════════════════════════════════
@@ -1043,19 +1043,10 @@ tbody td { padding: 10px 14px; }
 
   <!-- ───── TOAST ───── -->
   <div id="toast" class="toast hidden"></div>
-
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-  <script>
-    if (typeof firebase === 'undefined') {
-      document.getElementById('loading-msg').textContent = '❌ Firebase SDK failed to load. Check your internet connection.';
-      document.getElementById('loading-msg').style.color = '#E74C3C';
-      throw new Error('Firebase SDK not loaded');
-    }
-  </script>
-
+  <script>if(typeof firebase==='undefined'){document.getElementById('loading-msg').textContent='❌ Firebase SDK failed to load.';throw new Error('Firebase SDK not loaded');}</script>
   <script>
 /* ═══════════════════════════════════════════
    firebase-init.js
@@ -1099,7 +1090,6 @@ spinnerStyle.textContent = `
 document.head.appendChild(spinnerStyle);
 
   </script>
-
   <script>
 /* ═══════════════════════════════════════════
    db.js — Firestore Database Layer
@@ -2347,8 +2337,7 @@ const TeacherViews = (() => {
 
   let _currentView = 't-dashboard';
   let _qFilter = { topic:'', type:'', search:'' };
-  let _qPage   = 1;
-  const Q_PER  = 15;
+  const Q_PER  = 99999; // show all questions, no pagination
 
   function show(view) {
     _currentView = view;
@@ -2845,12 +2834,14 @@ const TeacherViews = (() => {
   async function renderQBank() {
     loading();
     const [allQs, topics] = await Promise.all([DB.Questions.all(), DB.Questions.topics()]);
-    window._allQs = allQs;
-    _qPage = 1;
+    window._allQs      = allQs;
+    window._filteredQs = [];
+    _qFilter           = { topic:'', type:'', search:'' };
+    _qShowing          = Q_CHUNK;
 
     Utils.renderIn('teacher-main',`
       <div class="page-header">
-        <div><h2>Question Bank</h2><p>${allQs.length} questions</p></div>
+        <div><h2>Question Bank</h2><p>${allQs.length} questions total</p></div>
         <button class="btn-primary" onclick="TeacherViews.openAddQ()">+ Add Question</button>
       </div>
       <div class="section">
@@ -2862,20 +2853,28 @@ const TeacherViews = (() => {
               ${QTypes.list.map(t=>`<option value="${t.id}">${t.icon} ${t.name}</option>`).join('')}
             </select>
             <select id="q-topic" onchange="TeacherViews.filterQs()">
-              <option value="">All Topics</option>
+              <option value="">— Select a Lesson —</option>
               ${topics.map(t=>`<option value="${Utils.esc(t)}">${Utils.esc(t)}</option>`).join('')}
             </select>
           </div>
         </div>
-        <div class="section-body" id="q-list">${renderQList(allQs,1)}</div>
+        <div class="section-body" id="q-list">
+          <div class="empty-state">
+            <div class="e-icon">🔍</div>
+            <p>Select a lesson from the dropdown<br>or type in the search box to show questions</p>
+          </div>
+        </div>
       </div>`);
   }
 
-  function renderQList(qs, page) {
+  const Q_CHUNK = 30;
+  let   _qShowing = Q_CHUNK;
+
+  function renderQList(qs, showAll = false) {
     if (!qs.length) return Utils.empty('❓','No questions match your filter.');
-    const pages = Math.ceil(qs.length/Q_PER);
-    const slice = qs.slice((page-1)*Q_PER, page*Q_PER);
-    const cards = slice.map(q=>`
+    const slice   = showAll ? qs : qs.slice(0, _qShowing);
+    const hasMore = !showAll && qs.length > _qShowing;
+    const cards   = slice.map(q=>`
       <div class="q-card">
         <div class="q-card-head">
           <span class="q-num">${Utils.esc(QTypes.label(q.type))} · ${q.points} pts</span>
@@ -2890,25 +2889,58 @@ const TeacherViews = (() => {
           <span class="badge badge-grey">${q.difficulty||'—'}</span>
         </div>
       </div>`).join('');
-    const pager = pages>1?`<div class="pagination">${Array.from({length:pages},(_,i)=>`
-      <button class="page-btn${i+1===page?' active':''}" onclick="TeacherViews.goQPage(${i+1})">${i+1}</button>`).join('')}</div>`:'';
-    return cards+pager;
+    const loadMore = hasMore ? `
+      <div style="text-align:center;margin-top:16px;">
+        <button class="btn-secondary" onclick="TeacherViews.loadMoreQs()">
+          Load More (${qs.length - _qShowing} remaining)
+        </button>
+      </div>` : '';
+    return `<p class="text-muted" style="margin-bottom:12px;">
+              Showing ${slice.length} of ${qs.length} question${qs.length!==1?'s':''}
+            </p>` + cards + loadMore;
   }
 
   function filterQs() {
-    _qFilter.search = document.getElementById('q-search').value.toLowerCase();
-    _qFilter.type   = document.getElementById('q-type').value;
-    _qFilter.topic  = document.getElementById('q-topic').value;
-    _qPage = 1; updateQList();
+    _qFilter.search = document.getElementById('q-search')?.value.toLowerCase()||'';
+    _qFilter.type   = document.getElementById('q-type')?.value||'';
+    _qFilter.topic  = document.getElementById('q-topic')?.value||'';
+    _qShowing = Q_CHUNK;
+    updateQList();
   }
+
   function updateQList() {
+    const el = document.getElementById('q-list');
+    if (!el) return;
+    const { search, topic, type } = _qFilter;
+
+    // Show prompt if nothing selected
+    if (!search && !topic && !type) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <div class="e-icon">🔍</div>
+          <p>Select a lesson from the dropdown<br>or type in the search box to show questions</p>
+        </div>`;
+      return;
+    }
+
     let qs = window._allQs||[];
-    if (_qFilter.search) qs=qs.filter(q=>q.text.toLowerCase().includes(_qFilter.search)||(q.topic||'').toLowerCase().includes(_qFilter.search));
-    if (_qFilter.type)  qs=qs.filter(q=>q.type===_qFilter.type);
-    if (_qFilter.topic) qs=qs.filter(q=>q.topic===_qFilter.topic);
-    document.getElementById('q-list').innerHTML = renderQList(qs,_qPage);
+    if (search) qs = qs.filter(q => q.text.toLowerCase().includes(search)||(q.topic||'').toLowerCase().includes(search));
+    if (type)   qs = qs.filter(q => q.type === type);
+    if (topic)  qs = qs.filter(q => q.topic === topic);
+
+    // Topic filter = show ALL (only 10-20 per lesson — always fast)
+    // Search/type only = chunk to 30 at a time
+    window._filteredQs = qs;
+    el.innerHTML = renderQList(qs, !!topic);
   }
-  function goQPage(p){ _qPage=p; updateQList(); }
+
+  function loadMoreQs() {
+    _qShowing += Q_CHUNK;
+    const el = document.getElementById('q-list');
+    if (el) el.innerHTML = renderQList(window._filteredQs||[], false);
+  }
+
+  function goQPage(p) { updateQList(); } // kept for safety
 
   async function openAddQ() {
     const topics = await DB.Questions.topics();
@@ -3148,7 +3180,7 @@ const TeacherViews = (() => {
     modalStudent, saveStudent, deleteStudent, filterStudents, studentReport,
     modalExam, saveExam, togglePublish, deleteExam, manageQs, toggleExamQ,
     filterManageQs, toggleAllVisible,
-    renderQBank, filterQs, goQPage, openAddQ, editQ, deleteQ,
+    renderQBank, filterQs, goQPage, loadMoreQs, openAddQ, editQ, deleteQ,
     filterResults, manualGrade, saveGrades,
     lbTab,
   };
@@ -3661,6 +3693,5 @@ Utils.hideLoadingOverlay = function() {
 })();
 
   </script>
-
 </body>
 </html>
