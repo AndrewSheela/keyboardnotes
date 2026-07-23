@@ -173,6 +173,8 @@
   .mini-order-btn{width:26px;height:22px;border-radius:5px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
   .mini-order-btn:hover:not(:disabled){border-color:var(--accent4);color:var(--accent4);}
   .mini-order-btn:disabled{opacity:.3;cursor:not-allowed;}
+  .position-input{width:34px;text-align:center;padding:3px 2px;border-radius:5px;border:1.5px solid var(--border);background:var(--card2);color:var(--accent);font-family:'Fredoka One',cursive;font-size:.8rem;-moz-appearance:textfield;}
+  .position-input::-webkit-outer-spin-button,.position-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
   .song-meta{display:flex;flex-direction:column;gap:3px;flex:1;min-width:160px;}
   .song-meta .sm-title{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--text);}
   .song-meta .sm-details{font-size:.78rem;color:var(--muted);}
@@ -523,6 +525,7 @@ const firebaseConfig = {
   messagingSenderId: "829997302552",
   appId: "1:829997302552:web:25508fd4e11a236ec7946d",
   measurementId: "G-6XPPZ9N78G"
+
 };
 const SONGS_COLLECTION = 'rootScaleSongs';
 
@@ -1462,10 +1465,14 @@ function renderSongManageList(){
     div.innerHTML = `
       <div class="song-order-controls">
         <button class="mini-order-btn" title="Move up" onclick="moveSong('${song.id}', -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <input type="number" class="position-input" value="${i + 1}" min="1" max="${songs.length}"
+               title="Type a position to move this song there"
+               onchange="moveSongToPosition('${song.id}', this.value)"
+               onkeydown="if(event.key==='Enter') this.blur()">
         <button class="mini-order-btn" title="Move down" onclick="moveSong('${song.id}', 1)" ${i === songs.length - 1 ? 'disabled' : ''}>▼</button>
       </div>
       <div class="song-meta">
-        <div class="sm-title">${i + 1}. ${escapeHtml(song.title || song.filename)}${song.artist ? ' — ' + escapeHtml(song.artist) : ''}</div>
+        <div class="sm-title">${escapeHtml(song.title || song.filename)}${song.artist ? ' — ' + escapeHtml(song.artist) : ''}</div>
         <div class="sm-details">${escapeHtml(details)}</div>
       </div>
       <div class="song-manage-actions">
@@ -1477,19 +1484,52 @@ function renderSongManageList(){
   });
 }
 
-// Swaps this song's order with its neighbor and saves both — this is what
-// controls the order students see songs in on their song list.
+// Renumbers every song's `order` to match its current index in the `songs`
+// array, and saves only the ones that actually changed.
+async function persistFullOrder(){
+  const writes = [];
+  songs.forEach((s, i) => {
+    if(s.order !== i){
+      s.order = i;
+      writes.push(saveSongToFirestore(s));
+    }
+  });
+  await Promise.all(writes);
+}
+
+// Nudges a song up or down by one spot.
 async function moveSong(id, direction){
   const idx = songs.findIndex(s => s.id === id);
-  const swapIdx = idx + direction;
-  if(idx === -1 || swapIdx < 0 || swapIdx >= songs.length) return;
-  const a = songs[idx], b = songs[swapIdx];
-  const tmp = a.order != null ? a.order : idx;
-  a.order = b.order != null ? b.order : swapIdx;
-  b.order = tmp;
+  const newIdx = idx + direction;
+  if(idx === -1 || newIdx < 0 || newIdx >= songs.length) return;
+  const [item] = songs.splice(idx, 1);
+  songs.splice(newIdx, 0, item);
   renderSongManageList(); // optimistic re-render so it feels instant
   try {
-    await Promise.all([saveSongToFirestore(a), saveSongToFirestore(b)]);
+    await persistFullOrder();
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not save the new order — check your Firebase setup.');
+  }
+  await loadSongsFromFirestore();
+  renderSongManageList();
+}
+
+// Moves a song directly to any position — e.g. type "3" to drop a newly
+// added song into the middle of the list instead of nudging it one at a time.
+async function moveSongToPosition(id, rawPos){
+  const idx = songs.findIndex(s => s.id === id);
+  if(idx === -1) return;
+  let newIdx = Math.round(Number(rawPos)) - 1;
+  if(isNaN(newIdx)){ renderSongManageList(); return; }
+  newIdx = Math.max(0, Math.min(songs.length - 1, newIdx));
+  if(newIdx === idx){ renderSongManageList(); return; }
+  const [item] = songs.splice(idx, 1);
+  songs.splice(newIdx, 0, item);
+  renderSongManageList();
+  try {
+    await persistFullOrder();
+    showToast(`✅ Moved to position ${newIdx + 1}`);
   } catch(e){
     console.error(e);
     showToast('⚠️ Could not save the new order — check your Firebase setup.');
