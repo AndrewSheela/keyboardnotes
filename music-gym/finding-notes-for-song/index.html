@@ -184,6 +184,8 @@
 </style>
 </head>
 <body>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
 <!-- PAGE 1: LOGIN -->
 <div class="page active" id="loginPage">
@@ -275,16 +277,16 @@
         <div class="loop-controls-row">
           <div class="mini-field">
             <label>Point A</label>
-            <input type="text" id="loopAInput" placeholder="0:00">
+            <input type="text" id="loopAInput" placeholder="0.00.00">
           </div>
           <button class="btn-tiny" onclick="setLoopPointFromPlayhead('A')">Set A ⏺</button>
           <div class="mini-field">
             <label>Point B</label>
-            <input type="text" id="loopBInput" placeholder="0:00">
+            <input type="text" id="loopBInput" placeholder="0.00.00">
           </div>
           <button class="btn-tiny" onclick="setLoopPointFromPlayhead('B')">Set B ⏺</button>
         </div>
-        <div class="loop-hint">Play the song, tap <strong>Set A</strong> where you want the loop to start, and <strong>Set B</strong> where it should end. You can also type times directly (mm:ss).</div>
+        <div class="loop-hint">Play the song, tap <strong>Set A</strong> where you want the loop to start, and <strong>Set B</strong> where it should end. Times are shown as <strong>min.sec.centisec</strong> (e.g. <strong>0.10.20</strong> = 10.20s) — type it that way, or as plain seconds (e.g. <strong>10.2</strong>).</div>
       </div>
 
       <div class="loop-panel" id="loopPanelMeasure">
@@ -499,8 +501,70 @@ const MINOR_KEYSIG = {
   'D#':'6 sharps','A#':'7 sharps','D':'1 flat','G':'2 flats','C':'3 flats','F':'4 flats'
 };
 
-const STORAGE_SONGS  = 'rootScaleSongs';
+const STORAGE_SONGS  = 'rootScaleSongs';       // used only as an offline fallback cache
 const STORAGE_SCORES = 'rootScaleScores';
+
+// ══════════════════════════════════════════════════════════════
+// FIREBASE — shared song list across every student's device
+// ══════════════════════════════════════════════════════════════
+// TODO (Andrew): paste your actual web app config below. Firebase Console →
+// Project settings (⚙️) → General tab → "Your apps" → select the web app
+// (or click </> to create one) → "SDK setup and configuration" → Config.
+// Project ID should already be sample-6eb3e, matching your other apps.
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+};
+const SONGS_COLLECTION = 'rootScaleSongs';
+
+let db = null;
+let firestoreReady = false;
+try {
+  if(firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    firestoreReady = true;
+  } else {
+    console.warn('Firebase config not filled in yet — songs will only be visible on this device.');
+  }
+} catch(e){
+  console.error('Firebase init failed — falling back to local-only song storage.', e);
+}
+
+// Loads the song list from Firestore (so every device sees the same songs).
+// Falls back to the last-known local copy if Firestore is unreachable.
+async function loadSongsFromFirestore(){
+  if(!firestoreReady){
+    songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
+    return songs;
+  }
+  try {
+    const snap = await db.collection(SONGS_COLLECTION).get();
+    songs = snap.docs.map(doc => Object.assign({ id: doc.id }, doc.data()));
+    localStorage.setItem(STORAGE_SONGS, JSON.stringify(songs)); // offline cache
+  } catch(e){
+    console.error('Could not reach Firestore, using last local copy.', e);
+    songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
+  }
+  return songs;
+}
+
+async function saveSongToFirestore(song){
+  if(!firestoreReady) throw new Error('Firebase is not configured yet.');
+  const data = Object.assign({}, song);
+  delete data.id;
+  await db.collection(SONGS_COLLECTION).doc(song.id).set(data);
+}
+
+async function deleteSongFromFirestore(id){
+  if(!firestoreReady) throw new Error('Firebase is not configured yet.');
+  await db.collection(SONGS_COLLECTION).doc(id).delete();
+}
 
 // Teacher password as a SHA-256 hash — regenerate via index.html?setup
 const TEACHER = {
@@ -526,12 +590,14 @@ let currentRole    = 'student';
 let currentStudent = null;
 let currentSongId  = null;
 let coins          = 0;
-let songs  = JSON.parse(localStorage.getItem(STORAGE_SONGS)  || '[]');
+let songs  = JSON.parse(localStorage.getItem(STORAGE_SONGS)  || '[]'); // seeded from cache; refreshed from Firestore on page load
 let scores = JSON.parse(localStorage.getItem(STORAGE_SCORES) || '{}');
 let loopMode   = 'time';
 let loopActive = false;
 let loopStart  = 0;
 let loopEnd    = 0;
+let loopRafId  = null;
+const LOOP_LOOKAHEAD = 0.03; // seconds — jump back slightly early to avoid audibly bleeding into the next beat/measure
 let editingSongId = null;
 let pianoOctave = 4;
 let audioCtx = null;
@@ -542,7 +608,6 @@ let pianoVolumeMultiplier = 1.5; // multiplier applied on top of each note's bas
 const audioEl = () => document.getElementById('audioEl');
 
 // ── Helpers ──
-function saveSongs(){ localStorage.setItem(STORAGE_SONGS, JSON.stringify(songs)); }
 function saveScoresLS(){ localStorage.setItem(STORAGE_SCORES, JSON.stringify(scores)); }
 function capitalise(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function rootLabel(v){ const r = ROOT_NOTES.find(r => r.value === v); return r ? r.label : v; }
@@ -570,6 +635,36 @@ function parseMMSS(str){
     const [m, s] = str.split(':').map(Number);
     if(isNaN(m) || isNaN(s)) return null;
     return m * 60 + s;
+  }
+  const n = Number(str);
+  return isNaN(n) ? null : n;
+}
+
+// Precise min.sec.centisecond format used for loop points, e.g. 10.20s -> "0.10.20"
+function formatPreciseTime(sec){
+  if(!isFinite(sec) || sec < 0) sec = 0;
+  let m = Math.floor(sec / 60);
+  let s = Math.floor(sec % 60);
+  let cs = Math.round((sec - Math.floor(sec)) * 100);
+  if(cs >= 100){ cs = 0; s += 1; if(s >= 60){ s = 0; m += 1; } }
+  return m + '.' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');
+}
+
+// Accepts "M.SS.CC" (e.g. "0.10.20" = 10.20s), "M:SS" (legacy), or a plain
+// number of seconds (e.g. "12.5").
+function parsePreciseTime(str){
+  if(!str) return null;
+  str = str.trim();
+  if(str.includes(':')){
+    const [m, s] = str.split(':').map(Number);
+    if(isNaN(m) || isNaN(s)) return null;
+    return m * 60 + s;
+  }
+  const parts = str.split('.');
+  if(parts.length === 3){
+    const [m, s, cs] = parts.map(Number);
+    if(isNaN(m) || isNaN(s) || isNaN(cs)) return null;
+    return m * 60 + s + cs / 100;
   }
   const n = Number(str);
   return isNaN(n) ? null : n;
@@ -661,16 +756,21 @@ function doLogout(){
 // ══════════════════════════════════════════════════════════════
 // SONG LIST (student)
 // ══════════════════════════════════════════════════════════════
-function showSongList(){
+async function showSongList(){
   if(audioEl()) audioEl().pause();
   stopAllNotes();
-  songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
   document.getElementById('listCoinDisplay').textContent = coins;
+  document.getElementById('songGrid').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
+  showPage('songListPage');
+  await loadSongsFromFirestore();
+  renderSongGrid();
+}
+
+function renderSongGrid(){
   const grid = document.getElementById('songGrid');
   grid.innerHTML = '';
   if(!songs.length){
     grid.innerHTML = '<div class="empty-state">🎼 No songs have been added yet.<br>Ask your teacher to upload one!</div>';
-    showPage('songListPage');
     return;
   }
   const rec = scores[currentStudent] || { songs:{} };
@@ -692,7 +792,6 @@ function showSongList(){
     `;
     grid.appendChild(div);
   });
-  showPage('songListPage');
 }
 
 function escapeHtml(s){
@@ -983,10 +1082,10 @@ document.addEventListener('DOMContentLoaded', () => {
   a.addEventListener('timeupdate', () => {
     document.getElementById('seekBar').value = a.currentTime;
     document.getElementById('curTimeLabel').textContent = formatMMSS(a.currentTime);
-    if(loopActive && loopEnd > loopStart && a.currentTime >= loopEnd){
-      a.currentTime = loopStart;
-    }
   });
+  a.addEventListener('play', startLoopWatcher);
+  a.addEventListener('pause', stopLoopWatcher);
+  a.addEventListener('ended', stopLoopWatcher);
   document.getElementById('seekBar').addEventListener('input', e => {
     a.currentTime = Number(e.target.value);
   });
@@ -1003,6 +1102,32 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Loop tools ──
+// Enforcing the loop boundary on requestAnimationFrame (instead of the coarser
+// 'timeupdate' event, which browsers fire as infrequently as a few times a
+// second) keeps the jump-back tight so playback doesn't bleed into the next
+// beat/measure before looping.
+function loopWatcherTick(){
+  const a = audioEl();
+  if(loopActive && loopEnd > loopStart && a.currentTime >= loopEnd - LOOP_LOOKAHEAD){
+    a.currentTime = loopStart;
+  }
+  if(!a.paused && !a.ended){
+    loopRafId = requestAnimationFrame(loopWatcherTick);
+  } else {
+    loopRafId = null;
+  }
+}
+
+function startLoopWatcher(){
+  if(loopRafId != null) cancelAnimationFrame(loopRafId);
+  loopRafId = requestAnimationFrame(loopWatcherTick);
+}
+
+function stopLoopWatcher(){
+  if(loopRafId != null) cancelAnimationFrame(loopRafId);
+  loopRafId = null;
+}
+
 function setLoopMode(mode){
   loopMode = mode;
   document.getElementById('loopTabTime').classList.toggle('active', mode === 'time');
@@ -1013,14 +1138,14 @@ function setLoopMode(mode){
 
 function setLoopPointFromPlayhead(point){
   const t = audioEl().currentTime;
-  if(point === 'A') document.getElementById('loopAInput').value = formatMMSS(t);
-  else document.getElementById('loopBInput').value = formatMMSS(t);
+  if(point === 'A') document.getElementById('loopAInput').value = formatPreciseTime(t);
+  else document.getElementById('loopBInput').value = formatPreciseTime(t);
   applyTimeLoopInputs();
 }
 
 function applyTimeLoopInputs(){
-  const aVal = parseMMSS(document.getElementById('loopAInput').value);
-  const bVal = parseMMSS(document.getElementById('loopBInput').value);
+  const aVal = parsePreciseTime(document.getElementById('loopAInput').value);
+  const bVal = parsePreciseTime(document.getElementById('loopBInput').value);
   if(aVal != null) loopStart = aVal;
   if(bVal != null) loopEnd = bVal;
   refreshLoopRegionBar();
@@ -1079,7 +1204,7 @@ function applyMeasureLoop(){
   const fromLabel = from.beat > 1 || fromRaw.includes('.') ? `${from.measure}.${from.beat}` : `${from.measure}`;
   const toLabel   = toRaw.includes('.') ? `${to.measure}.${to.beat}` : `${to.measure}`;
   document.getElementById('measureCalcHint').textContent =
-    `Measure ${fromLabel} → ${toLabel} · ${formatMMSS(loopStart)} to ${formatMMSS(loopEnd)}`;
+    `Measure ${fromLabel} → ${toLabel} · ${formatPreciseTime(loopStart)} to ${formatPreciseTime(loopEnd)}`;
 
   refreshLoopRegionBar();
   document.getElementById('loopToggle').checked = true;
@@ -1171,11 +1296,16 @@ function submitGuess(){
 // ══════════════════════════════════════════════════════════════
 // TEACHER — MANAGE SONGS
 // ══════════════════════════════════════════════════════════════
-function showTeacherPage(){
+async function showTeacherPage(){
   populateSelect(document.getElementById('fRootNote'), ROOT_NOTES, true);
   populateSelect(document.getElementById('fScaleType'), SCALE_TYPES, true);
-  renderSongManageList();
+  document.getElementById('songManageList').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
   showPage('teacherPage');
+  await loadSongsFromFirestore();
+  renderSongManageList();
+  if(!firestoreReady){
+    showToast('⚠️ Firebase isn\'t configured yet — songs will only save on this device.');
+  }
 }
 
 function autoFillKeySig(){
@@ -1205,7 +1335,7 @@ function clearSongForm(){
   document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
-function saveSong(){
+async function saveSong(){
   const filename = document.getElementById('fSongFilename').value.trim();
   const title = document.getElementById('fSongTitle').value.trim();
   const artist = document.getElementById('fSongArtist').value.trim();
@@ -1219,21 +1349,29 @@ function saveSong(){
   if(!filename){ showToast('⚠️ Please enter the audio filename.'); return; }
   if(!rootNote || !scaleType){ showToast('⚠️ Please set the root note and scale (answer key).'); return; }
 
-  songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
-  if(editingSongId){
-    const s = songs.find(x => x.id === editingSongId);
-    if(s){ Object.assign(s, {filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset}); }
-    showToast('✅ Song updated!');
-  } else {
-    songs.push({
-      id: 'song_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
-      filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset,
-      addedAt: Date.now()
-    });
-    showToast('✅ Song added!');
+  const isEdit = !!editingSongId;
+  const songObj = isEdit
+    ? Object.assign({}, songs.find(x => x.id === editingSongId), {filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset})
+    : { id: 'song_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+        filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset,
+        addedAt: Date.now() };
+
+  const saveBtn = document.getElementById('saveSongBtn');
+  const prevLabel = saveBtn.textContent;
+  saveBtn.textContent = 'Saving…';
+  saveBtn.disabled = true;
+  try {
+    await saveSongToFirestore(songObj);
+    showToast(isEdit ? '✅ Song updated for everyone!' : '✅ Song added — visible to all students now!');
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not save to the shared song list — check your Firebase setup.');
   }
-  saveSongs();
+  saveBtn.disabled = false;
+  saveBtn.textContent = prevLabel;
+
   clearSongForm();
+  await loadSongsFromFirestore();
   renderSongManageList();
 }
 
@@ -1258,16 +1396,21 @@ function editSong(id){
 
 function cancelEditSong(){ clearSongForm(); }
 
-function deleteSong(id){
+async function deleteSong(id){
   if(!confirm('Delete this song? This cannot be undone.')) return;
-  songs = songs.filter(s => s.id !== id);
-  saveSongs();
+  try {
+    await deleteSongFromFirestore(id);
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not delete from the shared song list.');
+    return;
+  }
+  await loadSongsFromFirestore();
   renderSongManageList();
-  showToast('🗑️ Song deleted.');
+  showToast('🗑️ Song deleted for everyone.');
 }
 
 function renderSongManageList(){
-  songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
   const list = document.getElementById('songManageList');
   list.innerHTML = '';
   if(!songs.length){
