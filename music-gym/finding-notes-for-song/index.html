@@ -86,6 +86,7 @@
   .practice-title{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--text);margin-bottom:4px;text-align:center;}
   .practice-artist{color:var(--muted);font-size:.85rem;text-align:center;margin-bottom:18px;}
   .audio-error{background:rgba(255,79,79,.1);border:1.5px solid rgba(255,79,79,.35);color:var(--red);border-radius:10px;padding:10px 14px;font-size:.8rem;line-height:1.5;margin-bottom:16px;text-align:center;}
+  .audio-loading{background:rgba(107,181,255,.1);border:1.5px solid rgba(107,181,255,.3);color:var(--accent4);border-radius:10px;padding:10px 14px;font-size:.82rem;margin-bottom:16px;text-align:center;font-weight:700;}
   .audio-error code{background:var(--card2);padding:1px 6px;border-radius:4px;color:var(--accent3);}
   .time-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-family:'Fredoka One',cursive;margin-bottom:6px;}
   .seek-wrap{position:relative;height:14px;margin-bottom:16px;}
@@ -248,8 +249,7 @@
       <div class="practice-title" id="practTitle">Song Title</div>
       <div class="practice-artist" id="practArtist">Artist</div>
       <div class="audio-error" id="audioErrorBanner" style="display:none"></div>
-
-      <audio id="audioEl" preload="metadata"></audio>
+      <div class="audio-loading" id="audioLoadingBanner" style="display:none">⏳ Loading audio…</div>
 
       <div class="time-row"><span id="curTimeLabel">0:00</span><span id="durTimeLabel">0:00</span></div>
       <div class="seek-wrap">
@@ -518,14 +518,12 @@ const STORAGE_SCORES = 'rootScaleScores';
 // (or click </> to create one) → "SDK setup and configuration" → Config.
 // Project ID should already be sample-6eb3e, matching your other apps.
 const firebaseConfig = {
-  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
-  authDomain: "sample-6eb3e.firebaseapp.com",
-  projectId: "sample-6eb3e",
-  storageBucket: "sample-6eb3e.firebasestorage.app",
-  messagingSenderId: "829997302552",
-  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
-  measurementId: "G-6XPPZ9N78G"
-
+  apiKey:            "PASTE_YOUR_API_KEY_HERE",
+  authDomain:        "sample-6eb3e.firebaseapp.com",
+  projectId:         "sample-6eb3e",
+  storageBucket:     "sample-6eb3e.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID_HERE",
+  appId:             "PASTE_YOUR_APP_ID_HERE"
 };
 const SONGS_COLLECTION = 'rootScaleSongs';
 
@@ -629,16 +627,29 @@ let loopMode   = 'time';
 let loopActive = false;
 let loopStart  = 0;
 let loopEnd    = 0;
-let loopRafId  = null;
-const LOOP_LOOKAHEAD = 0.03; // seconds — jump back slightly early to avoid audibly bleeding into the next beat/measure
 let editingSongId = null;
 let pianoOctave = 4;
 let audioCtx = null;
 let activeNotes = {};
-let songVolume = 0.7;          // 0.0 – 1.0, applied to the <audio> element
+let songVolume = 0.7;          // 0.0 – 1.0
 let pianoVolumeMultiplier = 1.5; // multiplier applied on top of each note's base gain
 
-const audioEl = () => document.getElementById('audioEl');
+// ── Song playback engine (Web Audio API) ──
+// Songs play from a fully-decoded AudioBuffer through an AudioBufferSourceNode,
+// using its native loop/loopStart/loopEnd properties. That looping happens on
+// the browser's audio rendering thread, sample-accurate — not something we
+// poll for from JS — so loop points land exactly, with no bleed into the
+// next beat/measure the way seeking a plain <audio> element can.
+let songAudioBuffer     = null;  // decoded audio for the current song
+let songDuration        = 0;
+let songGainNode        = null;  // persistent, connected once, controls song volume
+let songSourceNode      = null;  // current AudioBufferSourceNode (recreated on seek/speed/play)
+let isSongPlaying       = false;
+let playbackStartCtxTime = 0;    // ctx.currentTime when the current source started
+let playbackStartOffset  = 0;    // buffer-time position at that moment
+let currentPlaybackRate  = 1;
+let songLoadToken       = 0;     // guards against a stale fetch overwriting a newer song
+let uiTickerId          = null;  // rAF id for updating the seek bar / clock while playing
 
 // ── Helpers ──
 function saveScoresLS(){ localStorage.setItem(STORAGE_SCORES, JSON.stringify(scores)); }
@@ -773,8 +784,7 @@ async function doLogin(){
 document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
 function doLogout(){
-  const a = audioEl();
-  if(a){ a.pause(); }
+  stopPlayback();
   stopAllNotes();
   currentStudent = null;
   currentSongId = null;
@@ -790,7 +800,7 @@ function doLogout(){
 // SONG LIST (student)
 // ══════════════════════════════════════════════════════════════
 async function showSongList(){
-  if(audioEl()) audioEl().pause();
+  stopPlayback();
   stopAllNotes();
   document.getElementById('listCoinDisplay').textContent = coins;
   document.getElementById('songGrid').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
@@ -862,14 +872,10 @@ function openPractice(songId){
   updateBestScorePill(song);
   updateMeasureNote(song);
 
-  const a = audioEl();
-  document.getElementById('audioErrorBanner').style.display = 'none';
-  a.removeAttribute('src');
-  a.src = 'songs/' + encodeURIComponent(song.filename);
-  a.playbackRate = 1;
+  currentPlaybackRate = 1;
   document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === '1'));
-  a.currentTime = 0;
   updatePlayButton(false);
+  loadSongAudio(song);
 
   showPage('practicePage');
 }
@@ -907,7 +913,7 @@ function buildSpeedRow(){
 }
 
 function setSpeed(sp, btn){
-  audioEl().playbackRate = sp;
+  setPlaybackRate(sp);
   document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -928,10 +934,195 @@ let sampleBufferCache = {};   // id -> decoded AudioBuffer
 let sampleLoadPromises = {};  // id -> in-flight load promise
 let sampleFailed = {};        // id -> true once a sample fails to load (falls back to synth)
 
+// ══════════════════════════════════════════════════════════════
+// SONG PLAYBACK ENGINE (Web Audio API — sample-accurate looping)
+// ══════════════════════════════════════════════════════════════
 function getAudioCtx(){
   if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if(audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
+}
+
+function getSongGain(){
+  if(!songGainNode){
+    const ctx = getAudioCtx();
+    songGainNode = ctx.createGain();
+    songGainNode.gain.value = songVolume;
+    songGainNode.connect(ctx.destination);
+  }
+  return songGainNode;
+}
+
+// Fetches and fully decodes a song's audio file. Precise looping needs the
+// whole buffer decoded up front (that's what makes native loopStart/loopEnd
+// possible) rather than streaming it like a plain <audio> element does.
+async function loadSongAudio(song){
+  const myToken = ++songLoadToken;
+  stopPlayback();
+  songAudioBuffer = null;
+  songDuration = 0;
+  document.getElementById('audioErrorBanner').style.display = 'none';
+  document.getElementById('audioLoadingBanner').style.display = 'block';
+  document.getElementById('seekBar').value = 0;
+  document.getElementById('curTimeLabel').textContent = '0:00';
+  document.getElementById('durTimeLabel').textContent = '0:00';
+
+  try {
+    const ctx = getAudioCtx();
+    const res = await fetch('songs/' + encodeURIComponent(song.filename));
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const arrBuf = await res.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(arrBuf);
+    if(myToken !== songLoadToken) return; // a newer song was opened while this was loading
+    songAudioBuffer = decoded;
+    songDuration = decoded.duration;
+    document.getElementById('seekBar').max = songDuration;
+    document.getElementById('durTimeLabel').textContent = formatMMSS(songDuration);
+    document.getElementById('audioLoadingBanner').style.display = 'none';
+    refreshLoopRegionBar();
+  } catch(e){
+    if(myToken !== songLoadToken) return;
+    console.error(e);
+    document.getElementById('audioLoadingBanner').style.display = 'none';
+    const banner = document.getElementById('audioErrorBanner');
+    banner.style.display = 'block';
+    banner.innerHTML = `⚠️ Couldn't load <code>songs/${escapeHtml(song.filename)}</code>.<br>
+      Check that: the file exists in the <code>songs</code> folder with this <strong>exact</strong> name
+      (including the extension, e.g. <code>.mp3</code>), and that you're opening this app through a
+      local server (e.g. VS Code Live Server) rather than double-clicking the file.`;
+  }
+}
+
+function getCurrentPlaybackTime(){
+  if(!songAudioBuffer) return 0;
+  if(!isSongPlaying) return playbackStartOffset;
+  const ctx = getAudioCtx();
+  const t = playbackStartOffset + (ctx.currentTime - playbackStartCtxTime) * currentPlaybackRate;
+  return Math.min(t, songDuration);
+}
+
+// (Re)creates the audio source starting at `offset`. Recreating on every
+// seek/speed/loop change is what keeps the offset math simple and reliable;
+// the gap this introduces is inaudible (a few milliseconds at most).
+function startSourceAt(offset){
+  if(!songAudioBuffer) return;
+  const ctx = getAudioCtx();
+  stopSourceNode();
+  const source = ctx.createBufferSource();
+  source.buffer = songAudioBuffer;
+  source.playbackRate.value = currentPlaybackRate;
+  if(loopActive && loopEnd > loopStart){
+    source.loop = true;
+    source.loopStart = loopStart;
+    source.loopEnd = Math.min(loopEnd, songDuration);
+  } else {
+    source.loop = false;
+  }
+  source.connect(getSongGain());
+  const clamped = Math.max(0, Math.min(offset, songDuration - 0.001));
+  source.start(0, clamped);
+  source.onended = () => {
+    if(songSourceNode !== source) return; // superseded by a newer source, ignore
+    songSourceNode = null;
+    isSongPlaying = false;
+    updatePlayButton(false);
+    stopUiTicker();
+  };
+  songSourceNode = source;
+  playbackStartCtxTime = ctx.currentTime;
+  playbackStartOffset = clamped;
+}
+
+function stopSourceNode(){
+  if(songSourceNode){
+    try { songSourceNode.onended = null; songSourceNode.stop(); } catch(e){ /* already stopped */ }
+    songSourceNode = null;
+  }
+}
+
+function playSong(){
+  if(!songAudioBuffer) return;
+  startSourceAt(playbackStartOffset >= songDuration ? 0 : playbackStartOffset);
+  isSongPlaying = true;
+  updatePlayButton(true);
+  startUiTicker();
+}
+
+function pauseSong(){
+  if(!isSongPlaying) return;
+  playbackStartOffset = getCurrentPlaybackTime();
+  stopSourceNode();
+  isSongPlaying = false;
+  updatePlayButton(false);
+  stopUiTicker();
+}
+
+function stopPlayback(){
+  stopSourceNode();
+  isSongPlaying = false;
+  playbackStartOffset = 0;
+  updatePlayButton(false);
+  stopUiTicker();
+}
+
+function seekTo(time){
+  if(!songAudioBuffer) return;
+  const clamped = Math.max(0, Math.min(time, songDuration));
+  if(isSongPlaying){
+    startSourceAt(clamped);
+  } else {
+    playbackStartOffset = clamped;
+  }
+  updateTransportUI();
+}
+
+// Applies the current loop settings to whatever is already playing. If
+// playback is currently outside the loop region, jump into it; otherwise
+// just hand the new points to the live source (native looping handles the
+// rest with sample accuracy — no restart, no glitch).
+function updateLoopSettings(){
+  if(!songAudioBuffer) return;
+  if(!isSongPlaying){ refreshLoopRegionBar(); return; }
+  const cur = getCurrentPlaybackTime();
+  const inRange = loopActive && loopEnd > loopStart && cur >= loopStart && cur < loopEnd;
+  if(loopActive && loopEnd > loopStart && !inRange){
+    startSourceAt(loopStart);
+  } else if(songSourceNode){
+    songSourceNode.loop = loopActive && loopEnd > loopStart;
+    songSourceNode.loopStart = loopStart;
+    songSourceNode.loopEnd = Math.min(loopEnd, songDuration);
+  }
+  refreshLoopRegionBar();
+}
+
+function setPlaybackRate(rate){
+  const cur = getCurrentPlaybackTime();
+  currentPlaybackRate = rate;
+  if(isSongPlaying){
+    startSourceAt(cur);
+  } else {
+    playbackStartOffset = cur;
+  }
+}
+
+function updateTransportUI(){
+  const t = getCurrentPlaybackTime();
+  document.getElementById('seekBar').value = t;
+  document.getElementById('curTimeLabel').textContent = formatMMSS(t);
+}
+
+function startUiTicker(){
+  stopUiTicker();
+  const tick = () => {
+    updateTransportUI();
+    uiTickerId = requestAnimationFrame(tick);
+  };
+  uiTickerId = requestAnimationFrame(tick);
+}
+
+function stopUiTicker(){
+  if(uiTickerId != null) cancelAnimationFrame(uiTickerId);
+  uiTickerId = null;
 }
 
 function noteFrequency(noteName, octave){
@@ -1079,8 +1270,8 @@ function shiftOctave(delta){
 
 // ── Transport ──
 function togglePlay(){
-  const a = audioEl();
-  if(a.paused){ a.play(); } else { a.pause(); }
+  if(!songAudioBuffer) return;
+  if(isSongPlaying) pauseSong(); else playSong();
 }
 
 function updatePlayButton(playing){
@@ -1088,44 +1279,17 @@ function updatePlayButton(playing){
 }
 
 function skipSeconds(n){
-  const a = audioEl();
-  a.currentTime = Math.max(0, Math.min((a.duration || 0), a.currentTime + n));
+  seekTo(getCurrentPlaybackTime() + n);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const a = audioEl();
-  a.volume = songVolume;
-  a.addEventListener('play', () => updatePlayButton(true));
-  a.addEventListener('pause', () => updatePlayButton(false));
-  a.addEventListener('error', () => {
-    const song = songs.find(s => s.id === currentSongId);
-    const banner = document.getElementById('audioErrorBanner');
-    if(!song || !banner) return;
-    banner.style.display = 'block';
-    banner.innerHTML = `⚠️ Couldn't load <code>songs/${escapeHtml(song.filename)}</code>.<br>
-      Check that: the file exists in the <code>songs</code> folder with this <strong>exact</strong> name
-      (including the extension, e.g. <code>.mp3</code>), and that you're opening this app through a
-      local server (e.g. VS Code Live Server) rather than double-clicking the file.`;
-  });
-  a.addEventListener('loadedmetadata', () => {
-    document.getElementById('seekBar').max = a.duration || 0;
-    document.getElementById('durTimeLabel').textContent = formatMMSS(a.duration);
-    document.getElementById('audioErrorBanner').style.display = 'none';
-  });
-  a.addEventListener('timeupdate', () => {
-    document.getElementById('seekBar').value = a.currentTime;
-    document.getElementById('curTimeLabel').textContent = formatMMSS(a.currentTime);
-  });
-  a.addEventListener('play', startLoopWatcher);
-  a.addEventListener('pause', stopLoopWatcher);
-  a.addEventListener('ended', stopLoopWatcher);
   document.getElementById('seekBar').addEventListener('input', e => {
-    a.currentTime = Number(e.target.value);
+    seekTo(Number(e.target.value));
   });
 
   document.getElementById('songVolumeSlider').addEventListener('input', e => {
     songVolume = Number(e.target.value) / 100;
-    a.volume = songVolume;
+    getSongGain().gain.value = songVolume;
     document.getElementById('songVolumeValue').textContent = e.target.value + '%';
   });
   document.getElementById('pianoVolumeSlider').addEventListener('input', e => {
@@ -1135,32 +1299,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Loop tools ──
-// Enforcing the loop boundary on requestAnimationFrame (instead of the coarser
-// 'timeupdate' event, which browsers fire as infrequently as a few times a
-// second) keeps the jump-back tight so playback doesn't bleed into the next
-// beat/measure before looping.
-function loopWatcherTick(){
-  const a = audioEl();
-  if(loopActive && loopEnd > loopStart && a.currentTime >= loopEnd - LOOP_LOOKAHEAD){
-    a.currentTime = loopStart;
-  }
-  if(!a.paused && !a.ended){
-    loopRafId = requestAnimationFrame(loopWatcherTick);
-  } else {
-    loopRafId = null;
-  }
-}
-
-function startLoopWatcher(){
-  if(loopRafId != null) cancelAnimationFrame(loopRafId);
-  loopRafId = requestAnimationFrame(loopWatcherTick);
-}
-
-function stopLoopWatcher(){
-  if(loopRafId != null) cancelAnimationFrame(loopRafId);
-  loopRafId = null;
-}
-
+// Looping is now handled natively by the AudioBufferSourceNode's own
+// loop/loopStart/loopEnd properties (see updateLoopSettings in the playback
+// engine above), which is sample-accurate — no JS polling needed here at all.
 function setLoopMode(mode){
   loopMode = mode;
   document.getElementById('loopTabTime').classList.toggle('active', mode === 'time');
@@ -1170,7 +1311,7 @@ function setLoopMode(mode){
 }
 
 function setLoopPointFromPlayhead(point){
-  const t = audioEl().currentTime;
+  const t = getCurrentPlaybackTime();
   if(point === 'A') document.getElementById('loopAInput').value = formatPreciseTime(t);
   else document.getElementById('loopBInput').value = formatPreciseTime(t);
   applyTimeLoopInputs();
@@ -1181,7 +1322,7 @@ function applyTimeLoopInputs(){
   const bVal = parsePreciseTime(document.getElementById('loopBInput').value);
   if(aVal != null) loopStart = aVal;
   if(bVal != null) loopEnd = bVal;
-  refreshLoopRegionBar();
+  updateLoopSettings();
 }
 
 ['loopAInput','loopBInput'].forEach(id => {
@@ -1239,22 +1380,20 @@ function applyMeasureLoop(){
   document.getElementById('measureCalcHint').textContent =
     `Measure ${fromLabel} → ${toLabel} · ${formatPreciseTime(loopStart)} to ${formatPreciseTime(loopEnd)}`;
 
-  refreshLoopRegionBar();
   document.getElementById('loopToggle').checked = true;
-  onLoopToggle();
+  loopActive = true;
   playFromLoopStart();
 }
 
 function onLoopToggle(){
   loopActive = document.getElementById('loopToggle').checked;
   if(loopMode === 'time') applyTimeLoopInputs();
-  refreshLoopRegionBar();
+  else updateLoopSettings();
 }
 
 function refreshLoopRegionBar(){
   const bar = document.getElementById('loopRegionBar');
-  const a = audioEl();
-  const dur = a.duration || 0;
+  const dur = songDuration || 0;
   if(!loopActive || !dur || loopEnd <= loopStart){ bar.style.display = 'none'; return; }
   const leftPct = Math.max(0, Math.min(100, (loopStart / dur) * 100));
   const widthPct = Math.max(0, Math.min(100 - leftPct, ((loopEnd - loopStart) / dur) * 100));
@@ -1264,9 +1403,10 @@ function refreshLoopRegionBar(){
 }
 
 function playFromLoopStart(){
-  const a = audioEl();
-  if(loopEnd > loopStart){ a.currentTime = loopStart; }
-  a.play();
+  if(!songAudioBuffer) return;
+  if(loopEnd > loopStart){ playbackStartOffset = loopStart; }
+  playSong();
+  updateLoopSettings();
 }
 
 // ══════════════════════════════════════════════════════════════
