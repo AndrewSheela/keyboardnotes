@@ -96,6 +96,16 @@
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent4);border:2px solid var(--text);margin-top:-7px;cursor:pointer;}
   input[type=range]::-moz-range-track{height:6px;background:var(--card2);border-radius:99px;border:1px solid var(--border);}
   input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent4);border:2px solid var(--text);cursor:pointer;}
+
+  /* ── Measure ruler ── */
+  .measure-timeline-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .mt-label{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+  .mt-zoom-btns{display:flex;gap:6px;}
+  .measure-timeline-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-bottom:10px;-webkit-overflow-scrolling:touch;}
+  .measure-timeline{position:relative;height:40px;cursor:pointer;}
+  .mt-loop-region{position:absolute;top:0;height:40px;background:rgba(167,139,250,.18);border-left:2px solid var(--purple);border-right:2px solid var(--purple);pointer-events:none;}
+  .mt-playhead{position:absolute;top:0;width:2px;height:40px;background:var(--accent2);pointer-events:none;box-shadow:0 0 5px var(--accent2);}
+
   .transport-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;}
   .play-btn{width:58px;height:58px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),#ffaa00);color:#1a1400;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
   .play-btn:hover{transform:scale(1.06);}
@@ -256,6 +266,22 @@
         <div class="loop-region" id="loopRegionBar" style="display:none"></div>
         <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
       </div>
+
+      <div class="measure-timeline-controls">
+        <span class="mt-label">📏 Measure Ruler</span>
+        <div class="mt-zoom-btns">
+          <button class="btn-tiny" onclick="zoomTimeline(-1)">🔍−</button>
+          <button class="btn-tiny" onclick="zoomTimeline(1)">🔍+</button>
+        </div>
+      </div>
+      <div class="measure-timeline-wrap" id="measureTimelineWrap" style="display:none">
+        <div class="measure-timeline" id="measureTimeline">
+          <div id="mtTicks"></div>
+          <div class="mt-loop-region" id="mtLoopRegion" style="display:none"></div>
+          <div class="mt-playhead" id="mtPlayhead" style="display:none"></div>
+        </div>
+      </div>
+      <div class="measure-note" id="timelineHint" style="display:none">Add BPM & time signature to this song (in the Teacher panel) to see a measure ruler here.</div>
 
       <div class="transport-row">
         <button class="skip-btn" onclick="skipSeconds(-5)">⏪</button>
@@ -525,7 +551,6 @@ const firebaseConfig = {
   messagingSenderId: "829997302552",
   appId: "1:829997302552:web:25508fd4e11a236ec7946d",
   measurementId: "G-6XPPZ9N78G"
-
 };
 const SONGS_COLLECTION = 'rootScaleSongs';
 
@@ -652,6 +677,11 @@ let playbackStartOffset  = 0;    // buffer-time position at that moment
 let currentPlaybackRate  = 1;
 let songLoadToken       = 0;     // guards against a stale fetch overwriting a newer song
 let uiTickerId          = null;  // rAF id for updating the seek bar / clock while playing
+
+// ── Measure ruler ──
+const TIMELINE_ZOOM_LEVELS = [15, 25, 40, 60, 90, 130, 180, 250]; // pixels per second
+let timelineZoomIndex = 2; // 40px/sec default
+let timelinePxPerSec  = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
 
 // ── Helpers ──
 function saveScoresLS(){ localStorage.setItem(STORAGE_SCORES, JSON.stringify(scores)); }
@@ -877,6 +907,8 @@ function openPractice(songId){
   currentPlaybackRate = 1;
   document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === '1'));
   updatePlayButton(false);
+  timelineZoomIndex = 2;
+  timelinePxPerSec = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
   loadSongAudio(song);
 
   showPage('practicePage');
@@ -981,11 +1013,14 @@ async function loadSongAudio(song){
     document.getElementById('seekBar').max = songDuration;
     document.getElementById('durTimeLabel').textContent = formatMMSS(songDuration);
     document.getElementById('audioLoadingBanner').style.display = 'none';
+    buildMeasureTimeline();
     refreshLoopRegionBar();
   } catch(e){
     if(myToken !== songLoadToken) return;
     console.error(e);
     document.getElementById('audioLoadingBanner').style.display = 'none';
+    document.getElementById('measureTimelineWrap').style.display = 'none';
+    document.getElementById('timelineHint').style.display = 'none';
     const banner = document.getElementById('audioErrorBanner');
     banner.style.display = 'block';
     banner.innerHTML = `⚠️ Couldn't load <code>songs/${escapeHtml(song.filename)}</code>.<br>
@@ -999,8 +1034,20 @@ function getCurrentPlaybackTime(){
   if(!songAudioBuffer) return 0;
   if(!isSongPlaying) return playbackStartOffset;
   const ctx = getAudioCtx();
-  const t = playbackStartOffset + (ctx.currentTime - playbackStartCtxTime) * currentPlaybackRate;
-  return Math.min(t, songDuration);
+  let t = playbackStartOffset + (ctx.currentTime - playbackStartCtxTime) * currentPlaybackRate;
+  // The source loops natively on the audio thread — we never get told when it
+  // wraps, so mirror that math here to keep the UI (seek bar, clock, ruler
+  // playhead) in sync with what's actually playing instead of climbing past it.
+  const looping = songSourceNode && songSourceNode.loop && loopEnd > loopStart;
+  if(looping){
+    if(t >= loopEnd){
+      const loopLen = loopEnd - loopStart;
+      t = loopStart + ((t - loopEnd) % loopLen);
+    }
+  } else {
+    t = Math.min(t, songDuration);
+  }
+  return t;
 }
 
 // (Re)creates the audio source starting at `offset`. Recreating on every
@@ -1111,6 +1158,7 @@ function updateTransportUI(){
   const t = getCurrentPlaybackTime();
   document.getElementById('seekBar').value = t;
   document.getElementById('curTimeLabel').textContent = formatMMSS(t);
+  updateTimelinePlayhead();
 }
 
 function startUiTicker(){
@@ -1396,12 +1444,25 @@ function onLoopToggle(){
 function refreshLoopRegionBar(){
   const bar = document.getElementById('loopRegionBar');
   const dur = songDuration || 0;
-  if(!loopActive || !dur || loopEnd <= loopStart){ bar.style.display = 'none'; return; }
-  const leftPct = Math.max(0, Math.min(100, (loopStart / dur) * 100));
-  const widthPct = Math.max(0, Math.min(100 - leftPct, ((loopEnd - loopStart) / dur) * 100));
-  bar.style.left = leftPct + '%';
-  bar.style.width = widthPct + '%';
-  bar.style.display = 'block';
+  if(!loopActive || !dur || loopEnd <= loopStart){ bar.style.display = 'none'; }
+  else {
+    const leftPct = Math.max(0, Math.min(100, (loopStart / dur) * 100));
+    const widthPct = Math.max(0, Math.min(100 - leftPct, ((loopEnd - loopStart) / dur) * 100));
+    bar.style.left = leftPct + '%';
+    bar.style.width = widthPct + '%';
+    bar.style.display = 'block';
+  }
+
+  const mtRegion = document.getElementById('mtLoopRegion');
+  const song = songs.find(s => s.id === currentSongId);
+  const timelineActive = song && song.bpm && song.beatsPerMeasure;
+  if(!loopActive || loopEnd <= loopStart || !timelineActive){
+    mtRegion.style.display = 'none';
+  } else {
+    mtRegion.style.left = (loopStart * timelinePxPerSec) + 'px';
+    mtRegion.style.width = ((loopEnd - loopStart) * timelinePxPerSec) + 'px';
+    mtRegion.style.display = 'block';
+  }
 }
 
 function playFromLoopStart(){
@@ -1412,7 +1473,83 @@ function playFromLoopStart(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// GUESS & SCORING
+// MEASURE RULER — DAW-style zoomable timeline with measure numbers
+// ══════════════════════════════════════════════════════════════
+function zoomTimeline(direction){
+  timelineZoomIndex = Math.max(0, Math.min(TIMELINE_ZOOM_LEVELS.length - 1, timelineZoomIndex + direction));
+  timelinePxPerSec = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
+  buildMeasureTimeline();
+}
+
+function buildMeasureTimeline(){
+  const song = songs.find(s => s.id === currentSongId);
+  const wrap = document.getElementById('measureTimelineWrap');
+  const hint = document.getElementById('timelineHint');
+  if(!song || !song.bpm || !song.beatsPerMeasure || !songDuration){
+    wrap.style.display = 'none';
+    hint.style.display = 'block';
+    return;
+  }
+  wrap.style.display = 'block';
+  hint.style.display = 'none';
+
+  const width = Math.max(wrap.clientWidth, songDuration * timelinePxPerSec);
+  const beatDur = 60 / song.bpm;
+  const offset = Number(song.startOffset) || 0;
+  const beatsPerMeasure = song.beatsPerMeasure;
+
+  let svg = `<svg width="${width}" height="40" style="display:block">`;
+  svg += `<line x1="0" y1="30" x2="${width}" y2="30" style="stroke:var(--border);stroke-width:1"/>`;
+  let beatIndex = 0;
+  for(let t = offset; t <= songDuration + 0.001; t += beatDur, beatIndex++){
+    const x = (t * timelinePxPerSec).toFixed(1);
+    const measureNum = Math.floor(beatIndex / beatsPerMeasure) + 1;
+    const isDownbeat = (beatIndex % beatsPerMeasure) === 0;
+    const tickH = isDownbeat ? 16 : 8;
+    svg += `<line x1="${x}" y1="${30 - tickH}" x2="${x}" y2="30" style="stroke:${isDownbeat ? 'var(--accent4)' : 'var(--border)'};stroke-width:${isDownbeat ? 2 : 1}"/>`;
+    if(isDownbeat){
+      svg += `<text x="${Number(x) + 3}" y="13" style="fill:var(--text);font-family:'Fredoka One',cursive;font-size:11px;">${measureNum}</text>`;
+    }
+  }
+  svg += `</svg>`;
+
+  document.getElementById('mtTicks').innerHTML = svg;
+  document.getElementById('measureTimeline').style.width = width + 'px';
+
+  updateTimelinePlayhead();
+  refreshLoopRegionBar();
+}
+
+function updateTimelinePlayhead(){
+  const song = songs.find(s => s.id === currentSongId);
+  const playhead = document.getElementById('mtPlayhead');
+  if(!song || !song.bpm || !song.beatsPerMeasure){ playhead.style.display = 'none'; return; }
+  const x = getCurrentPlaybackTime() * timelinePxPerSec;
+  playhead.style.left = x + 'px';
+  playhead.style.display = 'block';
+
+  // Keep the playhead in view while playing, without fighting a manual scroll while paused.
+  if(isSongPlaying){
+    const wrap = document.getElementById('measureTimelineWrap');
+    const visibleLeft = wrap.scrollLeft;
+    const visibleRight = visibleLeft + wrap.clientWidth;
+    if(x < visibleLeft + 20 || x > visibleRight - 20){
+      wrap.scrollLeft = Math.max(0, x - wrap.clientWidth / 2);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('measureTimeline').addEventListener('click', e => {
+    const song = songs.find(s => s.id === currentSongId);
+    if(!song || !song.bpm || !song.beatsPerMeasure || !songDuration) return;
+    const rect = document.getElementById('measureTimeline').getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    seekTo(x / timelinePxPerSec);
+  });
+});
+
+
 // ══════════════════════════════════════════════════════════════
 function submitGuess(){
   const song = songs.find(s => s.id === currentSongId);

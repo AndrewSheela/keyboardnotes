@@ -26,14 +26,15 @@ STEP 1 — Paste your Firebase config into index.html
    icon → give it any nickname → register it, then you'll see the same config.
 4. Copy the object that looks like this:
 
-     const firebaseConfig = {
-       apiKey: "AIzaSy...",
-       authDomain: "sample-6eb3e.firebaseapp.com",
-       projectId: "sample-6eb3e",
-       storageBucket: "sample-6eb3e.appspot.com",
-       messagingSenderId: "123456789",
-       appId: "1:123456789:web:abcdef123456"
-     };
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+};
 
 5. Open index.html, search for "PASTE_YOUR_API_KEY_HERE" (near the top of the
    <script> section), and replace the whole firebaseConfig object with the
