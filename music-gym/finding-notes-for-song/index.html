@@ -203,6 +203,7 @@
 <body>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 
 <!-- PAGE 1: LOGIN -->
 <div class="page active" id="loginPage">
@@ -218,12 +219,12 @@
       </button>
     </div>
     <div class="field" id="teacherNameField" style="display:none">
-      <label>Teacher Name</label>
-      <input type="text" id="teacherNameInput" placeholder="Enter teacher name">
+      <label>Email</label>
+      <input type="email" id="teacherEmailInput" placeholder="you@example.com" autocomplete="username">
     </div>
     <div class="field" id="teacherPasswordField" style="display:none">
       <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter password">
+      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
     </div>
     <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Start Practice 🎧</button>
     <div class="error-msg" id="loginError"></div>
@@ -391,7 +392,10 @@
   <div class="teacher-wrap">
     <div class="teacher-header">
       <div class="teacher-title">📋 Teacher Panel</div>
-      <button class="logout-btn" onclick="doLogout()">Logout</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="teacherSignedInAs" style="font-size:.78rem;color:var(--muted)"></span>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
     </div>
     <div class="hint-text">
         1. Copy the audio file into the <code>songs/</code> folder next to this HTML file.<br>
@@ -457,32 +461,6 @@
 
       <div class="section-label" style="margin-bottom:12px">All Songs</div>
       <div class="song-manage-list" id="songManageList"></div>
-  </div>
-</div>
-
-<!-- PAGE 5: SETUP (hash generator) -->
-<div class="page" id="setupPage">
-  <div class="card" style="max-width:520px">
-    <div class="logo" style="font-size:1.6rem">🔐 Hash Generator</div>
-    <div class="logo-sub">Teacher Setup Tool · URL: index.html?setup</div>
-    <div class="field">
-      <label>Plain Password to Hash</label>
-      <input type="text" id="setupInput" placeholder="e.g. music123" autocomplete="off">
-    </div>
-    <button class="btn btn-primary" onclick="generateHash()" style="margin-bottom:16px">Generate SHA-256 Hash 🔒</button>
-    <div id="hashResultWrap" style="display:none">
-      <label>Hash (paste into source code)</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="hashResult" readonly style="font-size:.7rem;color:var(--accent3)">
-        <button onclick="copyHash()" style="padding:14px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-weight:700;font-size:.85rem;">Copy</button>
-      </div>
-      <div id="copyMsg" style="color:var(--green);font-size:.8rem;margin-top:6px;min-height:18px"></div>
-    </div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:22px 0">
-    <p style="color:var(--muted);font-size:.78rem;text-align:center;line-height:1.6">
-      Students: no login needed — just tap "Start Practice"<br>
-      Teacher: <code style="color:var(--accent)">andrew</code>
-    </p>
   </div>
 </div>
 
@@ -555,14 +533,16 @@ const firebaseConfig = {
 const SONGS_COLLECTION = 'rootScaleSongs';
 
 let db = null;
+let auth = null;
 let firestoreReady = false;
 try {
   if(firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0){
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
+    auth = firebase.auth();
     firestoreReady = true;
   } else {
-    console.warn('Firebase config not filled in yet — songs will only be visible on this device.');
+    console.warn('Firebase config not filled in yet — songs will only be visible on this device, and teacher login will not work.');
   }
 } catch(e){
   console.error('Firebase init failed — falling back to local-only song storage.', e);
@@ -623,11 +603,6 @@ async function deleteSongFromFirestore(id){
   if(!firestoreReady) throw new Error('Firebase is not configured yet.');
   await db.collection(SONGS_COLLECTION).doc(id).delete();
 }
-
-// Teacher password as a SHA-256 hash — regenerate via index.html?setup
-const TEACHER = {
-  andrew: 'df3a573aa2c715e2ca89c038edfde35b09a7c3230cc9b2da0f2fc73e45ebc77b'
-};
 
 // Students don't log in with a name/password — practice progress is tracked
 // locally per-device under this key, since it's just a practice session.
@@ -746,11 +721,6 @@ function parsePreciseTime(str){
   return isNaN(n) ? null : n;
 }
 
-async function hashPwd(plain){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 function showPage(id){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -791,19 +761,42 @@ function setRole(role){
   document.getElementById('loginError').textContent = '';
 }
 
+// Maps Firebase Auth error codes to friendly messages instead of showing raw codes.
+function authErrorMessage(e){
+  switch(e.code){
+    case 'auth/invalid-email':        return '❌ That email address looks invalid.';
+    case 'auth/user-not-found':
+    case 'auth/user-disabled':        return '❌ No teacher account found for that email.';
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials': return '❌ Wrong email or password.';
+    case 'auth/too-many-requests':    return '❌ Too many attempts — please wait a moment and try again.';
+    case 'auth/network-request-failed': return '❌ Network error — check your internet connection.';
+    default:                          return '❌ Could not sign in (' + (e.code || e.message) + ').';
+  }
+}
+
 async function doLogin(){
   const err = document.getElementById('loginError');
   if(currentRole === 'teacher'){
-    const rawPwd = document.getElementById('loginPassword').value.trim();
-    if(!rawPwd){ err.textContent = '❌ Please enter your password.'; return; }
-    const hash = await hashPwd(rawPwd);
-    const tname = document.getElementById('teacherNameInput').value.trim().toLowerCase();
-    if(!tname){ err.textContent = '❌ Please enter teacher name.'; return; }
-    if(!TEACHER[tname]){ err.textContent = '❌ Unknown teacher name.'; return; }
-    if(TEACHER[tname] !== hash){ err.textContent = '❌ Wrong password.'; return; }
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('teacherNameInput').value = '';
-    showTeacherPage();
+    if(!auth){ err.textContent = '❌ Firebase isn\'t configured yet — teacher login is unavailable.'; return; }
+    const email = document.getElementById('teacherEmailInput').value.trim();
+    const pwd = document.getElementById('loginPassword').value;
+    if(!email || !pwd){ err.textContent = '❌ Please enter your email and password.'; return; }
+    const btn = document.getElementById('loginBtn');
+    const prevLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    try {
+      await auth.signInWithEmailAndPassword(email, pwd);
+      document.getElementById('loginPassword').value = '';
+      showTeacherPage();
+    } catch(e){
+      console.error(e);
+      err.textContent = authErrorMessage(e);
+    }
+    btn.disabled = false;
+    btn.textContent = prevLabel;
   } else {
     // Practice session — no name or password needed, single click to enter.
     currentStudent = GUEST_KEY;
@@ -818,12 +811,13 @@ document.getElementById('loginPassword').addEventListener('keydown', e => { if(e
 function doLogout(){
   stopPlayback();
   stopAllNotes();
+  if(auth && auth.currentUser) auth.signOut().catch(e => console.error(e));
   currentStudent = null;
   currentSongId = null;
   coins = 0;
   document.getElementById('loginError').textContent = '';
   document.getElementById('loginPassword').value = '';
-  document.getElementById('teacherNameInput').value = '';
+  document.getElementById('teacherEmailInput').value = '';
   setRole('student');
   showPage('loginPage');
 }
@@ -1611,6 +1605,8 @@ function submitGuess(){
 async function showTeacherPage(){
   populateSelect(document.getElementById('fRootNote'), ROOT_NOTES, true);
   populateSelect(document.getElementById('fScaleType'), SCALE_TYPES, true);
+  const emailLabel = document.getElementById('teacherSignedInAs');
+  emailLabel.textContent = (auth && auth.currentUser) ? '✓ ' + auth.currentUser.email : '';
   document.getElementById('songManageList').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
   showPage('teacherPage');
   await loadSongsFromFirestore();
@@ -1816,27 +1812,6 @@ async function moveSongToPosition(id, rawPos){
   await loadSongsFromFirestore();
   renderSongManageList();
 }
-
-// ── Hash Generator ──
-async function generateHash(){
-  const val = document.getElementById('setupInput').value.trim();
-  if(!val) return;
-  const hash = await hashPwd(val);
-  document.getElementById('hashResult').value = hash;
-  document.getElementById('hashResultWrap').style.display = '';
-  document.getElementById('copyMsg').textContent = '';
-}
-
-function copyHash(){
-  const input = document.getElementById('hashResult');
-  input.select();
-  document.execCommand('copy');
-  document.getElementById('copyMsg').textContent = '✅ Copied to clipboard!';
-}
-
-document.getElementById('setupInput').addEventListener('keydown', e => { if(e.key === 'Enter') generateHash(); });
-
-if(window.location.search.includes('setup')) showPage('setupPage');
 </script>
 </body>
 </html>
