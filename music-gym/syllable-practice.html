@@ -10,6 +10,7 @@
 <!-- Firebase (compat, CDN — no build step, fits single-file deployment) -->
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
 
 <style>
   :root{
@@ -95,6 +96,12 @@
 
   /* Song builder */
   .line-block{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;}
+  .para-divider{display:flex;align-items:center;gap:10px;margin:22px 0;color:var(--gold);font-size:11px;letter-spacing:.4px;text-transform:uppercase;}
+  .para-divider::before,.para-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .practice-line.paragraph-break{margin-top:46px;padding-top:22px;border-top:1px dashed var(--border);}
+  .quick-add-panel{background:var(--panel-3);border:1px dashed var(--gold);border-radius:8px;padding:14px;margin-bottom:14px;}
+  .qa-tap-row{padding:10px 8px;margin-bottom:0;}
+  .qa-tap-row .tap-unit{font-size:18px;}
   .line-block-head{margin-bottom:10px;}
   .segments-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
   .segment-card{background:var(--panel-3);border:1px solid var(--border);border-radius:8px;padding:10px;min-width:150px;position:relative;flex:0 0 auto;}
@@ -174,26 +181,27 @@
     <div id="teacher-login" class="card hidden" style="text-align:left;">
       <h3 style="font-size:16px;margin-bottom:14px;">Teacher Login</h3>
       <div style="margin-bottom:12px;">
-        <label>Username</label>
-        <input type="text" id="t-username" placeholder="andrew" autocomplete="off">
+        <label>Email</label>
+        <input type="email" id="t-email" placeholder="you@example.com" autocomplete="username">
       </div>
       <div style="margin-bottom:6px;">
         <label>Password</label>
-        <input type="password" id="t-password" placeholder="Enter password">
+        <input type="password" id="t-password" placeholder="Enter password" autocomplete="current-password">
       </div>
-      <div class="error-msg hidden" id="t-error">❌ Wrong username or password.</div>
+      <div class="error-msg hidden" id="t-error">❌ Wrong email or password.</div>
       <div class="row" style="margin-top:16px;">
-        <button class="btn ghost" type="button" onclick="backToRoles()">← Back</button>
-        <button class="btn" type="button" onclick="teacherLogin()">Log In</button>
+        <button class="btn ghost" type="button" id="t-login-back-btn" onclick="backToRoles()">← Back</button>
+        <button class="btn" type="button" id="t-login-btn" onclick="teacherLogin()">Log In</button>
       </div>
     </div>
   </div>
+  <p class="muted" style="max-width:420px;margin:14px auto 0;font-size:11px;text-align:center;">This app uses Firebase Authentication — your password is never stored in this page's code.</p>
 
   <!-- ================= TEACHER VIEW ================= -->
   <div id="teacher-view" class="hidden">
     <div class="topbar">
       <div class="brand"><div class="brand-mark">॰</div><div class="brand-text"><h1>Syllable Practice</h1><span>Teacher — song &amp; answer key builder</span></div></div>
-      <div class="who">Teacher: andrew <button onclick="logout()">Log out</button></div>
+      <div class="who">Teacher: <span id="teacher-email-display">—</span> <button onclick="logout()">Log out</button></div>
     </div>
 
     <div id="teacher-songs-panel">
@@ -310,27 +318,27 @@
    values from your Firebase console (Project settings → your web app).
 ====================================================================== */
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
   authDomain: "sample-6eb3e.firebaseapp.com",
   projectId: "sample-6eb3e",
-  storageBucket: "sample-6eb3e.appspot.com",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const SONGS_COLLECTION = 'syllableSongs';
 
 /* ======================================================================
-   AUTH — teacher: andrew / 156251 (hashed). Student: no credentials.
+   AUTH — Teacher: Firebase Authentication (Email/Password), set up in the
+   Firebase Console (Authentication → Sign-in method → Email/Password, then
+   Authentication → Users → Add user). No password lives in this file.
+   Firestore security rules restrict writes to that signed-in account.
+   Student: no credentials at all — reads are public.
 ====================================================================== */
-const TEACHER_USERNAME = "andrew";
-const TEACHER_PASS_HASH = "df3a573aa2c715e2ca89c038edfde35b09a7c3230cc9b2da0f2fc73e45ebc77b";
-
-async function sha256(text){
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
+const auth = firebase.auth();
 
 function showTeacherLogin(){
   document.getElementById('role-choice').classList.add('hidden');
@@ -342,14 +350,24 @@ function backToRoles(){
 }
 
 async function teacherLogin(){
-  const u = document.getElementById('t-username').value.trim().toLowerCase();
-  const p = document.getElementById('t-password').value;
-  const hash = await sha256(p);
-  if(u === TEACHER_USERNAME && hash === TEACHER_PASS_HASH){
-    sessionStorage.setItem('sp-role','teacher');
-    enterTeacherView();
-  } else {
-    document.getElementById('t-error').classList.remove('hidden');
+  const email = document.getElementById('t-email').value.trim();
+  const pass = document.getElementById('t-password').value;
+  const errEl = document.getElementById('t-error');
+  const btn = document.getElementById('t-login-btn');
+  errEl.classList.add('hidden');
+  if(!email || !pass){ errEl.textContent = '❌ Please enter your email and password.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Logging in…';
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged (below) takes care of switching to the teacher view.
+  } catch(e){
+    errEl.textContent = '❌ ' + (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
+      ? 'Wrong email or password.' : (e.message || 'Login failed.'));
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Log In';
   }
 }
 
@@ -358,22 +376,29 @@ function studentLogin(){
   enterStudentView();
 }
 
-function logout(){
+async function logout(){
+  try{ await auth.signOut(); }catch(e){ /* ignore */ }
   sessionStorage.clear();
   location.reload();
 }
 
 document.getElementById('t-password').addEventListener('keydown', e=>{ if(e.key==='Enter') teacherLogin(); });
 
-window.addEventListener('DOMContentLoaded', ()=>{
-  const role = sessionStorage.getItem('sp-role');
-  if(role === 'teacher') enterTeacherView();
-  else if(role === 'student') enterStudentView();
+// Firebase tells us here whether a teacher is actually signed in — this is
+// what actually gates the teacher view, not anything stored locally.
+auth.onAuthStateChanged(user=>{
+  if(user){
+    enterTeacherView();
+  } else if(sessionStorage.getItem('sp-role') === 'student'){
+    enterStudentView();
+  }
 });
 
 function enterTeacherView(){
   document.getElementById('login-view').classList.add('hidden');
   document.getElementById('teacher-view').classList.remove('hidden');
+  const u = auth.currentUser;
+  document.getElementById('teacher-email-display').textContent = u ? u.email : '—';
   loadSongList();
 }
 function enterStudentView(){
@@ -406,6 +431,11 @@ function escapeAttr(s){ return escapeHtml(s); }
 ====================================================================== */
 let currentSongId = null;
 let currentLines = [];   // [{segments:[{native,translit}, ...]}, ...]
+let quickAddState = {};  // per line index: {open, nativeText, translitText, nativeGaps:Set, translitGaps:Set, started}
+function qaGet(li){
+  if(!quickAddState[li]) quickAddState[li] = {open:false, nativeText:'', translitText:'', nativeGaps:new Set(), translitGaps:new Set(), started:false};
+  return quickAddState[li];
+}
 
 // Backward-compatible title getters — falls back to the old single `title` field
 // for songs saved before native/transliteration titles existed.
@@ -458,7 +488,8 @@ async function deleteSong(id, title){
 
 function newSong(){
   currentSongId = null;
-  currentLines = [{segments:[]}, {segments:[]}]; // default 2 lines
+  currentLines = [{segments:[], paragraphBreak:false}, {segments:[], paragraphBreak:false}]; // default 2 lines
+  quickAddState = {};
   document.getElementById('builder-title').textContent = 'New Song';
   document.getElementById('song-title-translit').value = '';
   document.getElementById('song-title-native').value = '';
@@ -473,7 +504,9 @@ async function editSong(id){
   const doc = await db.collection(SONGS_COLLECTION).doc(id).get();
   const s = doc.data();
   currentSongId = id;
-  currentLines = JSON.parse(JSON.stringify(s.lines || [{segments:[]},{segments:[]}]));
+  currentLines = JSON.parse(JSON.stringify(s.lines || [{segments:[],paragraphBreak:false},{segments:[],paragraphBreak:false}]));
+  currentLines.forEach(l=>{ if(l.paragraphBreak === undefined) l.paragraphBreak = false; });
+  quickAddState = {};
   document.getElementById('builder-title').textContent = 'Edit Song';
   document.getElementById('song-title-translit').value = songTranslitTitle(s);
   document.getElementById('song-title-native').value = songNativeTitle(s);
@@ -501,7 +534,7 @@ async function saveSong(){
   }
   syncAllSegmentsFromDOM();
   const cleanLines = currentLines
-    .map(l => ({segments: (l.segments||[]).filter(s => (s.native||'').trim() || (s.translit||'').trim())}))
+    .map(l => ({segments: (l.segments||[]).filter(s => (s.native||'').trim() || (s.translit||'').trim()), paragraphBreak: !!l.paragraphBreak}))
     .filter(l => l.segments.length > 0);
   if(!cleanLines.length){ alert('Please add at least one line with syllable chunks.'); return; }
   const data = {
@@ -536,11 +569,40 @@ async function saveSong(){
    TEACHER: LINE / SEGMENT (SYLLABLE) BUILDER UI
 ====================================================================== */
 function addLine(){
-  currentLines.push({segments:[]});
+  currentLines.push({segments:[], paragraphBreak:false});
+  quickAddState = {};
+  renderLines();
+}
+function insertLineAfter(li){
+  syncAllSegmentsFromDOM();
+  currentLines.splice(li+1, 0, {segments:[], paragraphBreak:false});
+  quickAddState = {};
   renderLines();
 }
 function removeLine(li){
+  syncAllSegmentsFromDOM();
   currentLines.splice(li,1);
+  quickAddState = {};
+  renderLines();
+}
+function moveLineUp(li){
+  if(li === 0) return;
+  syncAllSegmentsFromDOM();
+  const [line] = currentLines.splice(li,1);
+  currentLines.splice(li-1,0,line);
+  quickAddState = {};
+  renderLines();
+}
+function moveLineDown(li){
+  if(li === currentLines.length-1) return;
+  syncAllSegmentsFromDOM();
+  const [line] = currentLines.splice(li,1);
+  currentLines.splice(li+1,0,line);
+  quickAddState = {};
+  renderLines();
+}
+function toggleParagraphBreak(li){
+  currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak;
   renderLines();
 }
 function addSegment(li){
@@ -552,6 +614,118 @@ function removeSegment(li, si){
   syncAllSegmentsFromDOM();
   currentLines[li].segments.splice(si,1);
   renderLines();
+}
+
+/* ── Quick Add: paste a whole line, then split it into syllable boxes ── */
+function toggleQuickAdd(li){
+  syncAllSegmentsFromDOM();
+  const st = qaGet(li);
+  st.open = !st.open;
+  renderLines();
+}
+function cancelQuickAdd(li){
+  delete quickAddState[li];
+  renderLines();
+}
+function startTapSplit(li){
+  const st = qaGet(li);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
+  if(!st.nativeText.trim() && !st.translitText.trim()){
+    alert('Paste at least one line (native script or transliteration) first.');
+    return;
+  }
+  st.started = true;
+  st.nativeGaps = new Set();
+  st.translitGaps = new Set();
+  renderLines();
+}
+function toggleQaGap(li, field, gapIdx){
+  const st = qaGet(li);
+  const set = field === 'native' ? st.nativeGaps : st.translitGaps;
+  if(set.has(gapIdx)) set.delete(gapIdx); else set.add(gapIdx);
+  renderLines();
+}
+function chunksFromGaps(units, gapsSet){
+  const boundaries = [0, ...Array.from(gapsSet).sort((a,b)=>a-b), units.length];
+  const chunks = [];
+  for(let i=0;i<boundaries.length-1;i++){
+    chunks.push(units.slice(boundaries[i], boundaries[i+1]).join(''));
+  }
+  return chunks;
+}
+function applyQuickSegments(li, nativeChunks, translitChunks){
+  const hasNative = !!nativeChunks, hasTranslit = !!translitChunks;
+  if(hasNative && hasTranslit && nativeChunks.length !== translitChunks.length){
+    alert(`Split counts don't match — native has ${nativeChunks.length} syllables, transliteration has ${translitChunks.length}. Make both lines split into the same number of pieces, then try again.`);
+    return false;
+  }
+  const count = hasNative ? nativeChunks.length : translitChunks.length;
+  const newSegments = [];
+  for(let i=0;i<count;i++){
+    newSegments.push({native: hasNative ? nativeChunks[i] : '', translit: hasTranslit ? translitChunks[i] : ''});
+  }
+  if(currentLines[li].segments.length > 0 && !confirm('This will replace the existing syllable boxes for this line. Continue?')) return false;
+  currentLines[li].segments = newSegments;
+  delete quickAddState[li];
+  return true;
+}
+function convertQuickAdd(li){
+  const st = qaGet(li);
+  const hasNative = st.nativeText.trim().length>0;
+  const hasTranslit = st.translitText.trim().length>0;
+  const nativeChunks = hasNative ? chunksFromGaps(graphemes(st.nativeText), st.nativeGaps) : null;
+  const translitChunks = hasTranslit ? chunksFromGaps(graphemes(st.translitText), st.translitGaps) : null;
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+}
+function quickDelimiterSplit(li){
+  const st = qaGet(li);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
+  const hasNative = st.nativeText.trim().length>0;
+  const hasTranslit = st.translitText.trim().length>0;
+  if(!hasNative && !hasTranslit){ alert('Paste at least one line first.'); return; }
+  const splitFn = txt => txt.split(/[-\s]+/).map(s=>s.trim()).filter(Boolean);
+  const nativeChunks = hasNative ? splitFn(st.nativeText) : null;
+  const translitChunks = hasTranslit ? splitFn(st.translitText) : null;
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+}
+function qaTapRowsHtml(li, st){
+  const hasNative = st.nativeText.trim().length>0;
+  const hasTranslit = st.translitText.trim().length>0;
+  let nativeCount = 0, translitCount = 0;
+  let html = '<div style="margin-top:14px;">';
+  if(hasNative){
+    const units = graphemes(st.nativeText);
+    nativeCount = st.nativeGaps.size + 1;
+    html += `<div class="practice-line-label">Native — tap between letters</div><div class="tap-row qa-tap-row">`;
+    units.forEach((u, ui)=>{
+      if(ui>0){
+        const active = st.nativeGaps.has(ui);
+        html += `<div class="tap-gap ${active?'active':''}" onclick="toggleQaGap(${li},'native',${ui})"></div>`;
+      }
+      html += `<span class="tap-unit">${escapeHtml(u)}</span>`;
+    });
+    html += `</div><div class="muted" style="font-size:11px;margin-bottom:12px;">${nativeCount} syllable${nativeCount===1?'':'s'} marked</div>`;
+  }
+  if(hasTranslit){
+    const units = graphemes(st.translitText);
+    translitCount = st.translitGaps.size + 1;
+    html += `<div class="practice-line-label">Transliteration — tap between letters</div><div class="tap-row qa-tap-row">`;
+    units.forEach((u, ui)=>{
+      if(ui>0){
+        const active = st.translitGaps.has(ui);
+        html += `<div class="tap-gap ${active?'active':''}" onclick="toggleQaGap(${li},'translit',${ui})"></div>`;
+      }
+      html += `<span class="tap-unit">${escapeHtml(u)}</span>`;
+    });
+    html += `</div><div class="muted" style="font-size:11px;margin-bottom:12px;">${translitCount} syllable${translitCount===1?'':'s'} marked</div>`;
+  }
+  const mismatch = hasNative && hasTranslit && nativeCount !== translitCount;
+  html += `<button class="btn small" type="button" ${mismatch?'disabled':''} onclick="convertQuickAdd(${li})">✓ Convert to Syllable Boxes</button>`;
+  if(mismatch) html += `<span style="color:var(--incorrect);font-size:12px;margin-left:10px;">Counts don't match (${nativeCount} vs ${translitCount})</span>`;
+  html += '</div>';
+  return html;
 }
 
 function syncAllSegmentsFromDOM(){
@@ -570,6 +744,12 @@ function renderLines(){
   const container = document.getElementById('lines-container');
   container.innerHTML = '';
   currentLines.forEach((line, li)=>{
+    if(li > 0 && line.paragraphBreak){
+      const divider = document.createElement('div');
+      divider.className = 'para-divider';
+      divider.innerHTML = '<span>¶ new paragraph</span>';
+      container.appendChild(divider);
+    }
     const block = document.createElement('div');
     block.className = 'line-block';
     let segHtml = '';
@@ -585,13 +765,51 @@ function renderLines(){
           <input type="text" id="${prefix}-translit" value="${escapeAttr(seg.translit)}" placeholder="ta">
         </div>`;
     });
+    const paraLabel = li > 0
+      ? `<label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:12px;color:var(--muted);margin:0;">
+           <input type="checkbox" style="width:auto;" ${line.paragraphBreak?'checked':''} onchange="toggleParagraphBreak(${li})"> Start new paragraph before this line
+         </label>`
+      : '';
+    const isFirst = li === 0, isLast = li === currentLines.length - 1;
+    const st = qaGet(li);
+    const quickAddHtml = st.open ? `
+      <div class="quick-add-panel">
+        <div class="grid-2">
+          <div>
+            <label>Paste Native Line</label>
+            <input type="text" id="qa-native-${li}" value="${escapeAttr(st.nativeText)}" oninput="qaGet(${li}).nativeText=this.value" placeholder="தமிழ் வரிகள்">
+          </div>
+          <div>
+            <label>Paste Transliteration Line</label>
+            <input type="text" id="qa-translit-${li}" value="${escapeAttr(st.translitText)}" oninput="qaGet(${li}).translitText=this.value" placeholder="tamizh varigal">
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;gap:10px;">
+          <button class="btn secondary small" type="button" onclick="startTapSplit(${li})">✂ Tap to Split</button>
+          <button class="btn secondary small" type="button" onclick="quickDelimiterSplit(${li})">⚡ Split by "-" or space</button>
+          <button class="btn ghost small" type="button" onclick="cancelQuickAdd(${li})">Close</button>
+        </div>
+        ${st.started ? qaTapRowsHtml(li, st) : '<p class="muted" style="font-size:11px;margin-top:8px;">Tip: type hyphens between syllables (e.g. "ta-mi-zh") for an instant split, or use "Tap to Split" to mark boundaries by hand.</p>'}
+      </div>` : '';
     block.innerHTML = `
       <div class="spread line-block-head">
-        <strong style="font-size:13px;color:var(--gold-bright);">Line ${li+1}</strong>
-        <button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button>
+        <div class="row" style="gap:8px;">
+          <strong style="font-size:13px;color:var(--gold-bright);">Line ${li+1}</strong>
+          <button class="btn ghost small" type="button" title="Move up" ${isFirst?'disabled':''} onclick="moveLineUp(${li})">↑</button>
+          <button class="btn ghost small" type="button" title="Move down" ${isLast?'disabled':''} onclick="moveLineDown(${li})">↓</button>
+        </div>
+        <div class="row" style="gap:14px;">
+          ${paraLabel}
+          <button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button>
+        </div>
       </div>
+      ${quickAddHtml}
       <div class="segments-scroll">${segHtml}</div>
-      <button class="btn ghost small" type="button" style="margin-top:10px;" onclick="addSegment(${li})">+ Add Syllable</button>
+      <div class="row" style="margin-top:10px;gap:10px;">
+        <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
+        <button class="btn secondary small" type="button" onclick="insertLineAfter(${li})">↵ Insert Line Below</button>
+        <button class="btn secondary small" type="button" onclick="toggleQuickAdd(${li})">⚡ ${st.open ? 'Hide Quick Add' : 'Quick Add from Pasted Line'}</button>
+      </div>
     `;
     container.appendChild(block);
   });
@@ -705,7 +923,7 @@ function renderPracticeLines(){
   (practiceSong.lines||[]).forEach((line, li)=>{
     const {units, correctGaps} = lineUnits(line, practiceMode);
     const wrap = document.createElement('div');
-    wrap.className = 'practice-line';
+    wrap.className = 'practice-line' + (li > 0 && line.paragraphBreak ? ' paragraph-break' : '');
 
     let rowHtml = `<div class="practice-line-label">Line ${li+1} · ${modeLabel}</div><div class="tap-row" id="tap-row-${li}">`;
     units.forEach((u, ui)=>{
