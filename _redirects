@@ -1,0 +1,5 @@
+# Fix: Serve real files, don't send them to SPA 404 page
+/music-gym/song-studio-complete/audio/*  /music-gym/song-studio-complete/audio/:splat  200
+/*.mp3  /:splat  200
+/*.json  /:splat  200
+/*  /index.html  200
