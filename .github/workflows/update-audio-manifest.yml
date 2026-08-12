@@ -1,0 +1,55 @@
+name: Update Audio Manifest
+
+on:
+  push:
+    paths:
+      - 'song-studio-complete/audio/**'
+      - 'music-gym/song-studio-complete/audio/**'
+      - 'keyboardnotes/music-gym/song-studio-complete/audio/**'
+      - 'keyboard-notes/song-studio-complete/audio/**'
+      - 'keyboardnotes/song-studio-complete/audio/**'
+      - 'public/**'
+      - '.github/workflows/update-audio-manifest.yml'
+  workflow_dispatch:
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate manifest.json for all audio folders
+        run: |
+          python3 - << 'PY'
+          import json, pathlib
+          possible_dirs = [
+              pathlib.Path("music-gym/song-studio-complete/audio"),
+              pathlib.Path("song-studio-complete/audio"),
+              pathlib.Path("keyboardnotes/music-gym/song-studio-complete/audio"),
+              pathlib.Path("keyboardnotes/song-studio-complete/audio"),
+              pathlib.Path("keyboard-notes/song-studio-complete/audio"),
+              pathlib.Path("public/music-gym/song-studio-complete/audio"),
+              pathlib.Path("public/song-studio-complete/audio"),
+          ]
+          for audio_dir in possible_dirs:
+              if audio_dir.exists():
+                  mp3s = sorted([p.name for p in audio_dir.glob("*.mp3")])
+                  manifest_path = audio_dir / "manifest.json"
+                  manifest_path.write_text(json.dumps(mp3s, indent=2))
+                  print(f"Checked {audio_dir} - found {len(mp3s)} files")
+          PY
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto-update audio manifest [skip ci]"
+            git push
+          fi
