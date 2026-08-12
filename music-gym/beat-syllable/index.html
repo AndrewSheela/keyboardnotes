@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeatSpell — Rhythm &amp; Syllable Trainer</title>
+
+<!-- Firebase (compat, no build step) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#12141a;
+    --surface:#1c1f28;
+    --surface-2:#242836;
+    --line:#313645;
+    --text:#f2ede4;
+    --muted:#8b90a0;
+    --gold:#e8a33d;
+    --gold-dim:#e8a33d33;
+    --teal:#3fb8ae;
+    --teal-dim:#3fb8ae33;
+    --danger:#e0616b;
+    --font-display:'Fraunces', serif;
+    --font-body:'Poppins', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, #1a1d27 0%, var(--ink) 55%),
+      var(--ink);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 28px;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:20;
+    background:rgba(18,20,26,0.86);
+    backdrop-filter:blur(10px);
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(150deg,var(--gold),#c9791f);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-weight:700;color:#1a1206;font-size:15px;
+  }
+  .brand-name{font-family:var(--font-display);font-weight:600;font-size:20px;letter-spacing:0.2px;}
+  .brand-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;}
+
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .btn{
+    border:1px solid var(--line);background:var(--surface);color:var(--text);
+    padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;
+    transition:border-color .15s, background .15s;
+  }
+  .btn:hover{border-color:var(--gold);}
+  .btn-gold{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:600;}
+  .btn-gold:hover{background:#f0af4d;}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--muted);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--line);}
+  .btn-danger{border-color:var(--danger);color:var(--danger);background:transparent;}
+  .btn-danger:hover{background:var(--danger);color:#1a0608;}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .pill{
+    font-family:var(--font-mono);font-size:11px;color:var(--gold);
+    border:1px solid var(--gold-dim);background:var(--gold-dim);
+    padding:4px 10px;border-radius:999px;letter-spacing:.5px;
+  }
+
+  main{max-width:980px;margin:0 auto;padding:32px 24px 80px;}
+
+  /* ---------- song list ---------- */
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
+  .section-head h1{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0;}
+  .section-head p{color:var(--muted);font-size:13px;margin:4px 0 0;}
+
+  .song-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .song-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:18px;position:relative;overflow:hidden;
+    transition:border-color .15s, transform .15s;
+  }
+  .song-card:hover{border-color:var(--gold-dim);transform:translateY(-2px);}
+  .song-card .rail{
+    position:absolute;top:0;left:0;height:3px;width:100%;
+    background:linear-gradient(90deg,var(--gold),var(--teal));
+    opacity:.65;
+  }
+  .song-title{font-family:var(--font-display);font-weight:600;font-size:18px;margin:8px 0 2px;}
+  .song-artist{color:var(--muted);font-size:13px;margin-bottom:14px;}
+  .song-meta{display:flex;gap:10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .song-meta span{background:var(--surface-2);padding:3px 8px;border-radius:6px;}
+  .song-card-actions{display:flex;gap:8px;}
+  .empty-state{
+    border:1px dashed var(--line);border-radius:14px;padding:40px 20px;
+    text-align:center;color:var(--muted);font-size:14px;
+  }
+
+  /* ---------- player ---------- */
+  .player-view{display:none;}
+  .player-view.active{display:block;}
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-bottom:18px;background:none;border:none;padding:0;}
+  .back-link:hover{color:var(--gold);}
+
+  .player-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:32px 28px 26px;
+  }
+  .player-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+  .player-head h2{font-family:var(--font-display);font-weight:600;font-size:24px;margin:0;}
+  .player-head .artist{color:var(--muted);font-size:13px;margin-top:2px;}
+
+  /* lyric stage */
+  .lyric-stage{
+    min-height:220px;
+    background:radial-gradient(ellipse at center, var(--surface-2) 0%, var(--surface) 75%);
+    border:1px solid var(--line);border-radius:14px;
+    padding:34px 26px;
+    display:flex;flex-direction:column;justify-content:center;gap:14px;
+    font-family:var(--font-display);
+    text-align:center;
+    overflow-y:auto;max-height:320px;
+  }
+  .lyric-line{
+    font-size:26px;line-height:1.55;font-weight:500;color:var(--muted);
+    transition:color .2s;
+  }
+  .lyric-line.current-line{color:var(--text);}
+  .syll{
+    display:inline-block;padding:1px 2px;border-radius:5px;transition:all .12s ease;
+  }
+  .syll.sung{color:var(--gold);}
+  .syll.active{
+    color:#1a1206;background:var(--gold);
+    box-shadow:0 0 0 4px var(--gold-dim);
+    transform:scale(1.08);
+  }
+  .syll.upcoming{color:var(--muted);}
+
+  /* beat rail */
+  .beat-rail-wrap{margin-top:24px;}
+  .beat-rail-label{
+    font-family:var(--font-mono);font-size:11px;color:var(--muted);
+    letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .beat-rail{
+    display:flex;gap:6px;justify-content:center;align-items:center;
+    padding:16px 10px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);
+  }
+  .beat-dot{
+    flex:1;max-width:64px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .beat-num{
+    font-family:var(--font-mono);font-weight:700;font-size:15px;color:var(--muted);
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--line);
+    transition:all .08s ease;
+  }
+  .beat-num.downbeat{border-color:#4a4f63;}
+  .beat-num.off-beat{font-size:13px;opacity:.75;}
+  .beat-num.active{
+    color:#1a1206;background:var(--gold);border-color:var(--gold);
+    transform:scale(1.18);
+    box-shadow:0 0 14px var(--gold);
+  }
+  .beat-num.active.off-active{background:var(--teal);border-color:var(--teal);box-shadow:0 0 14px var(--teal);}
+
+  /* transport */
+  .transport{margin-top:26px;}
+  .seek-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .time-lbl{font-family:var(--font-mono);font-size:12px;color:var(--muted);width:44px;}
+  input[type=range]{
+    -webkit-appearance:none;flex:1;height:5px;border-radius:99px;
+    background:var(--line);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--gold);cursor:pointer;border:2px solid #1a1206;
+  }
+  .transport-controls{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .play-btn{
+    width:56px;height:56px;border-radius:50%;background:var(--gold);border:none;
+    display:flex;align-items:center;justify-content:center;color:#1a1206;
+    box-shadow:0 4px 20px var(--gold-dim);
+  }
+  .play-btn svg{width:22px;height:22px;}
+  .icon-btn{
+    width:42px;height:42px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--text);
+  }
+  .icon-btn:hover{border-color:var(--gold);}
+  .toggle-row{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .toggle-btn{
+    font-family:var(--font-mono);font-size:12px;padding:7px 14px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+  }
+  .toggle-btn.on{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+  .speed-select{
+    font-family:var(--font-mono);font-size:12px;background:var(--surface-2);color:var(--text);
+    border:1px solid var(--line);border-radius:999px;padding:7px 12px;
+  }
+
+  /* ---------- auth modal ---------- */
+  .modal-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(10,11,15,.72);
+    z-index:50;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);
+  }
+  .modal-backdrop.show{display:flex;}
+  .modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:26px;width:100%;max-width:380px;
+  }
+  .modal h3{font-family:var(--font-display);font-size:20px;margin:0 0 4px;}
+  .modal p.hint{color:var(--muted);font-size:12.5px;margin:0 0 18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field input,.field textarea,.field select{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;color:var(--text);font-family:inherit;font-size:14px;
+  }
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold);}
+  .field textarea{resize:vertical;min-height:90px;font-family:var(--font-mono);font-size:13px;line-height:1.6;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .err-msg{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;}
+  .modal-close{position:absolute;}
+
+  /* ---------- editor ---------- */
+  .editor-view{display:none;}
+  .editor-view.active{display:block;}
+  .editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+  @media(max-width:640px){.editor-grid{grid-template-columns:1fr;}}
+  .editor-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;
+  }
+  .editor-card h3{font-family:var(--font-display);font-size:17px;margin:0 0 14px;}
+  .helptext{font-size:12px;color:var(--muted);margin:-8px 0 14px;line-height:1.6;}
+  .tap-zone{
+    background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;
+    padding:20px;text-align:center;margin-top:6px;
+  }
+  .tap-target{font-family:var(--font-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .tap-preview{font-family:var(--font-display);font-size:22px;margin:10px 0;}
+  .tap-preview .prev-done{color:var(--muted);}
+  .tap-preview .cur{color:var(--gold);font-weight:700;}
+  .tap-preview .next-up{color:var(--text);opacity:.6;}
+  .tap-big-btn{
+    width:100%;padding:16px;border-radius:12px;background:var(--gold);border:none;
+    font-family:var(--font-mono);font-weight:700;font-size:14px;color:#1a1206;margin-top:10px;
+  }
+  .tap-progress{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:8px;}
+
+  .beat-table-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .beat-table-head{
+    display:grid;grid-template-columns:1.4fr 1fr 1.2fr 1fr;gap:8px;
+    padding:9px 14px;background:var(--surface-2);
+    font-family:var(--font-mono);font-size:10.5px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:1px;
+  }
+  .beat-table-body-scroll{max-height:280px;overflow-y:auto;}
+  .beat-row{
+    display:grid;grid-template-columns:1.4fr 1fr 1.2fr 1fr;gap:8px;align-items:center;
+    padding:8px 14px;border-top:1px solid var(--line);
+  }
+  .beat-row.linebreak-row{border-top:2px solid var(--gold-dim);}
+  .beat-row .syl-text{font-family:var(--font-display);font-size:14px;}
+  .beat-row input{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:6px 8px;color:var(--text);font-family:var(--font-mono);font-size:12.5px;
+  }
+  .beat-row input:focus{outline:none;border-color:var(--gold);}
+  .beat-row .measure-lbl{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);}
+  .beat-row .time-lbl-cell{font-family:var(--font-mono);font-size:11.5px;color:var(--gold);}
+
+  .footer-note{text-align:center;color:var(--muted);font-size:11.5px;margin-top:50px;line-height:1.7;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">♩</div>
+    <div>
+      <div class="brand-name">BeatSpell</div>
+      <div class="brand-sub">Rhythm &amp; Syllable Trainer</div>
+    </div>
+  </div>
+  <div class="top-actions" id="topActions">
+    <button class="btn btn-ghost btn-sm" id="teacherLoginBtn">Teacher login</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ============ SONG LIST ============ -->
+  <div id="listView">
+    <div class="section-head">
+      <div>
+        <h1 id="listTitle">Practice songs</h1>
+        <p id="listSub">Pick a song to practice syllables in rhythm.</p>
+      </div>
+    </div>
+    <div class="song-grid" id="songGrid"></div>
+    <div class="footer-note">Andrew's Music Academy · JGeneration Notes</div>
+  </div>
+
+  <!-- ============ PLAYER ============ -->
+  <div class="player-view" id="playerView">
+    <button class="back-link" id="backFromPlayer">&larr; All songs</button>
+    <div class="player-card">
+      <div class="player-head">
+        <div>
+          <h2 id="pTitle">—</h2>
+          <div class="artist" id="pArtist">—</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span class="pill" id="pBpmPill">— BPM</span>
+          <button class="btn btn-sm" id="editSongBtn" style="display:none;">Edit song</button>
+        </div>
+      </div>
+
+      <div class="lyric-stage" id="lyricStage"></div>
+
+      <div class="beat-rail-wrap">
+        <div class="beat-rail-label">
+          <span id="measureLabel">Measure —</span>
+          <span id="beatCountLabel">Beat —</span>
+        </div>
+        <div class="beat-rail" id="beatRail"></div>
+      </div>
+
+      <div class="transport">
+        <div class="seek-row">
+          <span class="time-lbl" id="curTimeLbl">0:00</span>
+          <input type="range" id="seekBar" min="0" max="100" value="0" step="0.01">
+          <span class="time-lbl" id="durTimeLbl">0:00</span>
+        </div>
+        <div class="transport-controls">
+          <button class="icon-btn" id="rewindBtn" title="Back 5s">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M11 19V5L2 12l9 7Z" fill="currentColor"/><path d="M21 19V5l-9 7 9 7Z" fill="currentColor" opacity=".5"/></svg>
+          </button>
+          <button class="play-btn" id="playBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><path d="M8 5v14l11-7L8 5Z"/></svg>
+          </button>
+          <button class="icon-btn" id="forwardBtn" title="Forward 5s">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M13 19V5l9 7-9 7Z" fill="currentColor"/><path d="M3 19V5l9 7-9 7Z" fill="currentColor" opacity=".5"/></svg>
+          </button>
+        </div>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="halfBeatToggle">Half beat: 1 &amp; 2 &amp; 3 &amp; 4 &amp;</button>
+          <select class="speed-select" id="speedSelect">
+            <option value="0.5">0.5×</option>
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <audio id="audioEl" preload="metadata"></audio>
+  </div>
+
+  <!-- ============ TEACHER EDITOR ============ -->
+  <div class="editor-view" id="editorView">
+    <button class="back-link" id="backFromEditor">&larr; All songs</button>
+    <div class="section-head">
+      <div>
+        <h1 id="editorHeading">New song</h1>
+        <p>Set up the track, tempo, and lyric syllables.</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-danger btn-sm" id="deleteSongBtn" style="display:none;">Delete song</button>
+        <button class="btn btn-gold btn-sm" id="saveSongBtn">Save song</button>
+      </div>
+    </div>
+
+    <div class="editor-card">
+      <h3>1 · Track details</h3>
+      <div class="editor-grid">
+        <div class="field"><label>Song title</label><input id="fTitle" type="text" placeholder="Amazing Grace"></div>
+        <div class="field"><label>Artist / batch (optional)</label><input id="fArtist" type="text" placeholder="Batch 4 · Keyboard"></div>
+      </div>
+      <div class="field"><label>Song file (path or URL)</label><input id="fMp3" type="text" placeholder="songs/thaen-inimaiyilum-d-maj-4.4-96.mp3"></div>
+      <div class="helptext" style="margin-top:-8px;">Use a relative path like <b>songs/your-file.mp3</b> if it's in your <b>songs/</b> folder next to this file, or a full <b>https://...</b> URL if it's hosted elsewhere.</div>
+      <div class="editor-grid">
+        <div class="field"><label>BPM</label><input id="fBpm" type="number" value="100" min="20" max="300"></div>
+        <div class="field"><label>Beats per measure (top number)</label><input id="fTimeSig" type="number" value="4" min="1" max="12"></div>
+      </div>
+      <div class="field"><label>Start offset (seconds to first beat)</label><input id="fOffset" type="number" value="0" step="0.01"></div>
+    </div>
+
+    <div class="editor-card">
+      <h3>2 · Lyrics with syllables</h3>
+      <div class="helptext">
+        Type the lyrics. Split each word into syllables with a hyphen, e.g. <b>A-ma-zing grace how sweet the sound</b>. Put each line on a new line. Click "Build syllable grid" to auto-space them across beats — you can fine-tune timing by tapping in step 3.
+      </div>
+      <div class="field"><textarea id="fLyrics" placeholder="A-ma-zing grace how sweet the sound&#10;That saved a wretch like me"></textarea></div>
+      <button class="btn btn-sm" id="buildGridBtn">Build syllable grid</button>
+      <span class="helptext" id="tokenCount" style="display:inline;margin-left:10px;"></span>
+    </div>
+
+    <div class="editor-card" id="beatTableCard" style="display:none;">
+      <h3>3 · Set exact beat for each syllable</h3>
+      <div class="helptext">
+        Each syllable defaults to one-per-beat. If a syllable actually falls on beat 1, beat 2, or a half-beat like <b>2.5</b> (the "&amp;" after beat 2), type that beat number here — the time updates automatically. Beat numbers run continuously through the song (e.g. measure 2 beat 1 in 4/4 = beat 5).
+      </div>
+      <div class="beat-table-wrap">
+        <div class="beat-table-head">
+          <span>Syllable</span><span>Beat</span><span>Measure : Beat</span><span>Time</span>
+        </div>
+        <div class="beat-table-body-scroll" id="beatTableBody"></div>
+      </div>
+    </div>
+
+    <div class="editor-card">
+      <h3>4 · Fine-tune by tapping (optional)</h3>
+      <div class="helptext">Load the MP3, press play, then tap the button (or hit Space) in rhythm with each syllable. Each tap locks in the exact time for that syllable.</div>
+      <div class="seek-row">
+        <span class="time-lbl" id="eCurTime">0:00</span>
+        <input type="range" id="eSeekBar" min="0" max="100" value="0" step="0.01">
+        <span class="time-lbl" id="eDurTime">0:00</span>
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:10px;">
+        <button class="icon-btn" id="ePlayBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" id="ePlayIcon"><path d="M8 5v14l11-7L8 5Z"/></svg>
+        </button>
+        <button class="btn btn-sm" id="eResetTapBtn">Reset to start of lyrics</button>
+      </div>
+      <div class="tap-zone">
+        <div class="tap-target">Next syllable to tag</div>
+        <div class="tap-preview" id="tapPreview">Build the grid first ↑</div>
+        <button class="tap-big-btn" id="tapBtn">TAP (or press Space)</button>
+        <div class="tap-progress" id="tapProgress"></div>
+      </div>
+    </div>
+    <audio id="eAudioEl" preload="metadata"></audio>
+  </div>
+
+</main>
+
+<!-- ============ TEACHER LOGIN MODAL ============ -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal">
+    <h3>Teacher login</h3>
+    <p class="hint">Sign in to add songs and set syllable timing. Students don't need an account.</p>
+    <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+    <div class="err-msg" id="loginErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="loginCancel">Cancel</button>
+      <button class="btn btn-gold btn-sm" id="loginSubmit">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   FIREBASE CONFIG — replace with your project's config
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const TEACHER_EMAIL = "josepath.andrew@gmail.com";
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let songs = [];              // all songs from Firestore, live
+let isTeacher = false;
+let currentSong = null;      // song currently open in player
+let currentTokens = [];      // parsed syllable tokens for player (with .time)
+let editingSongId = null;    // null = new song
+let editorTokens = [];       // tokens being built in editor
+let tapIndex = 0;            // which token tap-mode is about to tag
+let halfBeatOn = false;
+let rafId = null;
+let eRafId = null;
+
+/* =========================================================
+   LYRIC PARSING
+   token: {text, spaceBefore, lineBreakBefore, time (seconds|null), beatLabel}
+   ========================================================= */
+function parseLyrics(raw){
+  const lines = raw.split("\n").map(l=>l.trim()).filter(l=>l.length>0);
+  const tokens = [];
+  lines.forEach((line, li)=>{
+    const words = line.split(/\s+/);
+    words.forEach((word, wi)=>{
+      const syllables = word.split("-").filter(s=>s.length>0);
+      syllables.forEach((syl, si)=>{
+        tokens.push({
+          text: syl,
+          spaceBefore: si===0 && wi>0,
+          lineBreakBefore: si===0 && wi===0 && li>0,
+          time: null
+        });
+      });
+    });
+  });
+  return tokens;
+}
+
+// Auto space tokens evenly starting at beat 1, one syllable per beat (or half-beat if many tokens vs duration unknown -> just 1 per beat by default)
+function autoAssignTiming(tokens, bpm, offset){
+  const secPerBeat = 60/bpm;
+  return tokens.map((t, i)=>({...t, time: +(offset + i*secPerBeat).toFixed(3)}));
+}
+
+function beatLabelForTime(t, bpm, offset, timeSigTop){
+  const secPerBeat = 60/bpm;
+  const beatFloat = (t - offset)/secPerBeat + 1; // 1-indexed
+  const measureNum = Math.floor((beatFloat-1)/timeSigTop) + 1;
+  let beatInMeasure = ((beatFloat-1) % timeSigTop) + 1;
+  if (beatInMeasure < 0) beatInMeasure += timeSigTop;
+  return {measureNum, beatInMeasure, beatFloat};
+}
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+auth.onAuthStateChanged(user=>{
+  isTeacher = !!(user && user.email === TEACHER_EMAIL);
+  renderTopActions();
+  renderSongList();
+});
+
+function renderTopActions(){
+  const el = document.getElementById('topActions');
+  if(isTeacher){
+    el.innerHTML = `
+      <span class="pill">Teacher mode</span>
+      <button class="btn btn-gold btn-sm" id="newSongBtn">+ New song</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>
+    `;
+    document.getElementById('newSongBtn').onclick = ()=>openEditor(null);
+    document.getElementById('logoutBtn').onclick = ()=>auth.signOut();
+  } else {
+    el.innerHTML = `<button class="btn btn-ghost btn-sm" id="teacherLoginBtn">Teacher login</button>`;
+    document.getElementById('teacherLoginBtn').onclick = openLoginModal;
+  }
+}
+
+function openLoginModal(){
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginModal').classList.add('show');
+}
+document.getElementById('loginCancel').onclick = ()=>document.getElementById('loginModal').classList.remove('show');
+document.getElementById('loginSubmit').onclick = async ()=>{
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    document.getElementById('loginModal').classList.remove('show');
+  }catch(e){
+    errEl.textContent = 'Could not sign in — check email and password.';
+  }
+};
+
+/* =========================================================
+   FIRESTORE — songs
+   ========================================================= */
+db.collection('beatSyllableSongs').orderBy('createdAt','desc').onSnapshot(snap=>{
+  songs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  renderSongList();
+});
+
+function renderSongList(){
+  const grid = document.getElementById('songGrid');
+  document.getElementById('listSub').textContent = isTeacher
+    ? "Manage songs, or open one to fine-tune timing."
+    : "Pick a song to practice syllables in rhythm.";
+  if(songs.length===0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      ${isTeacher ? 'No songs yet — click "+ New song" to add your first track.' : 'No songs available yet. Check back soon.'}
+    </div>`;
+    return;
+  }
+  grid.innerHTML = songs.map(s=>`
+    <div class="song-card">
+      <div class="rail"></div>
+      <div class="song-title">${escapeHtml(s.title||'Untitled')}</div>
+      <div class="song-artist">${escapeHtml(s.artist||'')}</div>
+      <div class="song-meta">
+        <span>${s.bpm||'--'} BPM</span>
+        <span>${s.timeSigTop||4}/4</span>
+        <span>${(s.tokens||[]).length} syll.</span>
+      </div>
+      <div class="song-card-actions">
+        <button class="btn btn-sm btn-gold" data-play="${s.id}">Practice</button>
+        ${isTeacher ? `<button class="btn btn-sm" data-edit="${s.id}">Edit</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>openPlayer(b.dataset.play));
+  grid.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));
+}
+
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* =========================================================
+   VIEW SWITCHING
+   ========================================================= */
+function showView(name){
+  document.getElementById('listView').style.display = name==='list' ? '' : 'none';
+  document.getElementById('playerView').classList.toggle('active', name==='player');
+  document.getElementById('editorView').classList.toggle('active', name==='editor');
+  if(name!=='player'){ pauseAudio(); }
+  if(name!=='editor'){ pauseEditorAudio(); }
+}
+document.getElementById('backFromPlayer').onclick = ()=>showView('list');
+document.getElementById('backFromEditor').onclick = ()=>showView('list');
+
+/* =========================================================
+   PLAYER
+   ========================================================= */
+const audioEl = document.getElementById('audioEl');
+
+function openPlayer(id){
+  currentSong = songs.find(s=>s.id===id);
+  if(!currentSong) return;
+  currentTokens = (currentSong.tokens||[]).map(t=>({...t}));
+  document.getElementById('pTitle').textContent = currentSong.title||'Untitled';
+  document.getElementById('pArtist').textContent = currentSong.artist||'';
+  document.getElementById('pBpmPill').textContent = `${currentSong.bpm||'--'} BPM · ${currentSong.timeSigTop||4}/4`;
+  document.getElementById('editSongBtn').style.display = isTeacher ? '' : 'none';
+  document.getElementById('editSongBtn').onclick = ()=>openEditor(currentSong.id);
+  halfBeatOn = false;
+  updateHalfBeatBtn();
+  audioEl.src = currentSong.mp3Url || '';
+  audioEl.playbackRate = 1;
+  document.getElementById('speedSelect').value = "1";
+  renderLyricStage();
+  renderBeatRail();
+  showView('player');
+}
+
+function renderLyricStage(){
+  const stage = document.getElementById('lyricStage');
+  if(currentTokens.length===0){
+    stage.innerHTML = `<div class="lyric-line">No lyrics added yet for this song.</div>`;
+    return;
+  }
+  let html = '<div class="lyric-line current-line">';
+  currentTokens.forEach((t,i)=>{
+    if(t.lineBreakBefore){ html += '</div><div class="lyric-line">'; }
+    const sp = t.spaceBefore ? ' ' : '';
+    html += `${sp}<span class="syll upcoming" data-i="${i}">${escapeHtml(t.text)}</span>`;
+  });
+  html += '</div>';
+  stage.innerHTML = html;
+}
+
+function renderBeatRail(){
+  const top = currentSong ? (currentSong.timeSigTop||4) : 4;
+  const rail = document.getElementById('beatRail');
+  let items = [];
+  for(let b=1;b<=top;b++){
+    items.push({label:String(b), val:b, down:true});
+    if(halfBeatOn) items.push({label:'&', val:b+0.5, down:false});
+  }
+  rail.innerHTML = items.map(it=>`
+    <div class="beat-dot">
+      <div class="beat-num ${it.down?'downbeat':'off-beat'}" data-val="${it.val}">${it.label}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('halfBeatToggle').onclick = ()=>{
+  halfBeatOn = !halfBeatOn;
+  updateHalfBeatBtn();
+  renderBeatRail();
+};
+function updateHalfBeatBtn(){
+  document.getElementById('halfBeatToggle').classList.toggle('on', halfBeatOn);
+}
+
+document.getElementById('speedSelect').onchange = (e)=>{
+  audioEl.playbackRate = parseFloat(e.target.value);
+};
+
+const playBtn = document.getElementById('playBtn');
+const playIcon = document.getElementById('playIcon');
+playBtn.onclick = ()=>{
+  if(audioEl.paused){ audioEl.play(); } else { audioEl.pause(); }
+};
+audioEl.onplay = ()=>{ playIcon.innerHTML = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; startPlayerLoop(); };
+audioEl.onpause = ()=>{ playIcon.innerHTML = '<path d="M8 5v14l11-7L8 5Z"/>'; stopPlayerLoop(); };
+audioEl.onended = ()=>{ playIcon.innerHTML = '<path d="M8 5v14l11-7L8 5Z"/>'; };
+function pauseAudio(){ audioEl.pause(); }
+
+document.getElementById('rewindBtn').onclick = ()=>{ audioEl.currentTime = Math.max(0, audioEl.currentTime-5); };
+document.getElementById('forwardBtn').onclick = ()=>{ audioEl.currentTime = Math.min(audioEl.duration||0, audioEl.currentTime+5); };
+
+audioEl.onloadedmetadata = ()=>{
+  document.getElementById('seekBar').max = audioEl.duration || 0;
+  document.getElementById('durTimeLbl').textContent = fmtTime(audioEl.duration);
+};
+const seekBar = document.getElementById('seekBar');
+seekBar.oninput = ()=>{ audioEl.currentTime = parseFloat(seekBar.value); };
+
+function fmtTime(s){
+  if(!isFinite(s)) return '0:00';
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function startPlayerLoop(){
+  cancelAnimationFrame(rafId);
+  const step = ()=>{
+    updatePlayerFrame();
+    rafId = requestAnimationFrame(step);
+  };
+  rafId = requestAnimationFrame(step);
+}
+function stopPlayerLoop(){ cancelAnimationFrame(rafId); updatePlayerFrame(); }
+
+function updatePlayerFrame(){
+  const t = audioEl.currentTime;
+  document.getElementById('curTimeLbl').textContent = fmtTime(t);
+  if(!seekBar.matches(':active')) seekBar.value = t;
+
+  if(currentSong){
+    const bpm = currentSong.bpm||100, offset = currentSong.offset||0, top = currentSong.timeSigTop||4;
+    const {measureNum, beatInMeasure} = beatLabelForTime(t, bpm, offset, top);
+    document.getElementById('measureLabel').textContent = t < offset ? 'Measure —' : `Measure ${measureNum}`;
+    document.getElementById('beatCountLabel').textContent = t < offset ? '' : `Beat ${beatInMeasure.toFixed(2)}`;
+
+    // beat rail active dot
+    document.querySelectorAll('#beatRail .beat-num').forEach(el=>{
+      const val = parseFloat(el.dataset.val);
+      const nextVal = halfBeatOn ? val+0.5 : val+1;
+      const active = t>=offset && beatInMeasure>=val && beatInMeasure<nextVal;
+      el.classList.toggle('active', active);
+      el.classList.toggle('off-active', active && val%1!==0);
+    });
+
+    // syllable highlight: last token whose time <= t
+    let activeIdx = -1;
+    for(let i=0;i<currentTokens.length;i++){
+      if(currentTokens[i].time!==null && currentTokens[i].time<=t) activeIdx=i; else break;
+    }
+    document.querySelectorAll('#lyricStage .syll').forEach(el=>{
+      const i = parseInt(el.dataset.i);
+      el.classList.remove('sung','active','upcoming');
+      if(i<activeIdx) el.classList.add('sung');
+      else if(i===activeIdx) el.classList.add('active');
+      else el.classList.add('upcoming');
+    });
+    if(activeIdx>=0){
+      const activeEl = document.querySelector(`#lyricStage .syll[data-i="${activeIdx}"]`);
+      if(activeEl) activeEl.scrollIntoView({block:'center', behavior:'smooth'});
+    }
+  }
+}
+
+/* =========================================================
+   TEACHER EDITOR
+   ========================================================= */
+function openEditor(id){
+  editingSongId = id;
+  const song = id ? songs.find(s=>s.id===id) : null;
+  document.getElementById('editorHeading').textContent = song ? 'Edit song' : 'New song';
+  document.getElementById('fTitle').value = song?.title || '';
+  document.getElementById('fArtist').value = song?.artist || '';
+  document.getElementById('fMp3').value = song?.mp3Url || '';
+  document.getElementById('fBpm').value = song?.bpm || 100;
+  document.getElementById('fTimeSig').value = song?.timeSigTop || 4;
+  document.getElementById('fOffset').value = song?.offset || 0;
+  document.getElementById('fLyrics').value = tokensToRawText(song?.tokens || []);
+  editorTokens = (song?.tokens || []).map(t=>({...t}));
+  tapIndex = editorTokens.findIndex(t=>t.time===null);
+  if(tapIndex===-1) tapIndex = 0;
+  document.getElementById('deleteSongBtn').style.display = song ? '' : 'none';
+  document.getElementById('deleteSongBtn').onclick = ()=>deleteSong(id);
+  eAudioEl.src = song?.mp3Url || '';
+  updateTokenCount();
+  updateTapPreview();
+  renderBeatTable();
+  showView('editor');
+}
+
+function tokensToRawText(tokens){
+  let lines = [''];
+  tokens.forEach(t=>{
+    if(t.lineBreakBefore) lines.push('');
+    let li = lines.length-1;
+    if(t.spaceBefore || (lines[li]!=='' && !lines[li].endsWith('-') && lines[li].slice(-1)!=='' && needsNewWord(lines[li]))){}
+    // rebuild simply: track words
+  });
+  // simpler reconstruction using explicit word grouping
+  let out = [];
+  let curLine = [];
+  let curWord = '';
+  tokens.forEach((t,i)=>{
+    if(t.lineBreakBefore){
+      if(curWord) curLine.push(curWord);
+      out.push(curLine.join(' '));
+      curLine=[]; curWord='';
+    }
+    if(t.spaceBefore){
+      if(curWord) curLine.push(curWord);
+      curWord = t.text;
+    } else {
+      curWord = curWord ? curWord + '-' + t.text : t.text;
+    }
+  });
+  if(curWord) curLine.push(curWord);
+  if(curLine.length) out.push(curLine.join(' '));
+  return out.join('\n');
+}
+function needsNewWord(){return false;}
+
+function updateTokenCount(){
+  document.getElementById('tokenCount').textContent = editorTokens.length ? `${editorTokens.length} syllables` : '';
+}
+
+// continuous beat (1-indexed, e.g. 5.5 = measure 2 beat 1.5 in 4/4) <-> time
+function timeToContinuousBeat(t, bpm, offset){
+  const secPerBeat = 60/bpm;
+  return (t - offset)/secPerBeat + 1;
+}
+function continuousBeatToTime(beat, bpm, offset){
+  const secPerBeat = 60/bpm;
+  return offset + (beat-1)*secPerBeat;
+}
+
+['fBpm','fTimeSig','fOffset'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>renderBeatTable());
+});
+
+document.getElementById('buildGridBtn').onclick = ()=>{
+  const raw = document.getElementById('fLyrics').value;
+  const bpm = parseFloat(document.getElementById('fBpm').value)||100;
+  const offset = parseFloat(document.getElementById('fOffset').value)||0;
+  const parsed = parseLyrics(raw);
+  editorTokens = autoAssignTiming(parsed, bpm, offset);
+  tapIndex = 0;
+  updateTokenCount();
+  updateTapPreview();
+  renderBeatTable();
+};
+
+function renderBeatTable(){
+  const card = document.getElementById('beatTableCard');
+  const body = document.getElementById('beatTableBody');
+  if(editorTokens.length===0){ card.style.display='none'; return; }
+  card.style.display = '';
+  const bpm = parseFloat(document.getElementById('fBpm').value)||100;
+  const offset = parseFloat(document.getElementById('fOffset').value)||0;
+  const timeSigTop = parseInt(document.getElementById('fTimeSig').value)||4;
+
+  body.innerHTML = editorTokens.map((t,i)=>{
+    const beat = t.time===null ? '' : +(timeToContinuousBeat(t.time, bpm, offset)).toFixed(3);
+    let measureLbl = '—';
+    if(t.time!==null){
+      const {measureNum, beatInMeasure} = beatLabelForTime(t.time, bpm, offset, timeSigTop);
+      measureLbl = `${measureNum} : ${beatInMeasure.toFixed(2)}`;
+    }
+    const timeLbl = t.time===null ? '—' : fmtTime(t.time)+`.${Math.round((t.time%1)*10)}`;
+    return `
+      <div class="beat-row ${t.lineBreakBefore?'linebreak-row':''}">
+        <span class="syl-text">${t.spaceBefore?'&nbsp;':''}${escapeHtml(t.text)}</span>
+        <input type="number" step="0.5" data-i="${i}" class="beat-input" value="${beat}" placeholder="beat #">
+        <span class="measure-lbl">${measureLbl}</span>
+        <span class="time-lbl-cell">${timeLbl}</span>
+      </div>
+    `;
+  }).join('');
+
+  body.querySelectorAll('.beat-input').forEach(inp=>{
+    inp.onchange = (e)=>{
+      const i = parseInt(e.target.dataset.i);
+      const val = parseFloat(e.target.value);
+      const bpmNow = parseFloat(document.getElementById('fBpm').value)||100;
+      const offsetNow = parseFloat(document.getElementById('fOffset').value)||0;
+      if(isNaN(val)){ editorTokens[i].time = null; }
+      else{ editorTokens[i].time = +continuousBeatToTime(val, bpmNow, offsetNow).toFixed(3); }
+      updateTapPreview();
+      renderBeatTable();
+    };
+  });
+}
+
+/* ---- tap-to-tag ---- */
+const eAudioEl = document.getElementById('eAudioEl');
+const ePlayBtn = document.getElementById('ePlayBtn');
+const ePlayIcon = document.getElementById('ePlayIcon');
+ePlayBtn.onclick = ()=>{ if(eAudioEl.paused) eAudioEl.play(); else eAudioEl.pause(); };
+eAudioEl.onplay = ()=>{ ePlayIcon.innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; startEditorLoop(); };
+eAudioEl.onpause = ()=>{ ePlayIcon.innerHTML='<path d="M8 5v14l11-7L8 5Z"/>'; stopEditorLoop(); };
+function pauseEditorAudio(){ eAudioEl.pause(); }
+
+eAudioEl.onloadedmetadata = ()=>{
+  document.getElementById('eSeekBar').max = eAudioEl.duration||0;
+  document.getElementById('eDurTime').textContent = fmtTime(eAudioEl.duration);
+};
+document.getElementById('eSeekBar').oninput = (e)=>{ eAudioEl.currentTime = parseFloat(e.target.value); };
+
+function startEditorLoop(){
+  cancelAnimationFrame(eRafId);
+  const step = ()=>{
+    document.getElementById('eCurTime').textContent = fmtTime(eAudioEl.currentTime);
+    const bar = document.getElementById('eSeekBar');
+    if(!bar.matches(':active')) bar.value = eAudioEl.currentTime;
+    eRafId = requestAnimationFrame(step);
+  };
+  eRafId = requestAnimationFrame(step);
+}
+function stopEditorLoop(){ cancelAnimationFrame(eRafId); }
+
+document.getElementById('eResetTapBtn').onclick = ()=>{ tapIndex = 0; updateTapPreview(); };
+
+function updateTapPreview(){
+  const el = document.getElementById('tapPreview');
+  const prog = document.getElementById('tapProgress');
+  if(editorTokens.length===0){
+    el.innerHTML = 'Build the grid first ↑';
+    prog.textContent = '';
+    return;
+  }
+  const done = editorTokens.filter(t=>t.time!==null).length;
+  prog.textContent = `${done} / ${editorTokens.length} syllables timed`;
+  const prevTxt = editorTokens.slice(Math.max(0,tapIndex-3), tapIndex).map(t=>t.text).join(' ');
+  const curTxt = editorTokens[tapIndex] ? editorTokens[tapIndex].text : '— done —';
+  const nextTxt = editorTokens.slice(tapIndex+1, tapIndex+4).map(t=>t.text).join(' ');
+  el.innerHTML = `<span class="prev-done">${escapeHtml(prevTxt)}</span> <span class="cur">${escapeHtml(curTxt)}</span> <span class="next-up">${escapeHtml(nextTxt)}</span>`;
+}
+
+function doTap(){
+  if(editorTokens.length===0 || tapIndex>=editorTokens.length) return;
+  editorTokens[tapIndex].time = +eAudioEl.currentTime.toFixed(3);
+  tapIndex++;
+  updateTapPreview();
+  updateTokenCount();
+  renderBeatTable();
+}
+document.getElementById('tapBtn').onclick = doTap;
+document.addEventListener('keydown', (e)=>{
+  if(e.code==='Space' && document.getElementById('editorView').classList.contains('active')){
+    // only if focus isn't in a text field
+    const tag = document.activeElement.tagName;
+    if(tag!=='INPUT' && tag!=='TEXTAREA'){
+      e.preventDefault();
+      doTap();
+    }
+  }
+});
+
+/* ---- save / delete ---- */
+document.getElementById('saveSongBtn').onclick = async ()=>{
+  const title = document.getElementById('fTitle').value.trim();
+  const mp3Url = document.getElementById('fMp3').value.trim();
+  if(!title || !mp3Url){ alert('Please add a title and MP3 URL.'); return; }
+  const bpm = parseFloat(document.getElementById('fBpm').value)||100;
+  const timeSigTop = parseInt(document.getElementById('fTimeSig').value)||4;
+  const offset = parseFloat(document.getElementById('fOffset').value)||0;
+
+  // recompute beatLabels for stored tokens for reference/debugging
+  const tokens = editorTokens.map(t=>({
+    text: t.text,
+    spaceBefore: !!t.spaceBefore,
+    lineBreakBefore: !!t.lineBreakBefore,
+    time: t.time===null||t.time===undefined ? null : t.time
+  }));
+
+  const payload = {
+    title, artist: document.getElementById('fArtist').value.trim(),
+    mp3Url, bpm, timeSigTop, offset, tokens,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try{
+    if(editingSongId){
+      await db.collection('beatSyllableSongs').doc(editingSongId).update(payload);
+    } else {
+      payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('beatSyllableSongs').add(payload);
+    }
+    showView('list');
+  }catch(e){
+    alert('Could not save: '+e.message);
+  }
+};
+
+async function deleteSong(id){
+  if(!id) return;
+  if(!confirm('Delete this song? This cannot be undone.')) return;
+  try{
+    await db.collection('beatSyllableSongs').doc(id).delete();
+    showView('list');
+  }catch(e){
+    alert('Could not delete: '+e.message);
+  }
+}
+
+/* init */
+renderTopActions();
+</script>
+</body>
+</html>
