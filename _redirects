@@ -2,4 +2,3 @@
 /music-gym/song-studio-complete/audio/*  /music-gym/song-studio-complete/audio/:splat  200
 /*.mp3  /:splat  200
 /*.json  /:splat  200
-/*  /  200
