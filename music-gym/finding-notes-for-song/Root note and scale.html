@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Root Note & Scale Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0d0f1a;
+    --card:    #161928;
+    --card2:   #1e2238;
+    --accent:  #f5c842;
+    --accent2: #ff6b6b;
+    --accent3: #6bffb8;
+    --accent4: #6bb5ff;
+    --text:    #eef0ff;
+    --muted:   #7a80a0;
+    --border:  #2a2f50;
+    --gold:    #f5c842;
+    --red:     #ff4f4f;
+    --green:   #3dffa0;
+    --purple:  #a78bfa;
+    --radius:  18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 30%,rgba(167,139,250,.08) 0%,transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(107,181,255,.07) 0%,transparent 55%);pointer-events:none;z-index:0;}
+  .page{display:none;position:relative;z-index:1;}
+  .page.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  #songListPage.active,#practicePage.active,#teacherPage.active{justify-content:flex-start;padding:0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:40px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .logo{font-family:'Fredoka One',cursive;font-size:2.1rem;text-align:center;background:linear-gradient(135deg,var(--accent4),#a78bfa,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+  .logo-sub{text-align:center;color:var(--muted);font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:30px;}
+  .role-btns{display:flex;gap:14px;margin-bottom:28px;}
+  .role-btn{flex:1;padding:14px 10px;border-radius:12px;border:2px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .role-btn .icon{font-size:1.8rem;}
+  .role-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .role-btn.active{border-color:var(--accent);background:rgba(245,200,66,.1);color:var(--accent);}
+  label{display:block;font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .field{margin-bottom:18px;}
+  input[type=text],input[type=password],input[type=number],select{width:100%;padding:14px 16px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:1rem;outline:none;transition:border-color .2s;}
+  select{cursor:pointer;}
+  input:focus,select:focus{border-color:var(--accent);}
+  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-family:'Fredoka One',cursive;font-size:1.15rem;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#ffaa00);color:#1a1400;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(245,200,66,.35);}
+  .btn-secondary{background:var(--card2);color:var(--text);border:1.5px solid var(--border);}
+  .btn-secondary:hover{border-color:var(--accent4);color:var(--accent4);}
+  .btn-small{width:auto;padding:9px 16px;font-size:.85rem;border-radius:10px;}
+  .btn-danger{background:transparent;color:var(--red);border:1.5px solid var(--border);}
+  .btn-danger:hover{border-color:var(--red);}
+  .error-msg{color:var(--red);font-size:.85rem;margin-top:10px;text-align:center;min-height:20px;}
+  .logout-btn{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);}
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:12px 24px;font-weight:700;font-size:.9rem;z-index:1000;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  /* ── HUD / headers ── */
+  .top-wrap{width:100%;max-width:760px;margin:0 auto;padding:16px 14px;}
+  .hud{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .hud-coins{display:flex;align-items:center;gap:6px;font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--gold);}
+  .hud-student{color:var(--muted);font-size:.82rem;font-weight:700;}
+  .hud-student span{color:var(--text);}
+  .hud-actions{display:flex;gap:8px;align-items:center;}
+  .page-title{font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--text);margin-bottom:14px;}
+
+  /* ── Song list cards ── */
+  .song-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  .song-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:18px 20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .song-card:hover{border-color:var(--accent4);transform:translateY(-2px);}
+  .song-info{display:flex;flex-direction:column;gap:4px;}
+  .song-title{font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--text);}
+  .song-artist{color:var(--muted);font-size:.82rem;}
+  .song-status{padding:4px 12px;border-radius:99px;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
+  .status-mastered{background:rgba(61,255,160,.15);color:var(--green);}
+  .status-attempted{background:rgba(107,181,255,.15);color:var(--accent4);}
+  .status-new{background:rgba(122,128,160,.15);color:var(--muted);}
+  .empty-state{text-align:center;color:var(--muted);padding:50px 20px;font-size:.95rem;line-height:1.7;}
+
+  /* ── Practice page ── */
+  .practice-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:22px 20px;margin-bottom:14px;}
+  .practice-title{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--text);margin-bottom:4px;text-align:center;}
+  .practice-artist{color:var(--muted);font-size:.85rem;text-align:center;margin-bottom:18px;}
+  .audio-error{background:rgba(255,79,79,.1);border:1.5px solid rgba(255,79,79,.35);color:var(--red);border-radius:10px;padding:10px 14px;font-size:.8rem;line-height:1.5;margin-bottom:16px;text-align:center;}
+  .audio-loading{background:rgba(107,181,255,.1);border:1.5px solid rgba(107,181,255,.3);color:var(--accent4);border-radius:10px;padding:10px 14px;font-size:.82rem;margin-bottom:16px;text-align:center;font-weight:700;}
+  .audio-error code{background:var(--card2);padding:1px 6px;border-radius:4px;color:var(--accent3);}
+  .time-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-family:'Fredoka One',cursive;margin-bottom:6px;}
+  .seek-wrap{position:relative;height:14px;margin-bottom:16px;}
+  .loop-region{position:absolute;top:4px;height:6px;background:rgba(167,139,250,.4);border-radius:99px;pointer-events:none;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;background:transparent;position:relative;z-index:2;height:14px;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;background:var(--card2);border-radius:99px;border:1px solid var(--border);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent4);border:2px solid var(--text);margin-top:-7px;cursor:pointer;}
+  input[type=range]::-moz-range-track{height:6px;background:var(--card2);border-radius:99px;border:1px solid var(--border);}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent4);border:2px solid var(--text);cursor:pointer;}
+
+  /* ── Measure ruler ── */
+  .measure-timeline-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .mt-label{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+  .mt-zoom-btns{display:flex;gap:6px;}
+  .measure-timeline-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-bottom:10px;-webkit-overflow-scrolling:touch;}
+  .measure-timeline{position:relative;height:40px;cursor:pointer;}
+  .mt-loop-region{position:absolute;top:0;height:40px;background:rgba(167,139,250,.18);border-left:2px solid var(--purple);border-right:2px solid var(--purple);pointer-events:none;}
+  .mt-playhead{position:absolute;top:0;width:2px;height:40px;background:var(--accent2);pointer-events:none;box-shadow:0 0 5px var(--accent2);}
+
+  .transport-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;}
+  .play-btn{width:58px;height:58px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),#ffaa00);color:#1a1400;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .play-btn:hover{transform:scale(1.06);}
+  .skip-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .skip-btn:hover{border-color:var(--accent4);color:var(--accent4);}
+
+  .section-label{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 8px;}
+  .speed-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .speed-btn{flex:1;min-width:52px;padding:9px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Fredoka One',cursive;font-size:.85rem;cursor:pointer;transition:all .18s;}
+  .speed-btn:hover{border-color:var(--accent4);color:var(--accent4);}
+  .speed-btn.active{border-color:var(--accent);background:rgba(245,200,66,.12);color:var(--accent);}
+
+  .volume-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .vol-icon{font-size:1rem;flex-shrink:0;}
+  .vol-value{font-family:'Fredoka One',cursive;font-size:.82rem;color:var(--muted);min-width:42px;text-align:right;flex-shrink:0;}
+
+  .loop-tabs{display:flex;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px;margin-bottom:12px;}
+  .loop-tab{flex:1;padding:9px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;}
+  .loop-tab.active{background:var(--card);color:var(--text);border:1px solid var(--border);}
+  .loop-panel{display:none;}
+  .loop-panel.active{display:block;}
+  .loop-controls-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .loop-controls-row .mini-field{flex:1;min-width:90px;}
+  .loop-controls-row .mini-field label{margin-bottom:4px;font-size:.7rem;}
+  .loop-controls-row input{padding:10px 12px;font-size:.9rem;text-align:center;}
+  .btn-tiny{padding:10px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .18s;}
+  .btn-tiny:hover{border-color:var(--accent4);color:var(--accent4);}
+  .loop-toggle-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .toggle-switch{position:relative;width:46px;height:26px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:var(--card2);border:1.5px solid var(--border);border-radius:99px;cursor:pointer;transition:.2s;}
+  .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s;}
+  .toggle-switch input:checked + .toggle-slider{background:rgba(61,255,160,.15);border-color:var(--green);}
+  .toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px);background:var(--green);}
+  .loop-toggle-label{font-size:.85rem;font-weight:700;color:var(--muted);}
+  .loop-hint{font-size:.75rem;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .measure-note{font-size:.75rem;color:var(--purple);margin-bottom:10px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;}
+
+  /* ── Piano ── */
+  .piano-controls{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .octave-label{font-family:'Fredoka One',cursive;font-size:.9rem;color:var(--accent4);min-width:78px;text-align:center;}
+  .piano-note-label{margin-left:auto;font-family:'Fredoka One',cursive;font-size:1rem;color:var(--gold);}
+  .piano-wrap{overflow-x:auto;padding:4px 4px 10px;-webkit-overflow-scrolling:touch;}
+  .piano{position:relative;width:308px;height:160px;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:none;}
+  .piano-key{position:absolute;top:0;box-sizing:border-box;cursor:pointer;transition:background .08s;}
+  .white-key{width:44px;height:160px;background:#f4f1ea;border:1px solid #16192a;border-radius:0 0 7px 7px;z-index:1;}
+  .white-key.pressed{background:linear-gradient(180deg,#ffe08a,#f5c842);}
+  .black-key{width:28px;height:100px;background:#14162a;border:1px solid #000;border-radius:0 0 5px 5px;z-index:2;box-shadow:0 3px 4px rgba(0,0,0,.4);}
+  .black-key.pressed{background:linear-gradient(180deg,#6bb5ff,#3d7dd6);}
+
+  .guess-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .guess-row .field{flex:1;min-width:150px;margin-bottom:0;}
+  .guess-feedback{border-radius:12px;padding:14px 18px;margin-bottom:14px;font-weight:700;font-size:.92rem;display:none;}
+  .guess-feedback.show{display:block;}
+  .guess-feedback.correct{background:rgba(61,255,160,.12);border:1.5px solid rgba(61,255,160,.3);color:var(--green);}
+  .guess-feedback.partial{background:rgba(245,200,66,.12);border:1.5px solid rgba(245,200,66,.3);color:var(--gold);}
+  .guess-feedback.wrong{background:rgba(255,79,79,.12);border:1.5px solid rgba(255,79,79,.3);color:var(--red);}
+  .field-tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.72rem;font-weight:800;margin-right:6px;}
+  .tag-right{background:rgba(61,255,160,.2);color:var(--green);}
+  .tag-wrong{background:rgba(255,79,79,.2);color:var(--red);}
+  .best-score-pill{display:inline-flex;align-items:center;gap:6px;font-family:'Fredoka One',cursive;font-size:.95rem;color:var(--gold);background:rgba(245,200,66,.1);border:1.5px solid rgba(245,200,66,.3);border-radius:10px;padding:6px 14px;margin-bottom:14px;}
+
+  /* ── Teacher ── */
+  .teacher-wrap{width:100%;max-width:820px;margin:0 auto;padding:28px 18px;}
+  .teacher-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .teacher-title{font-family:'Fredoka One',cursive;font-size:1.7rem;color:var(--gold);}
+  .form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 20px;margin-bottom:20px;}
+  .form-card h3{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--text);margin-bottom:16px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .field.full{grid-column:1 / -1;}
+  .field-row-inline{display:flex;gap:10px;align-items:flex-end;}
+  .field-row-inline .field{flex:1;margin-bottom:0;}
+  .song-manage-list{display:flex;flex-direction:column;gap:10px;}
+  .song-manage-row{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .song-order-controls{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+  .mini-order-btn{width:26px;height:22px;border-radius:5px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .mini-order-btn:hover:not(:disabled){border-color:var(--accent4);color:var(--accent4);}
+  .mini-order-btn:disabled{opacity:.3;cursor:not-allowed;}
+  .position-input{width:34px;text-align:center;padding:3px 2px;border-radius:5px;border:1.5px solid var(--border);background:var(--card2);color:var(--accent);font-family:'Fredoka One',cursive;font-size:.8rem;-moz-appearance:textfield;}
+  .position-input::-webkit-outer-spin-button,.position-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .song-meta{display:flex;flex-direction:column;gap:3px;flex:1;min-width:160px;}
+  .song-meta .sm-title{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--text);}
+  .song-meta .sm-details{font-size:.78rem;color:var(--muted);}
+  .song-manage-actions{display:flex;gap:8px;}
+  .hint-text{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+  .hint-text code{color:var(--accent3);background:var(--card2);padding:1px 6px;border-radius:4px;}
+
+  @media(max-width:480px){
+    .card{padding:28px 18px;}
+    .logo{font-size:1.6rem;}
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+
+<!-- PAGE 1: LOGIN -->
+<div class="page active" id="loginPage">
+  <div class="card">
+    <div class="logo">🎧 Root & Scale Finder</div>
+    <div class="logo-sub">Ear Training Practice</div>
+    <div class="role-btns">
+      <button class="role-btn active" id="roleBtnStudent" onclick="setRole('student')">
+        <span class="icon">🎓</span>Student
+      </button>
+      <button class="role-btn" id="roleBtnTeacher" onclick="setRole('teacher')">
+        <span class="icon">📋</span>Teacher
+      </button>
+    </div>
+    <div class="field" id="teacherNameField" style="display:none">
+      <label>Email</label>
+      <input type="email" id="teacherEmailInput" placeholder="you@example.com" autocomplete="username">
+    </div>
+    <div class="field" id="teacherPasswordField" style="display:none">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Start Practice 🎧</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+</div>
+
+<!-- PAGE 2: SONG LIST (student) -->
+<div class="page" id="songListPage">
+  <div class="top-wrap">
+    <div class="hud">
+      <div class="hud-coins"><span>🪙</span><span id="listCoinDisplay">0</span></div>
+      <div class="hud-student">🎧 Practice Session</div>
+      <button class="logout-btn" onclick="doLogout()">Exit</button>
+    </div>
+    <div class="page-title">🎵 Choose a Song</div>
+    <div class="song-grid" id="songGrid"></div>
+  </div>
+</div>
+
+<!-- PAGE 3: PRACTICE (student) -->
+<div class="page" id="practicePage">
+  <div class="top-wrap">
+    <div class="hud">
+      <div class="hud-coins"><span>🪙</span><span id="practCoinDisplay">0</span></div>
+      <div class="hud-student">🎧 Practice Session</div>
+      <div class="hud-actions">
+        <button class="logout-btn" onclick="showSongList()">⬅ Songs</button>
+        <button class="logout-btn" onclick="doLogout()">Exit</button>
+      </div>
+    </div>
+
+    <div class="practice-card">
+      <div class="practice-title" id="practTitle">Song Title</div>
+      <div class="practice-artist" id="practArtist">Artist</div>
+      <div class="audio-error" id="audioErrorBanner" style="display:none"></div>
+      <div class="audio-loading" id="audioLoadingBanner" style="display:none">⏳ Loading audio…</div>
+
+      <div class="time-row"><span id="curTimeLabel">0:00</span><span id="durTimeLabel">0:00</span></div>
+      <div class="seek-wrap">
+        <div class="loop-region" id="loopRegionBar" style="display:none"></div>
+        <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
+      </div>
+
+      <div class="measure-timeline-controls">
+        <span class="mt-label">📏 Measure Ruler</span>
+        <div class="mt-zoom-btns">
+          <button class="btn-tiny" onclick="zoomTimeline(-1)">🔍−</button>
+          <button class="btn-tiny" onclick="zoomTimeline(1)">🔍+</button>
+        </div>
+      </div>
+      <div class="measure-timeline-wrap" id="measureTimelineWrap" style="display:none">
+        <div class="measure-timeline" id="measureTimeline">
+          <div id="mtTicks"></div>
+          <div class="mt-loop-region" id="mtLoopRegion" style="display:none"></div>
+          <div class="mt-playhead" id="mtPlayhead" style="display:none"></div>
+        </div>
+      </div>
+      <div class="measure-note" id="timelineHint" style="display:none">Add BPM & time signature to this song (in the Teacher panel) to see a measure ruler here.</div>
+
+      <div class="transport-row">
+        <button class="skip-btn" onclick="skipSeconds(-5)">⏪</button>
+        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <button class="skip-btn" onclick="skipSeconds(5)">⏩</button>
+      </div>
+
+      <div class="section-label">⚡ Playback Speed</div>
+      <div class="speed-row" id="speedRow"></div>
+
+      <div class="section-label">🔊 Song Volume</div>
+      <div class="volume-row">
+        <span class="vol-icon">🔈</span>
+        <input type="range" id="songVolumeSlider" min="0" max="100" value="70" step="5">
+        <span class="vol-value" id="songVolumeValue">70%</span>
+      </div>
+
+      <div class="section-label">🔁 Loop Practice</div>
+      <div class="loop-tabs">
+        <button class="loop-tab active" id="loopTabTime" onclick="setLoopMode('time')">⏱ Time-Based</button>
+        <button class="loop-tab" id="loopTabMeasure" onclick="setLoopMode('measure')">🎼 Measure-Based</button>
+      </div>
+
+      <div class="loop-panel active" id="loopPanelTime">
+        <div class="loop-controls-row">
+          <div class="mini-field">
+            <label>Point A</label>
+            <input type="text" id="loopAInput" placeholder="0.00.00">
+          </div>
+          <button class="btn-tiny" onclick="setLoopPointFromPlayhead('A')">Set A ⏺</button>
+          <div class="mini-field">
+            <label>Point B</label>
+            <input type="text" id="loopBInput" placeholder="0.00.00">
+          </div>
+          <button class="btn-tiny" onclick="setLoopPointFromPlayhead('B')">Set B ⏺</button>
+        </div>
+        <div class="loop-hint">Play the song, tap <strong>Set A</strong> where you want the loop to start, and <strong>Set B</strong> where it should end. Times are shown as <strong>min.sec.centisec</strong> (e.g. <strong>0.10.20</strong> = 10.20s) — type it that way, or as plain seconds (e.g. <strong>10.2</strong>).</div>
+      </div>
+
+      <div class="loop-panel" id="loopPanelMeasure">
+        <div class="measure-note" id="measureInfoNote">This song's BPM / time signature hasn't been set by your teacher yet, so measure-based looping isn't available. Use time-based looping instead.</div>
+        <div class="loop-controls-row">
+          <div class="mini-field">
+            <label>From (Measure.Beat)</label>
+            <input type="text" id="measureFromInput" placeholder="e.g. 4 or 4.1" value="1">
+          </div>
+          <div class="mini-field">
+            <label>To (Measure.Beat)</label>
+            <input type="text" id="measureToInput" placeholder="e.g. 5 or 4.2" value="2">
+          </div>
+          <button class="btn-tiny" onclick="applyMeasureLoop()">Apply 🎯</button>
+        </div>
+        <div class="loop-hint">Use just the measure number for a whole measure (e.g. <strong>4</strong>), or add <strong>.beat</strong> to loop part of one (e.g. <strong>4.1</strong> to <strong>4.2</strong> loops just beat 1 of measure 4).</div>
+        <div class="loop-hint" id="measureCalcHint"></div>
+      </div>
+
+      <div class="loop-toggle-row">
+        <div class="toggle-switch">
+          <input type="checkbox" id="loopToggle" onchange="onLoopToggle()">
+          <label class="toggle-slider" for="loopToggle"></label>
+        </div>
+        <span class="loop-toggle-label">Loop A → B enabled</span>
+        <button class="btn-tiny" style="margin-left:auto" onclick="playFromLoopStart()">▶ Play Loop</button>
+      </div>
+    </div>
+
+    <div class="practice-card">
+      <div class="section-label" style="margin-top:0">🎹 Piano Reference</div>
+      <div class="piano-controls">
+        <button class="btn-tiny" onclick="shiftOctave(-1)">◀ Lower</button>
+        <span class="octave-label" id="octaveLabel">Octave 4</span>
+        <button class="btn-tiny" onclick="shiftOctave(1)">Higher ▶</button>
+        <span class="piano-note-label" id="pianoNoteLabel">—</span>
+      </div>
+      <div class="volume-row">
+        <span class="vol-icon">🎹</span>
+        <input type="range" id="pianoVolumeSlider" min="50" max="200" value="150" step="10">
+        <span class="vol-value" id="pianoVolumeValue">150%</span>
+      </div>
+      <div class="piano-wrap">
+        <div class="piano" id="pianoKeys"></div>
+      </div>
+      <div class="loop-hint">Press and hold a key to hear a real piano note. Loop the song and compare what you hear to the notes here to find the root note. (Needs an internet connection the first time each note is played — after that it's cached.)</div>
+    </div>
+
+    <div class="practice-card">
+      <div class="section-label" style="margin-top:0">🎯 What's the Root Note & Scale?</div>
+      <div id="bestScorePillWrap"></div>
+      <div class="guess-row">
+        <div class="field">
+          <label>Root Note</label>
+          <select id="guessRoot"></select>
+        </div>
+        <div class="field">
+          <label>Scale / Mode</label>
+          <select id="guessScale"></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="submitGuess()">Submit Guess 🎶</button>
+      <div class="guess-feedback" id="guessFeedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: TEACHER -->
+<div class="page" id="teacherPage">
+  <div class="teacher-wrap">
+    <div class="teacher-header">
+      <div class="teacher-title">📋 Teacher Panel</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="teacherSignedInAs" style="font-size:.78rem;color:var(--muted)"></span>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+    <div class="hint-text">
+        1. Copy the audio file into the <code>songs/</code> folder next to this HTML file.<br>
+        2. Enter the exact filename below (e.g. <code>song1.mp3</code>) along with the answer key.<br>
+        3. Students will see the song in their list immediately.
+      </div>
+      <div class="form-card">
+        <h3 id="formTitle">➕ Add a New Song</h3>
+        <input type="hidden" id="editingSongId">
+        <div class="form-grid">
+          <div class="field full">
+            <label>Audio Filename (in /songs folder)</label>
+            <input type="text" id="fSongFilename" placeholder="e.g. my_song.mp3">
+          </div>
+          <div class="field">
+            <label>Song Title</label>
+            <input type="text" id="fSongTitle" placeholder="e.g. Yellow">
+          </div>
+          <div class="field">
+            <label>Artist</label>
+            <input type="text" id="fSongArtist" placeholder="e.g. Coldplay">
+          </div>
+          <div class="field">
+            <label>Root Note (Answer)</label>
+            <select id="fRootNote"></select>
+          </div>
+          <div class="field">
+            <label>Scale / Mode (Answer)</label>
+            <select id="fScaleType"></select>
+          </div>
+          <div class="field">
+            <label>Key Signature (optional)</label>
+            <div class="field-row-inline">
+              <input type="text" id="fKeySig" placeholder="e.g. 2 sharps">
+              <button class="btn-tiny" onclick="autoFillKeySig()">Auto</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>BPM</label>
+            <input type="number" id="fBpm" placeholder="e.g. 120" min="1">
+          </div>
+          <div class="field">
+            <label>Beats per Measure</label>
+            <select id="fBeatsPerMeasure">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4" selected>4</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Start Offset (sec, optional)</label>
+            <input type="number" id="fStartOffset" placeholder="0" min="0" step="0.01" value="0">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn btn-primary" onclick="saveSong()" id="saveSongBtn">Add Song ➕</button>
+          <button class="btn btn-secondary" style="display:none" id="cancelEditBtn" onclick="cancelEditSong()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px">All Songs</div>
+      <div class="song-manage-list" id="songManageList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const ROOT_NOTES = [
+  {value:'C',  label:'C'},
+  {value:'C#', label:'C♯ / D♭'},
+  {value:'D',  label:'D'},
+  {value:'D#', label:'D♯ / E♭'},
+  {value:'E',  label:'E'},
+  {value:'F',  label:'F'},
+  {value:'F#', label:'F♯ / G♭'},
+  {value:'G',  label:'G'},
+  {value:'G#', label:'G♯ / A♭'},
+  {value:'A',  label:'A'},
+  {value:'A#', label:'A♯ / B♭'},
+  {value:'B',  label:'B'},
+];
+
+const SCALE_TYPES = [
+  'Major', 'Natural Minor', 'Harmonic Minor', 'Melodic Minor',
+  'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Locrian',
+  'Major Pentatonic', 'Minor Pentatonic', 'Blues'
+];
+
+const SPEED_OPTIONS = [
+  { rate: 0.6, label: '60x' },
+  { rate: 0.7, label: '70x' },
+  { rate: 0.8, label: '80x' },
+  { rate: 0.9, label: '90x' },
+  { rate: 1,   label: '1x'  },
+  { rate: 1.1, label: '1.1x' },
+  { rate: 1.2, label: '1.2x' }
+];
+
+// Circle of fifths — key signature auto-fill for Major / Natural Minor
+const MAJOR_KEYSIG = {
+  'C':'0 sharps/flats','G':'1 sharp','D':'2 sharps','A':'3 sharps','E':'4 sharps','B':'5 sharps',
+  'F#':'6 sharps','C#':'7 sharps','F':'1 flat','A#':'3 flats','D#':'2 flats','G#':'4 flats'
+};
+const MINOR_KEYSIG = {
+  'A':'0 sharps/flats','E':'1 sharp','B':'2 sharps','F#':'3 sharps','C#':'4 sharps','G#':'5 sharps',
+  'D#':'6 sharps','A#':'7 sharps','D':'1 flat','G':'2 flats','C':'3 flats','F':'4 flats'
+};
+
+const STORAGE_SONGS  = 'rootScaleSongs';       // used only as an offline fallback cache
+const STORAGE_SCORES = 'rootScaleScores';
+
+// ══════════════════════════════════════════════════════════════
+// FIREBASE — shared song list across every student's device
+// ══════════════════════════════════════════════════════════════
+// TODO (Andrew): paste your actual web app config below. Firebase Console →
+// Project settings (⚙️) → General tab → "Your apps" → select the web app
+// (or click </> to create one) → "SDK setup and configuration" → Config.
+// Project ID should already be sample-6eb3e, matching your other apps.
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+};
+const SONGS_COLLECTION = 'rootScaleSongs';
+
+let db = null;
+let auth = null;
+let firestoreReady = false;
+try {
+  if(firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    firestoreReady = true;
+  } else {
+    console.warn('Firebase config not filled in yet — songs will only be visible on this device, and teacher login will not work.');
+  }
+} catch(e){
+  console.error('Firebase init failed — falling back to local-only song storage.', e);
+}
+
+// Loads the song list from Firestore (so every device sees the same songs).
+// Falls back to the last-known local copy if Firestore is unreachable.
+async function loadSongsFromFirestore(){
+  if(!firestoreReady){
+    songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
+    sortSongsByOrder();
+    return songs;
+  }
+  try {
+    const snap = await db.collection(SONGS_COLLECTION).get();
+    songs = snap.docs.map(doc => Object.assign({ id: doc.id }, doc.data()));
+    await migrateMissingSongOrder(); // self-heal songs added before ordering existed
+    sortSongsByOrder();
+    localStorage.setItem(STORAGE_SONGS, JSON.stringify(songs)); // offline cache
+  } catch(e){
+    console.error('Could not reach Firestore, using last local copy.', e);
+    songs = JSON.parse(localStorage.getItem(STORAGE_SONGS) || '[]');
+    sortSongsByOrder();
+  }
+  return songs;
+}
+
+function sortSongsByOrder(){
+  songs.sort((a, b) => {
+    const ao = a.order != null ? a.order : Infinity;
+    const bo = b.order != null ? b.order : Infinity;
+    if(ao !== bo) return ao - bo;
+    return (a.addedAt || 0) - (b.addedAt || 0);
+  });
+}
+
+// Assigns an "order" value (by addedAt) to any song that doesn't have one yet,
+// so lists added before this feature existed still get a stable order.
+async function migrateMissingSongOrder(){
+  const missing = songs.filter(s => s.order == null);
+  if(!missing.length) return;
+  let nextOrder = songs.reduce((max, s) => Math.max(max, s.order || 0), 0) + 1;
+  missing.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+  for(const s of missing){
+    s.order = nextOrder++;
+    try { await saveSongToFirestore(s); } catch(e){ console.error('Could not migrate order for song', s.id, e); }
+  }
+}
+
+async function saveSongToFirestore(song){
+  if(!firestoreReady) throw new Error('Firebase is not configured yet.');
+  const data = Object.assign({}, song);
+  delete data.id;
+  await db.collection(SONGS_COLLECTION).doc(song.id).set(data);
+}
+
+async function deleteSongFromFirestore(id){
+  if(!firestoreReady) throw new Error('Firebase is not configured yet.');
+  await db.collection(SONGS_COLLECTION).doc(id).delete();
+}
+
+// Students don't log in with a name/password — practice progress is tracked
+// locally per-device under this key, since it's just a practice session.
+const GUEST_KEY = 'guest';
+
+const COIN_ROOT_CORRECT  = 40;
+const COIN_SCALE_CORRECT = 40;
+const COIN_BOTH_BONUS    = 20;
+
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const PIANO_WHITE_NOTES = ['C','D','E','F','G','A','B'];
+const PIANO_BLACK_AFTER = {'C':'C#','D':'D#','F':'F#','G':'G#','A':'A#'}; // black key sits after this white key
+const WHITE_KEY_WIDTH = 44;
+const BLACK_KEY_WIDTH = 28;
+
+// ── State ──
+let currentRole    = 'student';
+let currentStudent = null;
+let currentSongId  = null;
+let coins          = 0;
+let songs  = JSON.parse(localStorage.getItem(STORAGE_SONGS)  || '[]'); // seeded from cache; refreshed from Firestore on page load
+let scores = JSON.parse(localStorage.getItem(STORAGE_SCORES) || '{}');
+let loopMode   = 'time';
+let loopActive = false;
+let loopStart  = 0;
+let loopEnd    = 0;
+let editingSongId = null;
+let pianoOctave = 4;
+let audioCtx = null;
+let activeNotes = {};
+let songVolume = 0.7;          // 0.0 – 1.0
+let pianoVolumeMultiplier = 1.5; // multiplier applied on top of each note's base gain
+
+// ── Song playback engine (Web Audio API) ──
+// Songs play from a fully-decoded AudioBuffer through an AudioBufferSourceNode,
+// using its native loop/loopStart/loopEnd properties. That looping happens on
+// the browser's audio rendering thread, sample-accurate — not something we
+// poll for from JS — so loop points land exactly, with no bleed into the
+// next beat/measure the way seeking a plain <audio> element can.
+let songAudioBuffer     = null;  // decoded audio for the current song
+let songDuration        = 0;
+let songGainNode        = null;  // persistent, connected once, controls song volume
+let songSourceNode      = null;  // current AudioBufferSourceNode (recreated on seek/speed/play)
+let isSongPlaying       = false;
+let playbackStartCtxTime = 0;    // ctx.currentTime when the current source started
+let playbackStartOffset  = 0;    // buffer-time position at that moment
+let currentPlaybackRate  = 1;
+let songLoadToken       = 0;     // guards against a stale fetch overwriting a newer song
+let uiTickerId          = null;  // rAF id for updating the seek bar / clock while playing
+
+// ── Measure ruler ──
+const TIMELINE_ZOOM_LEVELS = [15, 25, 40, 60, 90, 130, 180, 250]; // pixels per second
+let timelineZoomIndex = 2; // 40px/sec default
+let timelinePxPerSec  = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
+
+// ── Helpers ──
+function saveScoresLS(){ localStorage.setItem(STORAGE_SCORES, JSON.stringify(scores)); }
+function capitalise(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function rootLabel(v){ const r = ROOT_NOTES.find(r => r.value === v); return r ? r.label : v; }
+
+function formatTime(ts){
+  if(!ts) return '—';
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if(diff < 60) return diff + 's ago';
+  if(diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if(diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return new Date(ts).toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
+}
+
+function formatMMSS(sec){
+  if(!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function parseMMSS(str){
+  if(!str) return null;
+  str = str.trim();
+  if(str.includes(':')){
+    const [m, s] = str.split(':').map(Number);
+    if(isNaN(m) || isNaN(s)) return null;
+    return m * 60 + s;
+  }
+  const n = Number(str);
+  return isNaN(n) ? null : n;
+}
+
+// Precise min.sec.centisecond format used for loop points, e.g. 10.20s -> "0.10.20"
+function formatPreciseTime(sec){
+  if(!isFinite(sec) || sec < 0) sec = 0;
+  let m = Math.floor(sec / 60);
+  let s = Math.floor(sec % 60);
+  let cs = Math.round((sec - Math.floor(sec)) * 100);
+  if(cs >= 100){ cs = 0; s += 1; if(s >= 60){ s = 0; m += 1; } }
+  return m + '.' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');
+}
+
+// Accepts "M.SS.CC" (e.g. "0.10.20" = 10.20s), "M:SS" (legacy), or a plain
+// number of seconds (e.g. "12.5").
+function parsePreciseTime(str){
+  if(!str) return null;
+  str = str.trim();
+  if(str.includes(':')){
+    const [m, s] = str.split(':').map(Number);
+    if(isNaN(m) || isNaN(s)) return null;
+    return m * 60 + s;
+  }
+  const parts = str.split('.');
+  if(parts.length === 3){
+    const [m, s, cs] = parts.map(Number);
+    if(isNaN(m) || isNaN(s) || isNaN(cs)) return null;
+    return m * 60 + s + cs / 100;
+  }
+  const n = Number(str);
+  return isNaN(n) ? null : n;
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function populateSelect(el, options, includeBlank){
+  el.innerHTML = '';
+  if(includeBlank){
+    const o = document.createElement('option');
+    o.value = ''; o.textContent = '— Select —';
+    el.appendChild(o);
+  }
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    if(typeof opt === 'string'){ o.value = opt; o.textContent = opt; }
+    else { o.value = opt.value; o.textContent = opt.label; }
+    el.appendChild(o);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+function setRole(role){
+  currentRole = role;
+  document.getElementById('roleBtnStudent').classList.toggle('active', role === 'student');
+  document.getElementById('roleBtnTeacher').classList.toggle('active', role === 'teacher');
+  document.getElementById('teacherNameField').style.display     = role === 'teacher' ? '' : 'none';
+  document.getElementById('teacherPasswordField').style.display = role === 'teacher' ? '' : 'none';
+  document.getElementById('loginBtn').textContent = role === 'teacher' ? 'Login 🔐' : 'Start Practice 🎧';
+  document.getElementById('loginError').textContent = '';
+}
+
+// Maps Firebase Auth error codes to friendly messages instead of showing raw codes.
+function authErrorMessage(e){
+  switch(e.code){
+    case 'auth/invalid-email':        return '❌ That email address looks invalid.';
+    case 'auth/user-not-found':
+    case 'auth/user-disabled':        return '❌ No teacher account found for that email.';
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials': return '❌ Wrong email or password.';
+    case 'auth/too-many-requests':    return '❌ Too many attempts — please wait a moment and try again.';
+    case 'auth/network-request-failed': return '❌ Network error — check your internet connection.';
+    default:                          return '❌ Could not sign in (' + (e.code || e.message) + ').';
+  }
+}
+
+async function doLogin(){
+  const err = document.getElementById('loginError');
+  if(currentRole === 'teacher'){
+    if(!auth){ err.textContent = '❌ Firebase isn\'t configured yet — teacher login is unavailable.'; return; }
+    const email = document.getElementById('teacherEmailInput').value.trim();
+    const pwd = document.getElementById('loginPassword').value;
+    if(!email || !pwd){ err.textContent = '❌ Please enter your email and password.'; return; }
+    const btn = document.getElementById('loginBtn');
+    const prevLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    try {
+      await auth.signInWithEmailAndPassword(email, pwd);
+      document.getElementById('loginPassword').value = '';
+      showTeacherPage();
+    } catch(e){
+      console.error(e);
+      err.textContent = authErrorMessage(e);
+    }
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  } else {
+    // Practice session — no name or password needed, single click to enter.
+    currentStudent = GUEST_KEY;
+    if(!scores[currentStudent]) scores[currentStudent] = { totalCoins:0, songs:{}, lastActive:Date.now() };
+    coins = scores[currentStudent].totalCoins || 0;
+    showSongList();
+  }
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+function doLogout(){
+  stopPlayback();
+  stopAllNotes();
+  if(auth && auth.currentUser) auth.signOut().catch(e => console.error(e));
+  currentStudent = null;
+  currentSongId = null;
+  coins = 0;
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('teacherEmailInput').value = '';
+  setRole('student');
+  showPage('loginPage');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SONG LIST (student)
+// ══════════════════════════════════════════════════════════════
+async function showSongList(){
+  stopPlayback();
+  stopAllNotes();
+  document.getElementById('listCoinDisplay').textContent = coins;
+  document.getElementById('songGrid').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
+  showPage('songListPage');
+  await loadSongsFromFirestore();
+  renderSongGrid();
+}
+
+function renderSongGrid(){
+  const grid = document.getElementById('songGrid');
+  grid.innerHTML = '';
+  if(!songs.length){
+    grid.innerHTML = '<div class="empty-state">🎼 No songs have been added yet.<br>Ask your teacher to upload one!</div>';
+    return;
+  }
+  const rec = scores[currentStudent] || { songs:{} };
+  songs.forEach(song => {
+    const sScore = rec.songs && rec.songs[song.id];
+    let statusHtml, statusClass;
+    if(sScore && sScore.rootCorrect && sScore.scaleCorrect){ statusClass = 'status-mastered'; statusHtml = '✅ Mastered'; }
+    else if(sScore && sScore.attempts > 0){ statusClass = 'status-attempted'; statusHtml = '🎯 Attempted'; }
+    else { statusClass = 'status-new'; statusHtml = '⏳ New'; }
+    const div = document.createElement('div');
+    div.className = 'song-card';
+    div.onclick = () => openPractice(song.id);
+    div.innerHTML = `
+      <div class="song-info">
+        <div class="song-title">🎵 ${escapeHtml(song.title || song.filename)}</div>
+        <div class="song-artist">${escapeHtml(song.artist || 'Unknown Artist')}</div>
+      </div>
+      <div class="song-status ${statusClass}">${statusHtml}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRACTICE PAGE
+// ══════════════════════════════════════════════════════════════
+function openPractice(songId){
+  const song = songs.find(s => s.id === songId);
+  if(!song) return;
+  currentSongId = songId;
+  loopActive = false;
+  loopStart = 0; loopEnd = 0;
+  document.getElementById('loopToggle').checked = false;
+  document.getElementById('loopAInput').value = '';
+  document.getElementById('loopBInput').value = '';
+  setLoopMode('time');
+
+  document.getElementById('practCoinDisplay').textContent = coins;
+  document.getElementById('practTitle').textContent = song.title || song.filename;
+  document.getElementById('practArtist').textContent = song.artist || 'Unknown Artist';
+
+  populateSelect(document.getElementById('guessRoot'), ROOT_NOTES, true);
+  populateSelect(document.getElementById('guessScale'), SCALE_TYPES, true);
+  document.getElementById('guessFeedback').className = 'guess-feedback';
+  document.getElementById('guessFeedback').textContent = '';
+
+  buildSpeedRow();
+  pianoOctave = 4;
+  buildPiano();
+  updateBestScorePill(song);
+  updateMeasureNote(song);
+
+  currentPlaybackRate = 1;
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === '1'));
+  updatePlayButton(false);
+  timelineZoomIndex = 2;
+  timelinePxPerSec = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
+  loadSongAudio(song);
+
+  showPage('practicePage');
+}
+
+function updateBestScorePill(song){
+  const wrap = document.getElementById('bestScorePillWrap');
+  const rec = scores[currentStudent] && scores[currentStudent].songs && scores[currentStudent].songs[song.id];
+  if(rec && rec.attempts > 0){
+    wrap.innerHTML = `<div class="best-score-pill">🏅 Best: ${rec.coinsEarned || 0} coins · ${rec.attempts} attempt${rec.attempts > 1 ? 's' : ''}</div>`;
+  } else {
+    wrap.innerHTML = '';
+  }
+}
+
+function updateMeasureNote(song){
+  const note = document.getElementById('measureInfoNote');
+  if(song.bpm && song.beatsPerMeasure){
+    note.style.display = 'none';
+  } else {
+    note.style.display = 'block';
+  }
+}
+
+function buildSpeedRow(){
+  const row = document.getElementById('speedRow');
+  row.innerHTML = '';
+  SPEED_OPTIONS.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'speed-btn' + (opt.rate === 1 ? ' active' : '');
+    btn.textContent = opt.label;
+    btn.dataset.speed = opt.rate;
+    btn.onclick = () => setSpeed(opt.rate, btn);
+    row.appendChild(btn);
+  });
+}
+
+function setSpeed(sp, btn){
+  setPlaybackRate(sp);
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// PIANO REFERENCE (real piano samples, Web Audio API)
+// ══════════════════════════════════════════════════════════════
+// Public-domain-licensed pre-rendered acoustic grand piano samples
+// (Benjamin Gleitzman's FluidR3_GM soundfont set, widely used on the web).
+const PIANO_SAMPLE_BASE = 'https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/acoustic_grand_piano-mp3/';
+// The sample set names black keys with flats rather than sharps.
+const NOTE_TO_SAMPLE_NAME = {
+  'C':'C', 'C#':'Db', 'D':'D', 'D#':'Eb', 'E':'E', 'F':'F',
+  'F#':'Gb', 'G':'G', 'G#':'Ab', 'A':'A', 'A#':'Bb', 'B':'B'
+};
+
+let sampleBufferCache = {};   // id -> decoded AudioBuffer
+let sampleLoadPromises = {};  // id -> in-flight load promise
+let sampleFailed = {};        // id -> true once a sample fails to load (falls back to synth)
+
+// ══════════════════════════════════════════════════════════════
+// SONG PLAYBACK ENGINE (Web Audio API — sample-accurate looping)
+// ══════════════════════════════════════════════════════════════
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function getSongGain(){
+  if(!songGainNode){
+    const ctx = getAudioCtx();
+    songGainNode = ctx.createGain();
+    songGainNode.gain.value = songVolume;
+    songGainNode.connect(ctx.destination);
+  }
+  return songGainNode;
+}
+
+// Fetches and fully decodes a song's audio file. Precise looping needs the
+// whole buffer decoded up front (that's what makes native loopStart/loopEnd
+// possible) rather than streaming it like a plain <audio> element does.
+async function loadSongAudio(song){
+  const myToken = ++songLoadToken;
+  stopPlayback();
+  songAudioBuffer = null;
+  songDuration = 0;
+  document.getElementById('audioErrorBanner').style.display = 'none';
+  document.getElementById('audioLoadingBanner').style.display = 'block';
+  document.getElementById('seekBar').value = 0;
+  document.getElementById('curTimeLabel').textContent = '0:00';
+  document.getElementById('durTimeLabel').textContent = '0:00';
+
+  try {
+    const ctx = getAudioCtx();
+    const res = await fetch('songs/' + encodeURIComponent(song.filename));
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const arrBuf = await res.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(arrBuf);
+    if(myToken !== songLoadToken) return; // a newer song was opened while this was loading
+    songAudioBuffer = decoded;
+    songDuration = decoded.duration;
+    document.getElementById('seekBar').max = songDuration;
+    document.getElementById('durTimeLabel').textContent = formatMMSS(songDuration);
+    document.getElementById('audioLoadingBanner').style.display = 'none';
+    buildMeasureTimeline();
+    refreshLoopRegionBar();
+  } catch(e){
+    if(myToken !== songLoadToken) return;
+    console.error(e);
+    document.getElementById('audioLoadingBanner').style.display = 'none';
+    document.getElementById('measureTimelineWrap').style.display = 'none';
+    document.getElementById('timelineHint').style.display = 'none';
+    const banner = document.getElementById('audioErrorBanner');
+    banner.style.display = 'block';
+    banner.innerHTML = `⚠️ Couldn't load <code>songs/${escapeHtml(song.filename)}</code>.<br>
+      Check that: the file exists in the <code>songs</code> folder with this <strong>exact</strong> name
+      (including the extension, e.g. <code>.mp3</code>), and that you're opening this app through a
+      local server (e.g. VS Code Live Server) rather than double-clicking the file.`;
+  }
+}
+
+function getCurrentPlaybackTime(){
+  if(!songAudioBuffer) return 0;
+  if(!isSongPlaying) return playbackStartOffset;
+  const ctx = getAudioCtx();
+  let t = playbackStartOffset + (ctx.currentTime - playbackStartCtxTime) * currentPlaybackRate;
+  // The source loops natively on the audio thread — we never get told when it
+  // wraps, so mirror that math here to keep the UI (seek bar, clock, ruler
+  // playhead) in sync with what's actually playing instead of climbing past it.
+  const looping = songSourceNode && songSourceNode.loop && loopEnd > loopStart;
+  if(looping){
+    if(t >= loopEnd){
+      const loopLen = loopEnd - loopStart;
+      t = loopStart + ((t - loopEnd) % loopLen);
+    }
+  } else {
+    t = Math.min(t, songDuration);
+  }
+  return t;
+}
+
+// (Re)creates the audio source starting at `offset`. Recreating on every
+// seek/speed/loop change is what keeps the offset math simple and reliable;
+// the gap this introduces is inaudible (a few milliseconds at most).
+function startSourceAt(offset){
+  if(!songAudioBuffer) return;
+  const ctx = getAudioCtx();
+  stopSourceNode();
+  const source = ctx.createBufferSource();
+  source.buffer = songAudioBuffer;
+  source.playbackRate.value = currentPlaybackRate;
+  if(loopActive && loopEnd > loopStart){
+    source.loop = true;
+    source.loopStart = loopStart;
+    source.loopEnd = Math.min(loopEnd, songDuration);
+  } else {
+    source.loop = false;
+  }
+  source.connect(getSongGain());
+  const clamped = Math.max(0, Math.min(offset, songDuration - 0.001));
+  source.start(0, clamped);
+  source.onended = () => {
+    if(songSourceNode !== source) return; // superseded by a newer source, ignore
+    songSourceNode = null;
+    isSongPlaying = false;
+    updatePlayButton(false);
+    stopUiTicker();
+  };
+  songSourceNode = source;
+  playbackStartCtxTime = ctx.currentTime;
+  playbackStartOffset = clamped;
+}
+
+function stopSourceNode(){
+  if(songSourceNode){
+    try { songSourceNode.onended = null; songSourceNode.stop(); } catch(e){ /* already stopped */ }
+    songSourceNode = null;
+  }
+}
+
+function playSong(){
+  if(!songAudioBuffer) return;
+  startSourceAt(playbackStartOffset >= songDuration ? 0 : playbackStartOffset);
+  isSongPlaying = true;
+  updatePlayButton(true);
+  startUiTicker();
+}
+
+function pauseSong(){
+  if(!isSongPlaying) return;
+  playbackStartOffset = getCurrentPlaybackTime();
+  stopSourceNode();
+  isSongPlaying = false;
+  updatePlayButton(false);
+  stopUiTicker();
+}
+
+function stopPlayback(){
+  stopSourceNode();
+  isSongPlaying = false;
+  playbackStartOffset = 0;
+  updatePlayButton(false);
+  stopUiTicker();
+}
+
+function seekTo(time){
+  if(!songAudioBuffer) return;
+  const clamped = Math.max(0, Math.min(time, songDuration));
+  if(isSongPlaying){
+    startSourceAt(clamped);
+  } else {
+    playbackStartOffset = clamped;
+  }
+  updateTransportUI();
+}
+
+// Applies the current loop settings to whatever is already playing. If
+// playback is currently outside the loop region, jump into it; otherwise
+// just hand the new points to the live source (native looping handles the
+// rest with sample accuracy — no restart, no glitch).
+function updateLoopSettings(){
+  if(!songAudioBuffer) return;
+  if(!isSongPlaying){ refreshLoopRegionBar(); return; }
+  const cur = getCurrentPlaybackTime();
+  const inRange = loopActive && loopEnd > loopStart && cur >= loopStart && cur < loopEnd;
+  if(loopActive && loopEnd > loopStart && !inRange){
+    startSourceAt(loopStart);
+  } else if(songSourceNode){
+    songSourceNode.loop = loopActive && loopEnd > loopStart;
+    songSourceNode.loopStart = loopStart;
+    songSourceNode.loopEnd = Math.min(loopEnd, songDuration);
+  }
+  refreshLoopRegionBar();
+}
+
+function setPlaybackRate(rate){
+  const cur = getCurrentPlaybackTime();
+  currentPlaybackRate = rate;
+  if(isSongPlaying){
+    startSourceAt(cur);
+  } else {
+    playbackStartOffset = cur;
+  }
+}
+
+function updateTransportUI(){
+  const t = getCurrentPlaybackTime();
+  document.getElementById('seekBar').value = t;
+  document.getElementById('curTimeLabel').textContent = formatMMSS(t);
+  updateTimelinePlayhead();
+}
+
+function startUiTicker(){
+  stopUiTicker();
+  const tick = () => {
+    updateTransportUI();
+    uiTickerId = requestAnimationFrame(tick);
+  };
+  uiTickerId = requestAnimationFrame(tick);
+}
+
+function stopUiTicker(){
+  if(uiTickerId != null) cancelAnimationFrame(uiTickerId);
+  uiTickerId = null;
+}
+
+function noteFrequency(noteName, octave){
+  const idx = NOTE_NAMES.indexOf(noteName);
+  const midi = (octave + 1) * 12 + idx; // MIDI note number (C4 = 60)
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function noteDisplayLabel(noteName){
+  return noteName.replace('#', '♯');
+}
+
+function sampleUrlFor(note, octave){
+  return PIANO_SAMPLE_BASE + NOTE_TO_SAMPLE_NAME[note] + octave + '.mp3';
+}
+
+function loadSample(note, octave){
+  const id = note + octave;
+  if(sampleBufferCache[id]) return Promise.resolve(sampleBufferCache[id]);
+  if(sampleLoadPromises[id]) return sampleLoadPromises[id];
+  const ctx = getAudioCtx();
+  const promise = fetch(sampleUrlFor(note, octave))
+    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.arrayBuffer(); })
+    .then(buf => ctx.decodeAudioData(buf))
+    .then(decoded => { sampleBufferCache[id] = decoded; return decoded; })
+    .catch(() => { sampleFailed[id] = true; return null; });
+  sampleLoadPromises[id] = promise;
+  return promise;
+}
+
+function preloadOctaveSamples(octave){
+  PIANO_WHITE_NOTES.concat(Object.values(PIANO_BLACK_AFTER)).forEach(note => {
+    if(!sampleFailed[note + octave]) loadSample(note, octave);
+  });
+}
+
+function buildPiano(){
+  const wrap = document.getElementById('pianoKeys');
+  if(!wrap) return;
+  stopAllNotes();
+  wrap.innerHTML = '';
+  wrap.style.width = (PIANO_WHITE_NOTES.length * WHITE_KEY_WIDTH) + 'px';
+
+  PIANO_WHITE_NOTES.forEach((note, i) => {
+    const key = document.createElement('div');
+    key.className = 'piano-key white-key';
+    key.style.left = (i * WHITE_KEY_WIDTH) + 'px';
+    attachKeyEvents(key, note);
+    wrap.appendChild(key);
+  });
+  PIANO_WHITE_NOTES.forEach((whiteNote, i) => {
+    const blackNote = PIANO_BLACK_AFTER[whiteNote];
+    if(!blackNote) return;
+    const key = document.createElement('div');
+    key.className = 'piano-key black-key';
+    key.style.left = ((i + 1) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2) + 'px';
+    attachKeyEvents(key, blackNote);
+    wrap.appendChild(key);
+  });
+
+  document.getElementById('octaveLabel').textContent = 'Octave ' + pianoOctave;
+  document.getElementById('pianoNoteLabel').textContent = '—';
+  preloadOctaveSamples(pianoOctave);
+}
+
+function attachKeyEvents(key, note){
+  const start = (e) => { e.preventDefault(); startNote(note, key); };
+  const stop  = ()  => { stopNote(note, key); };
+  key.addEventListener('pointerdown', start);
+  key.addEventListener('pointerup', stop);
+  key.addEventListener('pointerleave', stop);
+  key.addEventListener('pointercancel', stop);
+}
+
+async function startNote(note, keyEl){
+  const ctx = getAudioCtx();
+  const octave = pianoOctave;
+  const id = note + octave;
+  if(activeNotes[id]) return;
+  keyEl.classList.add('pressed');
+  document.getElementById('pianoNoteLabel').textContent = '🎵 ' + noteDisplayLabel(note) + octave;
+
+  if(!sampleFailed[id]){
+    const buffer = await loadSample(note, octave);
+    // Bail if the key was released, or the octave changed, while the sample was loading.
+    if(octave !== pianoOctave || !keyEl.classList.contains('pressed')) return;
+    if(buffer){
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.9 * pianoVolumeMultiplier, ctx.currentTime);
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start();
+      activeNotes[id] = { source, gain, isSample: true };
+      return;
+    }
+  }
+  // Fallback: synth tone, used only if the real sample couldn't be loaded
+  // (e.g. no internet access to the sample host).
+  const freq = noteFrequency(note, octave);
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.28 * pianoVolumeMultiplier, ctx.currentTime + 0.02);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  activeNotes[id] = { source: osc, gain, isSample: false };
+}
+
+function stopNote(note, keyEl){
+  keyEl.classList.remove('pressed');
+  const id = note + pianoOctave;
+  const rec = activeNotes[id];
+  if(!rec) return;
+  const ctx = getAudioCtx();
+  const releaseTime = rec.isSample ? 0.25 : 0.09;
+  rec.gain.gain.cancelScheduledValues(ctx.currentTime);
+  rec.gain.gain.setValueAtTime(rec.gain.gain.value, ctx.currentTime);
+  rec.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + releaseTime);
+  try { rec.source.stop(ctx.currentTime + releaseTime + 0.02); } catch(e){ /* already stopped */ }
+  delete activeNotes[id];
+}
+
+function stopAllNotes(){
+  document.querySelectorAll('.piano-key.pressed').forEach(k => k.classList.remove('pressed'));
+  if(!audioCtx) { activeNotes = {}; return; }
+  Object.values(activeNotes).forEach(rec => {
+    try {
+      rec.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+      rec.gain.gain.setValueAtTime(0, audioCtx.currentTime);
+      rec.source.stop(audioCtx.currentTime + 0.02);
+    } catch(e){ /* already stopped */ }
+  });
+  activeNotes = {};
+}
+
+function shiftOctave(delta){
+  pianoOctave = Math.max(2, Math.min(6, pianoOctave + delta));
+  buildPiano();
+}
+
+// ── Transport ──
+function togglePlay(){
+  if(!songAudioBuffer) return;
+  if(isSongPlaying) pauseSong(); else playSong();
+}
+
+function updatePlayButton(playing){
+  document.getElementById('playBtn').textContent = playing ? '⏸' : '▶';
+}
+
+function skipSeconds(n){
+  seekTo(getCurrentPlaybackTime() + n);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('seekBar').addEventListener('input', e => {
+    seekTo(Number(e.target.value));
+  });
+
+  document.getElementById('songVolumeSlider').addEventListener('input', e => {
+    songVolume = Number(e.target.value) / 100;
+    getSongGain().gain.value = songVolume;
+    document.getElementById('songVolumeValue').textContent = e.target.value + '%';
+  });
+  document.getElementById('pianoVolumeSlider').addEventListener('input', e => {
+    pianoVolumeMultiplier = Number(e.target.value) / 100;
+    document.getElementById('pianoVolumeValue').textContent = e.target.value + '%';
+  });
+});
+
+// ── Loop tools ──
+// Looping is now handled natively by the AudioBufferSourceNode's own
+// loop/loopStart/loopEnd properties (see updateLoopSettings in the playback
+// engine above), which is sample-accurate — no JS polling needed here at all.
+function setLoopMode(mode){
+  loopMode = mode;
+  document.getElementById('loopTabTime').classList.toggle('active', mode === 'time');
+  document.getElementById('loopTabMeasure').classList.toggle('active', mode === 'measure');
+  document.getElementById('loopPanelTime').classList.toggle('active', mode === 'time');
+  document.getElementById('loopPanelMeasure').classList.toggle('active', mode === 'measure');
+}
+
+function setLoopPointFromPlayhead(point){
+  const t = getCurrentPlaybackTime();
+  if(point === 'A') document.getElementById('loopAInput').value = formatPreciseTime(t);
+  else document.getElementById('loopBInput').value = formatPreciseTime(t);
+  applyTimeLoopInputs();
+}
+
+function applyTimeLoopInputs(){
+  const aVal = parsePreciseTime(document.getElementById('loopAInput').value);
+  const bVal = parsePreciseTime(document.getElementById('loopBInput').value);
+  if(aVal != null) loopStart = aVal;
+  if(bVal != null) loopEnd = bVal;
+  updateLoopSettings();
+}
+
+['loopAInput','loopBInput'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById(id).addEventListener('change', applyTimeLoopInputs);
+  });
+});
+
+// Parses a "measure" or "measure.beat" string into a precise time in seconds.
+// isEndPoint controls what a bare measure number (no ".beat") means:
+//   - as a start point, it means "beat 1 of that measure"
+//   - as an end point, it means "through the end of that measure" (i.e. beat 1 of the next one)
+function measureBeatToTime(str, song, isEndPoint){
+  const parts = String(str).trim().split('.');
+  let measure = Math.max(1, parseInt(parts[0], 10) || 1);
+  let beat = null;
+  if(parts.length > 1 && parts[1] !== ''){
+    beat = Math.max(1, Math.min(song.beatsPerMeasure, parseInt(parts[1], 10) || 1));
+  }
+  if(beat === null){
+    if(isEndPoint){ measure += 1; beat = 1; }
+    else { beat = 1; }
+  }
+  const beatDur = 60 / song.bpm;
+  const measureDur = song.beatsPerMeasure * beatDur;
+  const offset = Number(song.startOffset) || 0;
+  return { time: offset + (measure - 1) * measureDur + (beat - 1) * beatDur, measure, beat };
+}
+
+function applyMeasureLoop(){
+  const song = songs.find(s => s.id === currentSongId);
+  if(!song || !song.bpm || !song.beatsPerMeasure){
+    showToast('⚠️ This song has no BPM / time signature set.');
+    return;
+  }
+  const fromRaw = document.getElementById('measureFromInput').value;
+  const toRaw   = document.getElementById('measureToInput').value;
+  if(!fromRaw.trim() || !toRaw.trim()){
+    showToast('⚠️ Enter both a from and to measure (e.g. 4 or 4.1).');
+    return;
+  }
+  const from = measureBeatToTime(fromRaw, song, false);
+  const to   = measureBeatToTime(toRaw, song, true);
+
+  if(to.time <= from.time){
+    showToast('⚠️ The "to" point must come after the "from" point.');
+    return;
+  }
+
+  loopStart = from.time;
+  loopEnd   = to.time;
+
+  const fromLabel = from.beat > 1 || fromRaw.includes('.') ? `${from.measure}.${from.beat}` : `${from.measure}`;
+  const toLabel   = toRaw.includes('.') ? `${to.measure}.${to.beat}` : `${to.measure}`;
+  document.getElementById('measureCalcHint').textContent =
+    `Measure ${fromLabel} → ${toLabel} · ${formatPreciseTime(loopStart)} to ${formatPreciseTime(loopEnd)}`;
+
+  document.getElementById('loopToggle').checked = true;
+  loopActive = true;
+  playFromLoopStart();
+}
+
+function onLoopToggle(){
+  loopActive = document.getElementById('loopToggle').checked;
+  if(loopMode === 'time') applyTimeLoopInputs();
+  else updateLoopSettings();
+}
+
+function refreshLoopRegionBar(){
+  const bar = document.getElementById('loopRegionBar');
+  const dur = songDuration || 0;
+  if(!loopActive || !dur || loopEnd <= loopStart){ bar.style.display = 'none'; }
+  else {
+    const leftPct = Math.max(0, Math.min(100, (loopStart / dur) * 100));
+    const widthPct = Math.max(0, Math.min(100 - leftPct, ((loopEnd - loopStart) / dur) * 100));
+    bar.style.left = leftPct + '%';
+    bar.style.width = widthPct + '%';
+    bar.style.display = 'block';
+  }
+
+  const mtRegion = document.getElementById('mtLoopRegion');
+  const song = songs.find(s => s.id === currentSongId);
+  const timelineActive = song && song.bpm && song.beatsPerMeasure;
+  if(!loopActive || loopEnd <= loopStart || !timelineActive){
+    mtRegion.style.display = 'none';
+  } else {
+    mtRegion.style.left = (loopStart * timelinePxPerSec) + 'px';
+    mtRegion.style.width = ((loopEnd - loopStart) * timelinePxPerSec) + 'px';
+    mtRegion.style.display = 'block';
+  }
+}
+
+function playFromLoopStart(){
+  if(!songAudioBuffer) return;
+  if(loopEnd > loopStart){ playbackStartOffset = loopStart; }
+  playSong();
+  updateLoopSettings();
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEASURE RULER — DAW-style zoomable timeline with measure numbers
+// ══════════════════════════════════════════════════════════════
+function zoomTimeline(direction){
+  timelineZoomIndex = Math.max(0, Math.min(TIMELINE_ZOOM_LEVELS.length - 1, timelineZoomIndex + direction));
+  timelinePxPerSec = TIMELINE_ZOOM_LEVELS[timelineZoomIndex];
+  buildMeasureTimeline();
+}
+
+function buildMeasureTimeline(){
+  const song = songs.find(s => s.id === currentSongId);
+  const wrap = document.getElementById('measureTimelineWrap');
+  const hint = document.getElementById('timelineHint');
+  if(!song || !song.bpm || !song.beatsPerMeasure || !songDuration){
+    wrap.style.display = 'none';
+    hint.style.display = 'block';
+    return;
+  }
+  wrap.style.display = 'block';
+  hint.style.display = 'none';
+
+  const width = Math.max(wrap.clientWidth, songDuration * timelinePxPerSec);
+  const beatDur = 60 / song.bpm;
+  const offset = Number(song.startOffset) || 0;
+  const beatsPerMeasure = song.beatsPerMeasure;
+
+  let svg = `<svg width="${width}" height="40" style="display:block">`;
+  svg += `<line x1="0" y1="30" x2="${width}" y2="30" style="stroke:var(--border);stroke-width:1"/>`;
+  let beatIndex = 0;
+  for(let t = offset; t <= songDuration + 0.001; t += beatDur, beatIndex++){
+    const x = (t * timelinePxPerSec).toFixed(1);
+    const measureNum = Math.floor(beatIndex / beatsPerMeasure) + 1;
+    const isDownbeat = (beatIndex % beatsPerMeasure) === 0;
+    const tickH = isDownbeat ? 16 : 8;
+    svg += `<line x1="${x}" y1="${30 - tickH}" x2="${x}" y2="30" style="stroke:${isDownbeat ? 'var(--accent4)' : 'var(--border)'};stroke-width:${isDownbeat ? 2 : 1}"/>`;
+    if(isDownbeat){
+      svg += `<text x="${Number(x) + 3}" y="13" style="fill:var(--text);font-family:'Fredoka One',cursive;font-size:11px;">${measureNum}</text>`;
+    }
+  }
+  svg += `</svg>`;
+
+  document.getElementById('mtTicks').innerHTML = svg;
+  document.getElementById('measureTimeline').style.width = width + 'px';
+
+  updateTimelinePlayhead();
+  refreshLoopRegionBar();
+}
+
+function updateTimelinePlayhead(){
+  const song = songs.find(s => s.id === currentSongId);
+  const playhead = document.getElementById('mtPlayhead');
+  if(!song || !song.bpm || !song.beatsPerMeasure){ playhead.style.display = 'none'; return; }
+  const x = getCurrentPlaybackTime() * timelinePxPerSec;
+  playhead.style.left = x + 'px';
+  playhead.style.display = 'block';
+
+  // Keep the playhead in view while playing, without fighting a manual scroll while paused.
+  if(isSongPlaying){
+    const wrap = document.getElementById('measureTimelineWrap');
+    const visibleLeft = wrap.scrollLeft;
+    const visibleRight = visibleLeft + wrap.clientWidth;
+    if(x < visibleLeft + 20 || x > visibleRight - 20){
+      wrap.scrollLeft = Math.max(0, x - wrap.clientWidth / 2);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('measureTimeline').addEventListener('click', e => {
+    const song = songs.find(s => s.id === currentSongId);
+    if(!song || !song.bpm || !song.beatsPerMeasure || !songDuration) return;
+    const rect = document.getElementById('measureTimeline').getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    seekTo(x / timelinePxPerSec);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════
+function submitGuess(){
+  const song = songs.find(s => s.id === currentSongId);
+  if(!song) return;
+  const guessRoot = document.getElementById('guessRoot').value;
+  const guessScale = document.getElementById('guessScale').value;
+  if(!guessRoot || !guessScale){ showToast('⚠️ Please select both a root note and a scale.'); return; }
+  if(!song.rootNote || !song.scaleType){ showToast('⚠️ This song has no answer key set yet — ask your teacher.'); return; }
+
+  const rootCorrect  = guessRoot === song.rootNote;
+  const scaleCorrect = guessScale === song.scaleType;
+  let coinsThisAttempt = 0;
+  if(rootCorrect) coinsThisAttempt += COIN_ROOT_CORRECT;
+  if(scaleCorrect) coinsThisAttempt += COIN_SCALE_CORRECT;
+  if(rootCorrect && scaleCorrect) coinsThisAttempt += COIN_BOTH_BONUS;
+
+  if(!scores[currentStudent]) scores[currentStudent] = { totalCoins:0, songs:{}, lastActive:Date.now() };
+  const studentRec = scores[currentStudent];
+  if(!studentRec.songs[song.id]) studentRec.songs[song.id] = { attempts:0, coinsEarned:0, rootCorrect:false, scaleCorrect:false };
+  const songRec = studentRec.songs[song.id];
+  songRec.attempts += 1;
+  songRec.lastGuessRoot = guessRoot;
+  songRec.lastGuessScale = guessScale;
+  songRec.rootCorrect = songRec.rootCorrect || rootCorrect;
+  songRec.scaleCorrect = songRec.scaleCorrect || scaleCorrect;
+
+  const priorBest = songRec.coinsEarned || 0;
+  const improvement = Math.max(0, coinsThisAttempt - priorBest);
+  songRec.coinsEarned = Math.max(priorBest, coinsThisAttempt);
+  studentRec.totalCoins = Math.max(0, (studentRec.totalCoins || 0) + improvement);
+  studentRec.lastActive = Date.now();
+  coins = studentRec.totalCoins;
+  saveScoresLS();
+
+  document.getElementById('practCoinDisplay').textContent = coins;
+  document.getElementById('listCoinDisplay').textContent = coins;
+
+  const fb = document.getElementById('guessFeedback');
+  const rootTag = `<span class="field-tag ${rootCorrect ? 'tag-right' : 'tag-wrong'}">Root ${rootCorrect ? '✓' : '✗'}</span>`;
+  const scaleTag = `<span class="field-tag ${scaleCorrect ? 'tag-right' : 'tag-wrong'}">Scale ${scaleCorrect ? '✓' : '✗'}</span>`;
+  let cls, headline;
+  if(rootCorrect && scaleCorrect){ cls = 'correct'; headline = `🎉 Perfect! +${improvement} coins this attempt`; }
+  else if(rootCorrect || scaleCorrect){ cls = 'partial'; headline = `Almost there — +${improvement} coins this attempt`; }
+  else { cls = 'wrong'; headline = `Not quite — keep listening and try again`; }
+
+  let revealHtml = '';
+  if(rootCorrect && scaleCorrect){
+    revealHtml = `<div style="margin-top:8px;font-weight:400;font-size:.85rem">Answer: ${rootLabel(song.rootNote)} ${song.scaleType}</div>`;
+  }
+  fb.innerHTML = `${headline}<br><div style="margin-top:8px">${rootTag}${scaleTag}</div>${revealHtml}`;
+  fb.className = 'guess-feedback show ' + cls;
+
+  updateBestScorePill(song);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TEACHER — MANAGE SONGS
+// ══════════════════════════════════════════════════════════════
+async function showTeacherPage(){
+  populateSelect(document.getElementById('fRootNote'), ROOT_NOTES, true);
+  populateSelect(document.getElementById('fScaleType'), SCALE_TYPES, true);
+  const emailLabel = document.getElementById('teacherSignedInAs');
+  emailLabel.textContent = (auth && auth.currentUser) ? '✓ ' + auth.currentUser.email : '';
+  document.getElementById('songManageList').innerHTML = '<div class="empty-state">⏳ Loading songs…</div>';
+  showPage('teacherPage');
+  await loadSongsFromFirestore();
+  renderSongManageList();
+  if(!firestoreReady){
+    showToast('⚠️ Firebase isn\'t configured yet — songs will only save on this device.');
+  }
+}
+
+function autoFillKeySig(){
+  const root = document.getElementById('fRootNote').value;
+  const scale = document.getElementById('fScaleType').value;
+  if(!root || !scale){ showToast('⚠️ Pick a root note and scale first.'); return; }
+  let sig = null;
+  if(scale === 'Major') sig = MAJOR_KEYSIG[root];
+  else if(scale === 'Natural Minor') sig = MINOR_KEYSIG[root];
+  if(!sig){ showToast('ℹ️ Auto-fill only supports Major / Natural Minor — please enter manually.'); return; }
+  document.getElementById('fKeySig').value = sig;
+}
+
+function clearSongForm(){
+  document.getElementById('fSongFilename').value = '';
+  document.getElementById('fSongTitle').value = '';
+  document.getElementById('fSongArtist').value = '';
+  document.getElementById('fRootNote').value = '';
+  document.getElementById('fScaleType').value = '';
+  document.getElementById('fKeySig').value = '';
+  document.getElementById('fBpm').value = '';
+  document.getElementById('fBeatsPerMeasure').value = '4';
+  document.getElementById('fStartOffset').value = '0';
+  editingSongId = null;
+  document.getElementById('formTitle').textContent = '➕ Add a New Song';
+  document.getElementById('saveSongBtn').textContent = 'Add Song ➕';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+async function saveSong(){
+  const filename = document.getElementById('fSongFilename').value.trim();
+  const title = document.getElementById('fSongTitle').value.trim();
+  const artist = document.getElementById('fSongArtist').value.trim();
+  const rootNote = document.getElementById('fRootNote').value;
+  const scaleType = document.getElementById('fScaleType').value;
+  const keySig = document.getElementById('fKeySig').value.trim();
+  const bpm = Number(document.getElementById('fBpm').value) || null;
+  const beatsPerMeasure = Number(document.getElementById('fBeatsPerMeasure').value) || 4;
+  const startOffset = Number(document.getElementById('fStartOffset').value) || 0;
+
+  if(!filename){ showToast('⚠️ Please enter the audio filename.'); return; }
+  if(!rootNote || !scaleType){ showToast('⚠️ Please set the root note and scale (answer key).'); return; }
+
+  const isEdit = !!editingSongId;
+  const nextOrder = songs.reduce((max, s) => Math.max(max, s.order || 0), 0) + 1;
+  const songObj = isEdit
+    ? Object.assign({}, songs.find(x => x.id === editingSongId), {filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset})
+    : { id: 'song_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+        filename, title, artist, rootNote, scaleType, keySig, bpm, beatsPerMeasure, startOffset,
+        addedAt: Date.now(), order: nextOrder };
+
+  const saveBtn = document.getElementById('saveSongBtn');
+  const prevLabel = saveBtn.textContent;
+  saveBtn.textContent = 'Saving…';
+  saveBtn.disabled = true;
+  try {
+    await saveSongToFirestore(songObj);
+    showToast(isEdit ? '✅ Song updated for everyone!' : '✅ Song added — visible to all students now!');
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not save to the shared song list — check your Firebase setup.');
+  }
+  saveBtn.disabled = false;
+  saveBtn.textContent = prevLabel;
+
+  clearSongForm();
+  await loadSongsFromFirestore();
+  renderSongManageList();
+}
+
+function editSong(id){
+  const s = songs.find(x => x.id === id);
+  if(!s) return;
+  editingSongId = id;
+  document.getElementById('fSongFilename').value = s.filename || '';
+  document.getElementById('fSongTitle').value = s.title || '';
+  document.getElementById('fSongArtist').value = s.artist || '';
+  document.getElementById('fRootNote').value = s.rootNote || '';
+  document.getElementById('fScaleType').value = s.scaleType || '';
+  document.getElementById('fKeySig').value = s.keySig || '';
+  document.getElementById('fBpm').value = s.bpm || '';
+  document.getElementById('fBeatsPerMeasure').value = s.beatsPerMeasure || 4;
+  document.getElementById('fStartOffset').value = s.startOffset || 0;
+  document.getElementById('formTitle').textContent = '✏️ Edit Song';
+  document.getElementById('saveSongBtn').textContent = 'Save Changes 💾';
+  document.getElementById('cancelEditBtn').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function cancelEditSong(){ clearSongForm(); }
+
+async function deleteSong(id){
+  if(!confirm('Delete this song? This cannot be undone.')) return;
+  try {
+    await deleteSongFromFirestore(id);
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not delete from the shared song list.');
+    return;
+  }
+  await loadSongsFromFirestore();
+  renderSongManageList();
+  showToast('🗑️ Song deleted for everyone.');
+}
+
+function renderSongManageList(){
+  const list = document.getElementById('songManageList');
+  list.innerHTML = '';
+  if(!songs.length){
+    list.innerHTML = '<div class="empty-state">No songs added yet. Use the form above to add your first song.</div>';
+    return;
+  }
+  // `songs` is already sorted by order (see sortSongsByOrder) — this is the
+  // exact order students will see them in.
+  songs.forEach((song, i) => {
+    const div = document.createElement('div');
+    div.className = 'song-manage-row';
+    const details = [
+      `🎵 ${song.filename}`,
+      song.rootNote ? `Key: ${rootLabel(song.rootNote)} ${song.scaleType || ''}` : 'No answer key',
+      song.bpm ? `${song.bpm} BPM · ${song.beatsPerMeasure}/measure` : 'No BPM',
+      song.keySig ? song.keySig : null
+    ].filter(Boolean).join(' · ');
+    div.innerHTML = `
+      <div class="song-order-controls">
+        <button class="mini-order-btn" title="Move up" onclick="moveSong('${song.id}', -1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <input type="number" class="position-input" value="${i + 1}" min="1" max="${songs.length}"
+               title="Type a position to move this song there"
+               onchange="moveSongToPosition('${song.id}', this.value)"
+               onkeydown="if(event.key==='Enter') this.blur()">
+        <button class="mini-order-btn" title="Move down" onclick="moveSong('${song.id}', 1)" ${i === songs.length - 1 ? 'disabled' : ''}>▼</button>
+      </div>
+      <div class="song-meta">
+        <div class="sm-title">${escapeHtml(song.title || song.filename)}${song.artist ? ' — ' + escapeHtml(song.artist) : ''}</div>
+        <div class="sm-details">${escapeHtml(details)}</div>
+      </div>
+      <div class="song-manage-actions">
+        <button class="btn-tiny" onclick="editSong('${song.id}')">✏️ Edit</button>
+        <button class="btn-tiny" style="border-color:var(--red);color:var(--red)" onclick="deleteSong('${song.id}')">🗑️ Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// Renumbers every song's `order` to match its current index in the `songs`
+// array, and saves only the ones that actually changed.
+async function persistFullOrder(){
+  const writes = [];
+  songs.forEach((s, i) => {
+    if(s.order !== i){
+      s.order = i;
+      writes.push(saveSongToFirestore(s));
+    }
+  });
+  await Promise.all(writes);
+}
+
+// Nudges a song up or down by one spot.
+async function moveSong(id, direction){
+  const idx = songs.findIndex(s => s.id === id);
+  const newIdx = idx + direction;
+  if(idx === -1 || newIdx < 0 || newIdx >= songs.length) return;
+  const [item] = songs.splice(idx, 1);
+  songs.splice(newIdx, 0, item);
+  renderSongManageList(); // optimistic re-render so it feels instant
+  try {
+    await persistFullOrder();
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not save the new order — check your Firebase setup.');
+  }
+  await loadSongsFromFirestore();
+  renderSongManageList();
+}
+
+// Moves a song directly to any position — e.g. type "3" to drop a newly
+// added song into the middle of the list instead of nudging it one at a time.
+async function moveSongToPosition(id, rawPos){
+  const idx = songs.findIndex(s => s.id === id);
+  if(idx === -1) return;
+  let newIdx = Math.round(Number(rawPos)) - 1;
+  if(isNaN(newIdx)){ renderSongManageList(); return; }
+  newIdx = Math.max(0, Math.min(songs.length - 1, newIdx));
+  if(newIdx === idx){ renderSongManageList(); return; }
+  const [item] = songs.splice(idx, 1);
+  songs.splice(newIdx, 0, item);
+  renderSongManageList();
+  try {
+    await persistFullOrder();
+    showToast(`✅ Moved to position ${newIdx + 1}`);
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ Could not save the new order — check your Firebase setup.');
+  }
+  await loadSongsFromFirestore();
+  renderSongManageList();
+}
+</script>
+</body>
+</html>

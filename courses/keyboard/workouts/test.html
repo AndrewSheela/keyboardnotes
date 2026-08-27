@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm & Syllable Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 1);
+        }
+        .beat-unit {
+            transition: all 0.05s ease;
+            color: #fee2e2; 
+        }
+        .beat-active {
+            color: #ef4444; 
+            transform: scale(1.4);
+            font-weight: 900;
+        }
+        #bouncingBall {
+            transition: transform 0.1s ease;
+        }
+        .syllable-btn {
+            transition: all 0.2s;
+            position: relative;
+        }
+        .syllable-btn.selected {
+            background-color: #ef4444;
+            color: white;
+            border-color: #b91c1c;
+        }
+        .beat-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #1e293b;
+            color: white;
+            font-size: 8px;
+            padding: 2px 5px;
+            min-width: 32px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            font-weight: bold;
+            z-index: 10;
+        }
+        #successOverlay {
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass-card max-w-2xl w-full rounded-3xl shadow-2xl p-8 space-y-6 relative overflow-hidden">
+        
+        <!-- Success Overlay -->
+        <div id="successOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl border border-green-100 flex flex-col items-center">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mb-4">✓</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-2" id="successTitle">Level Complete!</h2>
+                <p class="text-slate-500 mb-6" id="successMessage">Excellent rhythm accuracy!</p>
+                <button onclick="handleSuccessButton()" id="nextBtn" class="px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all">Next</button>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-start">
+            <div class="text-left">
+                <div class="inline-block px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full mb-1 uppercase tracking-widest" id="levelIndicator">Level 1</div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Rhythm Trainer</h1>
+            </div>
+            <div class="text-right">
+                <span id="currentLevelTask" class="text-xs font-bold text-slate-500 block uppercase">Task: Find Beat 1</span>
+                <span id="sectionIndicator" class="text-[10px] text-slate-400 font-bold">Section 1 of 2</span>
+            </div>
+        </div>
+
+        <!-- Visual Metronome -->
+        <div class="bg-white rounded-2xl p-8 border-2 border-slate-200 relative overflow-hidden shadow-inner">
+            <div class="flex justify-between items-center relative z-10 px-2">
+                <div data-unit="0" class="beat-unit text-5xl">1</div>
+                <div data-unit="0.5" class="beat-unit text-2xl font-bold">&</div>
+                <div data-unit="1" class="beat-unit text-5xl">2</div>
+                <div data-unit="1.5" class="beat-unit text-2xl font-bold">&</div>
+                <div data-unit="2" class="beat-unit text-5xl">3</div>
+                <div data-unit="2.5" class="beat-unit text-2xl font-bold">&</div>
+                <div data-unit="3" class="beat-unit text-5xl">4</div>
+                <div data-unit="3.5" class="beat-unit text-2xl font-bold">&</div>
+            </div>
+            
+            <div class="mt-12 h-2 bg-red-50 w-full rounded-full relative">
+                <div id="bouncingBall" class="absolute -top-4 left-0 w-10 h-10 bg-red-600 rounded-full shadow-lg border-4 border-white z-20"></div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="space-y-4">
+            <div class="flex justify-between items-end">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="selectionLabel">Choose Syllables</label>
+                <div id="scoreDisplay" class="text-sm font-bold text-red-600">Selected: 0/4</div>
+            </div>
+            <div id="syllableContainer" class="flex flex-wrap gap-4 p-5 bg-white rounded-xl border-2 border-slate-100 min-h-[140px] shadow-sm">
+                <!-- Buttons populated by JS -->
+            </div>
+            
+            <!-- Level 2 Controls -->
+            <div id="level2Controls" class="hidden space-y-2">
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mb-2">
+                    <p class="text-[10px] text-blue-600 font-bold uppercase mb-1">How to play Level 2:</p>
+                    <p class="text-[11px] text-slate-600 italic">Click a syllable when it starts. Click "Skip" for silences or note extensions.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="handleSkipBeat()" class="flex-[3] py-4 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-black flex items-center justify-center gap-2 shadow-md">
+                        <span>Skip / Rest</span>
+                        <span id="skipPreview" class="bg-slate-600 px-2 py-0.5 rounded text-[10px]">1.1.1</span>
+                    </button>
+                    <button onclick="handleUndo()" class="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 flex items-center justify-center">
+                        Undo
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="checkAnswers()" class="flex-[3] py-4 bg-red-600 text-white rounded-2xl font-black text-lg hover:bg-red-700 shadow-lg transition-all active:scale-95">CHECK ANSWERS</button>
+                <button onclick="showCorrectAnswers()" class="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-bold text-xs hover:bg-slate-200 transition-all uppercase">Show Answer</button>
+            </div>
+        </div>
+
+        <!-- Audio Controls -->
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 col-span-2">
+                <div id="audioStatus" class="text-[9px] font-bold text-slate-400 uppercase mb-2">Audio: Loading...</div>
+                <audio id="mainAudio" class="hidden" preload="auto">
+                    <source src="song/song.mp3" type="audio/mpeg">
+                </audio>
+                <div class="flex gap-2">
+                    <button id="playBtn" class="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-black transition-colors">Play Loop</button>
+                    <button id="pauseBtn" class="flex-1 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold hover:bg-slate-300 transition-colors">Pause</button>
+                </div>
+            </div>
+            
+            <div class="col-span-2 space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Tempo: <span id="currentBPM" class="text-red-600">96</span> BPM</span>
+                </div>
+                <input type="range" id="tempoSlider" min="48" max="144" step="1" value="96" class="w-full h-2 bg-slate-200 rounded-lg appearance-none accent-red-600 cursor-pointer">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUDIO_PATH = "song/song.mp3"; 
+        const BASE_BPM = 96;
+        let currentGameLevel = 1; 
+        let currentSectionIdx = 0;
+
+        const SONG_LEVELS = [
+                 {
+                name: "Section 1",
+                loopStart: 70.0,      // Adjust to where Section 2 starts in your mp3
+                loopEnd: 79.95,        // Adjust to where Section 2 ends
+                metronomeOffset: 0.0, 
+                lyrics: ['Ye', 'su', 'En', 'num', 'Naa', 'mam', 'Un', 'du', 'In', 'drae', 'Je', 'yi', 'thi', 'du', 'vom'],
+                
+                // Level 1: Beat 1 of each measure
+                beat1Indices: [0, 4, 8, 14], 
+
+                // Level 2: 32 positions (mapping your 19 syllables)
+                // Adjusting to a likely rhythmic pattern:
+                fullBeatIndices: [
+                    // Meas 1
+                    0, null, 1, 2, 3, null, null, null, 
+                    // Meas 2
+                    4, null, 5, 6, 7, null, null, null,
+                    // Meas 3
+                    8, null,  9, null, 10, 11, 12, 13,
+                    // Meas 4
+                    14, null, null, null, null, null, null, null
+                ]
+            }
+        ];
+
+        const audio = document.getElementById('mainAudio');
+        const audioStatus = document.getElementById('audioStatus');
+        const tempoSlider = document.getElementById('tempoSlider');
+        const currentBPMDisplay = document.getElementById('currentBPM');
+        const ball = document.getElementById('bouncingBall');
+        const syllableContainer = document.getElementById('syllableContainer');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const successOverlay = document.getElementById('successOverlay');
+        const levelIndicator = document.getElementById('levelIndicator');
+        const taskDisplay = document.getElementById('currentLevelTask');
+        const sectionIndicator = document.getElementById('sectionIndicator');
+        const level2Controls = document.getElementById('level2Controls');
+        const skipPreview = document.getElementById('skipPreview');
+
+        let selectedIndices = [];
+
+        audio.oncanplaythrough = () => { audioStatus.innerText = "Audio: Ready"; audioStatus.style.color = "green"; };
+        audio.onerror = () => { audioStatus.innerText = "Audio: Error! Check folder/filename."; audioStatus.style.color = "red"; };
+
+        function initApp() {
+            const config = SONG_LEVELS[currentSectionIdx];
+            sectionIndicator.innerText = `Section ${currentSectionIdx + 1} of ${SONG_LEVELS.length}`;
+            levelIndicator.innerText = `Level ${currentGameLevel}`;
+            
+            if (currentGameLevel === 1) {
+                taskDisplay.innerText = `Task: ${config.name} Downbeats`;
+                document.getElementById('selectionLabel').innerText = `Select ${config.beat1Indices.length} syllables on Beat 1`;
+                level2Controls.classList.add('hidden');
+            } else {
+                taskDisplay.innerText = `Task: ${config.name} Full Rhythm`;
+                document.getElementById('selectionLabel').innerText = "Assign syllables to specific counts";
+                level2Controls.classList.remove('hidden');
+                updateSkipPreview();
+            }
+
+            syllableContainer.innerHTML = '';
+            selectedIndices = [];
+            updateScore();
+            
+            config.lyrics.forEach((syl, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'syllable-btn px-4 py-2 bg-white border-2 border-slate-100 rounded-xl text-base font-bold text-slate-700 hover:border-red-300';
+                btn.innerHTML = `<span>${syl}</span>`;
+                btn.onclick = () => toggleSyllable(btn, index);
+                syllableContainer.appendChild(btn);
+            });
+            updateTempoFromBPM();
+        }
+
+        function toggleSyllable(btn, index) {
+            const config = SONG_LEVELS[currentSectionIdx];
+            const maxAllowed = currentGameLevel === 1 ? config.beat1Indices.length : 32;
+
+            if (currentGameLevel === 2) {
+                if (selectedIndices.length < maxAllowed) {
+                    selectedIndices.push(index);
+                    addBadgeToBtn(btn, selectedIndices.length);
+                    updateSkipPreview();
+                }
+            } else {
+                if (selectedIndices.includes(index)) {
+                    selectedIndices = selectedIndices.filter(i => i !== index);
+                    btn.classList.remove('selected');
+                } else if (selectedIndices.length < maxAllowed) {
+                    selectedIndices.push(index);
+                    btn.classList.add('selected');
+                }
+            }
+            updateScore();
+        }
+
+        function handleSkipBeat() {
+            if (currentGameLevel !== 2) return;
+            if (selectedIndices.length < 32) {
+                selectedIndices.push(null);
+                updateScore();
+                updateSkipPreview();
+            }
+        }
+
+        function handleUndo() {
+            if (selectedIndices.length === 0) return;
+            const lastEntry = selectedIndices.pop();
+            if (lastEntry !== null) {
+                const buttons = syllableContainer.querySelectorAll('.syllable-btn');
+                const btn = buttons[lastEntry];
+                const badges = btn.querySelectorAll('.beat-badge');
+                if (badges.length > 0) badges[badges.length - 1].remove();
+                if (btn.querySelectorAll('.beat-badge').length === 0) btn.classList.remove('selected');
+            }
+            updateScore();
+            updateSkipPreview();
+        }
+
+        function showCorrectAnswers() {
+            const config = SONG_LEVELS[currentSectionIdx];
+            initApp();
+            
+            if (currentGameLevel === 1) {
+                const buttons = syllableContainer.querySelectorAll('.syllable-btn');
+                config.beat1Indices.forEach(idx => {
+                    selectedIndices.push(idx);
+                    buttons[idx].classList.add('selected');
+                });
+            } else {
+                const buttons = syllableContainer.querySelectorAll('.syllable-btn');
+                config.fullBeatIndices.forEach((val) => {
+                    selectedIndices.push(val);
+                    if (val !== null) {
+                        addBadgeToBtn(buttons[val], selectedIndices.length);
+                    }
+                });
+            }
+            updateScore();
+            updateSkipPreview();
+        }
+
+        function updateSkipPreview() {
+            if (selectedIndices.length >= 32) {
+                skipPreview.innerText = "Done";
+                return;
+            }
+            skipPreview.innerText = getNotation(selectedIndices.length + 1);
+        }
+
+        function getNotation(count) {
+            const measure = Math.ceil(count / 8);
+            const subdivisionInMeasure = (count - 1) % 8;
+            const beat = Math.floor(subdivisionInMeasure / 2) + 1;
+            const tick = subdivisionInMeasure % 2 === 0 ? "1" : "5";
+            return `${measure}.${beat}.${tick}`;
+        }
+
+        function addBadgeToBtn(btn, count) {
+            const badge = document.createElement('div');
+            badge.className = 'beat-badge';
+            badge.innerText = getNotation(count);
+            btn.appendChild(badge);
+            btn.classList.add('selected');
+        }
+
+        function updateScore() {
+            const config = SONG_LEVELS[currentSectionIdx];
+            const targetCount = currentGameLevel === 1 ? config.beat1Indices.length : 32;
+            scoreDisplay.innerText = `Count: ${selectedIndices.length}/${targetCount}`;
+        }
+
+        function checkAnswers() {
+            const config = SONG_LEVELS[currentSectionIdx];
+            const targetCount = currentGameLevel === 1 ? config.beat1Indices.length : 32;
+            if (selectedIndices.length < targetCount) {
+                alert(`Please finish the remaining ${targetCount - selectedIndices.length} counts!`);
+                return;
+            }
+            let isCorrect = false;
+            if (currentGameLevel === 1) {
+                const correctCount = selectedIndices.filter(i => config.beat1Indices.includes(i)).length;
+                isCorrect = (correctCount === config.beat1Indices.length);
+            } else {
+                isCorrect = selectedIndices.every((val, index) => val === config.fullBeatIndices[index]);
+            }
+            if (isCorrect) showSuccess();
+            else alert("The rhythm doesn't match. Try using 'Show Answer' to see the pattern!");
+        }
+
+        function showSuccess() {
+            audio.pause();
+            successOverlay.style.display = 'flex';
+            const nextBtn = document.getElementById('nextBtn');
+            const msg = document.getElementById('successMessage');
+            const title = document.getElementById('successTitle');
+
+            if (currentSectionIdx < SONG_LEVELS.length - 1) {
+                title.innerText = `${SONG_LEVELS[currentSectionIdx].name} Complete!`;
+                msg.innerText = "Ready for the next section?";
+                nextBtn.innerText = "Next Section";
+            } else if (currentGameLevel === 1) {
+                title.innerText = "All Sections Level 1 Complete!";
+                msg.innerText = "Now try to map every single count in Level 2.";
+                nextBtn.innerText = "Start Level 2";
+            } else {
+                title.innerText = "Grand Master Achieved!";
+                msg.innerText = "You have mastered all rhythms and sections!";
+                nextBtn.innerText = "Restart Game";
+            }
+        }
+
+        function handleSuccessButton() {
+            successOverlay.style.display = 'none';
+            
+            if (currentSectionIdx < SONG_LEVELS.length - 1) {
+                // Move to next section within same level
+                currentSectionIdx++;
+            } else if (currentGameLevel === 1) {
+                // Finished all section level 1, move to Level 2 Section 1
+                currentGameLevel = 2;
+                currentSectionIdx = 0;
+            } else {
+                // Game completely finished
+                currentGameLevel = 1;
+                currentSectionIdx = 0;
+            }
+            
+            initApp();
+            audio.currentTime = SONG_LEVELS[currentSectionIdx].loopStart;
+            audio.play();
+        }
+
+        function updateTempoFromBPM() {
+            const rate = parseFloat(tempoSlider.value) / BASE_BPM;
+            audio.playbackRate = rate;
+            currentBPMDisplay.innerText = tempoSlider.value;
+        }
+
+        function animate() {
+            if (!audio.paused) {
+                const config = SONG_LEVELS[currentSectionIdx];
+                if (audio.currentTime >= config.loopEnd || audio.currentTime < config.loopStart) {
+                    audio.currentTime = config.loopStart;
+                }
+                const secondsPerBeatAtOriginalSpeed = 60 / BASE_BPM;
+                const totalSecondsElapsed = audio.currentTime - config.loopStart + config.metronomeOffset;
+                const beatsElapsed = totalSecondsElapsed / secondsPerBeatAtOriginalSpeed;
+                const measureProgress = beatsElapsed % 4;
+                const subBeatProgress = (beatsElapsed * 2) % 1;
+                const unitValue = Math.floor(beatsElapsed * 2) % 8 / 2;
+                ball.style.left = ((measureProgress / 4) * 92) + '%';
+                document.querySelectorAll('.beat-unit').forEach((el) => {
+                    const elUnit = parseFloat(el.dataset.unit);
+                    if (Math.abs(elUnit - unitValue) < 0.1) el.classList.add('beat-active');
+                    else el.classList.remove('beat-active');
+                });
+                if (subBeatProgress < 0.2 && Number.isInteger(beatsElapsed)) {
+                    ball.style.transform = 'scale(1.25)';
+                } else {
+                    ball.style.transform = 'scale(1)';
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        playBtn.onclick = () => { if(!audio.src) audio.src = AUDIO_PATH; audio.play(); };
+        pauseBtn.onclick = () => audio.pause();
+        tempoSlider.oninput = updateTempoFromBPM;
+        window.onload = () => { initApp(); animate(); };
+    </script>
+</body>
+</html>

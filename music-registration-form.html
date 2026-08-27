@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Course Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --bg: #0b0b0b;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: rgba(201,168,76,0.2);
+    --border-hover: rgba(201,168,76,0.5);
+    --text: #f0ece4;
+    --text-muted: #8a8378;
+    --text-dim: #5a5550;
+    --error: #e06060;
+    --success: #6abf8a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background notes */
+  body::before {
+    content: '♩ ♪ ♫ ♬ ♭ ♮ ♯';
+    position: fixed;
+    top: -10%;
+    left: -5%;
+    font-size: 120px;
+    color: rgba(201,168,76,0.025);
+    letter-spacing: 30px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    width: 120%;
+    pointer-events: none;
+    z-index: 0;
+    transform: rotate(-15deg);
+    word-spacing: 40px;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  /* Header */
+  .form-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .form-header .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--border);
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .form-header h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .form-header p {
+    font-size: 15px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* Divider */
+  .ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 3rem;
+    animation: fadeIn 1s ease 0.2s both;
+  }
+  .ornament-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--border)); }
+  .ornament-line:last-child { background: linear-gradient(to left, transparent, var(--border)); }
+  .ornament-symbol { color: var(--gold); font-size: 18px; }
+
+  /* Form card */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    animation: fadeUp 0.9s ease 0.1s both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold-light) 50%, transparent 100%);
+    opacity: 0.5;
+  }
+
+  /* Grid layout */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .full { grid-column: 1 / -1; }
+
+  /* Field */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .field:nth-child(1) { animation-delay: 0.15s; }
+  .field:nth-child(2) { animation-delay: 0.2s; }
+  .field:nth-child(3) { animation-delay: 0.25s; }
+  .field:nth-child(4) { animation-delay: 0.3s; }
+  .field:nth-child(5) { animation-delay: 0.35s; }
+  .field:nth-child(6) { animation-delay: 0.4s; }
+  .field:nth-child(7) { animation-delay: 0.45s; }
+  .field:nth-child(8) { animation-delay: 0.5s; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  label .req { color: var(--gold); margin-left: 2px; }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text-dim); }
+
+  input:hover, select:hover, textarea:hover {
+    border-color: var(--border-hover);
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: #1f1e1a;
+    box-shadow: 0 0 0 3px var(--gold-dim);
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238a8378' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 42px;
+  }
+
+  select option { background: #1c1c1c; color: var(--text); }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+  /* Course tiles */
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .course-tile input[type="checkbox"] { display: none; }
+
+  .course-tile label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .course-tile label .icon {
+    font-size: 22px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .course-tile input:checked + label {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  .course-tile label:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+
+  /* Radio group */
+  .radio-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .radio-pill input[type="radio"] { display: none; }
+
+  .radio-pill label {
+    display: inline-block;
+    padding: 9px 20px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.18s;
+    font-weight: 400;
+  }
+
+  .radio-pill input:checked + label {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  .radio-pill label:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* Submit */
+  .submit-wrap {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 16px 32px;
+    background: var(--gold);
+    color: #0b0b0b;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-submit:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.25);
+  }
+
+  .btn-submit:active { transform: translateY(0); }
+
+  .btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .privacy-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* Alert messages */
+  .alert {
+    display: none;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 1rem;
+    width: 100%;
+    text-align: center;
+  }
+  .alert.success {
+    display: block;
+    background: rgba(106,191,138,0.1);
+    border: 1px solid rgba(106,191,138,0.3);
+    color: var(--success);
+  }
+  .alert.error {
+    display: block;
+    background: rgba(224,96,96,0.1);
+    border: 1px solid rgba(224,96,96,0.3);
+    color: var(--error);
+  }
+
+  /* Separator inside form */
+  .form-sep {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (max-width: 560px) {
+    .form-card { padding: 2rem 1.25rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    .full { grid-column: 1; }
+    .course-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <header class="form-header">
+    <div class="badge">♪ Enroll Now</div>
+    <h1>Begin Your<br><em>Musical Journey</em></h1>
+    <p>Fill in the form below and our team<br>will get back to you within 24 hours.</p>
+  </header>
+
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <span class="ornament-symbol">♬</span>
+    <div class="ornament-line"></div>
+  </div>
+
+  <div class="form-card">
+    <form id="registrationForm" action="https://formsubmit.co/josepath.andrew@gmail.com" method="POST">
+
+      <input type="hidden" name="_subject" value="New Music Course Registration 🎵">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="text" name="_honey" style="display:none">
+
+      <div class="form-grid">
+
+        <!-- Name -->
+        <div class="field">
+          <label for="name">Full Name <span class="req">*</span></label>
+          <input type="text" id="name" name="name" placeholder="e.g. Priya Sharma" required>
+        </div>
+
+        <!-- Age -->
+        <div class="field">
+          <label for="age">Age</label>
+          <input type="number" id="age" name="age" placeholder="e.g. 16" min="4" max="99">
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label for="email">Email Address <span class="req">*</span></label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <!-- Phone -->
+        <div class="field">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210">
+        </div>
+
+        <div class="form-sep"></div>
+
+        <!-- Course selection -->
+        <div class="field full">
+          <div class="section-label">Choose Your Course <span class="req">*</span></div>
+          <div class="course-grid" style="margin-top: 8px; grid-template-columns: repeat(2, 1fr);">
+            <div class="course-tile">
+              <input type="checkbox" id="keyboard" name="course" value="Keyboard">
+              <label for="keyboard"><span class="icon">🎹</span>Keyboard</label>
+            </div>
+            <div class="course-tile">
+              <input type="checkbox" id="theory" name="course" value="Music Theory">
+              <label for="theory"><span class="icon">🎼</span>Music Theory</label>
+            </div>
+            <div class="course-tile">
+              <input type="checkbox" id="ear" name="course" value="Ear Training">
+              <label for="ear"><span class="icon">👂</span>Ear Training</label>
+            </div>
+            <div class="course-tile">
+              <input type="checkbox" id="production" name="course" value="Music Production">
+              <label for="production"><span class="icon">🎛️</span>Music Production</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-sep"></div>
+
+        <!-- Experience level -->
+        <div class="field full">
+          <div class="section-label">Experience Level <span class="req">*</span></div>
+          <div class="radio-row" style="margin-top: 8px;">
+            <div class="radio-pill">
+              <input type="radio" id="beginner" name="experience" value="Beginner" required>
+              <label for="beginner">🌱 Beginner</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" id="intermediate" name="experience" value="Intermediate">
+              <label for="intermediate">🎵 Intermediate</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" id="advanced" name="experience" value="Advanced">
+              <label for="advanced">🌟 Advanced</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferred schedule -->
+        <div class="field full">
+          <div class="section-label">Preferred Schedule</div>
+          <div class="radio-row" style="margin-top: 8px;">
+            <div class="radio-pill">
+              <input type="radio" id="weekday-morning" name="schedule" value="Weekday Morning">
+              <label for="weekday-morning">Weekday Morning</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" id="weekday-evening" name="schedule" value="Weekday Evening">
+              <label for="weekday-evening">Weekday Evening</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" id="weekend" name="schedule" value="Weekend">
+              <label for="weekend">Weekend</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- How did you hear -->
+        <div class="field full">
+          <label for="source">How Did You Hear About Us?</label>
+          <select id="source" name="source">
+            <option value="" disabled selected>Select an option</option>
+            <option>Google Search</option>
+            <option>Instagram / Facebook</option>
+            <option>YouTube</option>
+            <option>Friend / Family Referral</option>
+            <option>Walk-in / Local Ad</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <!-- Message -->
+        <div class="field full">
+          <label for="message">Additional Notes</label>
+          <textarea id="message" name="message" placeholder="Any questions, goals, or special requirements..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Register Now ♪
+        </button>
+        <p class="privacy-note">Your information is kept private and never shared.</p>
+        <div class="alert success" id="successMsg">
+          ✓ Registration submitted! We'll be in touch within 24 hours.
+        </div>
+        <div class="alert error" id="errorMsg">
+          Something went wrong. Please try again or email us directly.
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const form = document.getElementById('registrationForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const successMsg = document.getElementById('successMsg');
+  const errorMsg = document.getElementById('errorMsg');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    const formData = new FormData(form);
+    const object = Object.fromEntries(formData);
+
+    // Collect all checked instruments
+    const instruments = [...document.querySelectorAll('input[name="course"]:checked')]
+      .map(el => el.value).join(', ');
+    if (instruments) object.course = instruments;
+
+    try {
+      const res = await fetch('https://formsubmit.co/josepath.andrew@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(object)
+      });
+      const data = await res.json();
+      if (data.success) {
+        successMsg.style.display = 'block';
+        form.reset();
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (err) {
+      errorMsg.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Register Now ♪';
+    }
+  });
+</script>
+
+</body>
+</html>

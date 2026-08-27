@@ -1,0 +1,2603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Studio — JGeneration Music Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat, CDN — no build step, single-file deploy) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --bg:#0c0d12;
+  --bg-2:#0f1016;
+  --surface:#16171f;
+  --surface-2:#1c1e28;
+  --surface-3:#22242f;
+  --line:#2b2d3a;
+  --line-soft:#212330;
+  --text:#f3efe3;
+  --muted:#8d90a3;
+  --muted-2:#5f6376;
+  --gold:#e3ab3d;
+  --gold-bright:#f2c368;
+  --gold-dim:#e3ab3d26;
+  --teal:#45c1b6;
+  --teal-dim:#45c1b626;
+  --purple:#a58bfa;
+  --purple-dim:#a58bfa26;
+  --correct:#4fbf7d;
+  --correct-bg:#123322;
+  --incorrect:#e2636e;
+  --incorrect-bg:#331a1e;
+  --acceptable:#f2c368;
+  --acceptable-bg:#332a12;
+  --radius:16px;
+  --radius-sm:10px;
+  --font-display:'Fraunces',serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1100px 620px at 12% -8%, rgba(227,171,61,0.10), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(69,193,182,0.07), transparent 55%),
+    radial-gradient(800px 500px at 50% 100%, rgba(165,139,250,0.05), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;margin:0;color:var(--gold-bright);}
+.mono{font-family:var(--font-mono);}
+.hidden{display:none !important;}
+.muted{color:var(--muted);}
+::-webkit-scrollbar{height:9px;width:9px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted-2);}
+
+/* ---------- layout shells ---------- */
+#app{max-width:1180px;margin:0 auto;padding:0 20px 90px;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px;margin-bottom:26px;
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:30;
+  background:rgba(12,13,18,0.88);backdrop-filter:blur(10px);
+  max-width:1180px;margin-left:auto;margin-right:auto;
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;flex:0 0 auto;
+  background:linear-gradient(150deg,var(--gold-bright),var(--gold) 55%,#8a5f16);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:800;color:#1a1206;font-size:19px;
+}
+.brand-text h1{font-size:20px;letter-spacing:.2px;}
+.brand-text span{font-size:11.5px;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;}
+.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+.btn{
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+  padding:10px 18px;border-radius:9px;font-size:13.5px;font-weight:600;
+  transition:border-color .15s,background .15s,transform .1s;
+}
+.btn:hover{border-color:var(--gold);}
+.btn:active{transform:translateY(1px);}
+.btn.gold{background:linear-gradient(150deg,var(--gold-bright),var(--gold));color:#1a1206;border-color:transparent;}
+.btn.gold:hover{filter:brightness(1.07);}
+.btn.teal{background:linear-gradient(150deg,#5fd6cb,var(--teal));color:#062521;border-color:transparent;}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted);}
+.btn.ghost:hover{color:var(--text);border-color:var(--line);}
+.btn.outline{background:none;border:1.5px solid var(--gold);color:var(--gold-bright);}
+.btn.danger{background:none;border:1px solid var(--incorrect);color:var(--incorrect);}
+.btn.danger:hover{background:var(--incorrect);color:#2a0a0d;}
+.btn.small{padding:6px 13px;font-size:12px;}
+.btn.big{padding:14px 22px;font-size:14.5px;border-radius:12px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--line);color:var(--text);flex:0 0 auto;}
+.btn-icon:hover{border-color:var(--gold);}
+
+.pill{
+  font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--gold-bright);
+  border:1px solid var(--gold-dim);background:var(--gold-dim);
+  padding:4px 11px;border-radius:999px;letter-spacing:.4px;white-space:nowrap;
+}
+.pill.teal{color:var(--teal);border-color:var(--teal-dim);background:var(--teal-dim);}
+.pill.purple{color:var(--purple);border-color:var(--purple-dim);background:var(--purple-dim);}
+.lang-tag{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--gold-bright);background:var(--gold-dim);border:1px solid var(--line);border-radius:20px;
+  padding:3px 10px;margin-right:6px;
+}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px;}
+.card.tight{padding:18px;}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.spread{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:720px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;font-weight:600;}
+input[type=text],input[type=password],input[type=number],input[type=email],select,textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  padding:11px 13px;border-radius:9px;font-family:var(--font-body);font-size:14px;outline:none;
+}
+textarea{resize:vertical;min-height:80px;font-family:var(--font-mono);font-size:13px;line-height:1.7;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+.field{margin-bottom:14px;}
+.help{font-size:12px;color:var(--muted);line-height:1.6;margin:-6px 0 12px;}
+.error-msg{color:var(--incorrect);font-size:13px;margin-top:8px;}
+
+/* ---------- login gate ---------- */
+#login-view{max-width:460px;margin:60px auto;text-align:center;}
+.role-choice{display:flex;gap:14px;margin:24px 0;}
+.role-btn{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px 14px;color:var(--text);}
+.role-btn:hover{border-color:var(--gold);transform:translateY(-2px);}
+.role-btn .icon{font-size:28px;margin-bottom:8px;}
+.role-btn h3{font-size:16px;color:var(--gold-bright);margin-bottom:4px;}
+.role-btn p{font-size:12px;color:var(--muted);margin:0;}
+
+/* ---------- toasts ---------- */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 24px;font-weight:600;font-size:13.5px;z-index:1000;opacity:0;transition:all .3s;pointer-events:none;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ---------- song library ---------- */
+.lib-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-chip{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);padding:7px 15px;border-radius:999px;font-size:12.5px;font-weight:600;}
+.filter-chip.active{border-color:var(--gold);color:var(--gold-bright);background:var(--gold-dim);}
+.song-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.song-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;
+  position:relative;overflow:hidden;transition:border-color .15s,transform .15s;
+}
+.song-card:hover{border-color:var(--gold-dim);transform:translateY(-3px);}
+.song-card .rail{position:absolute;top:0;left:0;height:3px;width:100%;background:linear-gradient(90deg,var(--gold),var(--teal),var(--purple));opacity:.7;}
+.song-card .native{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--gold-bright);margin:10px 0 1px;}
+.song-card .translit{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:12px;}
+.song-card .meta-row{display:flex;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-bottom:14px;}
+.song-card .meta-row span{background:var(--surface-2);padding:3px 8px;border-radius:6px;}
+.song-card-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.empty-state{border:1px dashed var(--line);border-radius:16px;padding:46px 20px;text-align:center;color:var(--muted);font-size:14px;grid-column:1/-1;}
+
+/* ---------- practice hub ---------- */
+.hub-head{text-align:center;margin:10px 0 26px;}
+.hub-head .native{font-family:var(--font-display);font-size:30px;color:var(--gold-bright);}
+.hub-head .translit{color:var(--muted);font-style:italic;font-size:14px;margin-top:2px;}
+.stage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px;}
+.stage-card{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:22px;text-align:left;
+  display:flex;flex-direction:column;gap:8px;color:var(--text);position:relative;
+}
+.stage-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.stage-card .num{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:1px;}
+.stage-card .ttl{font-family:var(--font-display);font-size:19px;color:var(--gold-bright);}
+.stage-card .desc{font-size:12.5px;color:var(--muted);line-height:1.55;}
+.stage-card .icon{font-size:26px;}
+.guided-card{
+  background:linear-gradient(135deg,var(--gold-dim),var(--purple-dim));
+  border:1.5px solid var(--gold);border-radius:16px;padding:24px;margin-bottom:22px;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.guided-card h3{font-size:20px;}
+.guided-card p{color:var(--muted);font-size:13px;margin-top:4px;}
+
+/* ---------- stepper ---------- */
+.stepper{display:flex;align-items:center;gap:6px;margin-bottom:22px;flex-wrap:wrap;}
+.step-dot{
+  display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted-2);
+  padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);
+}
+.step-dot.current{color:var(--gold-bright);border-color:var(--gold);background:var(--gold-dim);}
+.step-dot.done{color:var(--teal);border-color:var(--teal-dim);}
+.step-sep{width:16px;height:1px;background:var(--line);}
+
+/* ---------- syllable tap practice ---------- */
+.practice-line{margin-bottom:26px;}
+.practice-line-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.tap-row{display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px 10px;margin-bottom:8px;}
+.tap-row.readonly{background:transparent;border-style:dashed;padding:10px;}
+.tap-unit{font-family:var(--font-mono);font-size:21px;color:var(--text);padding:2px 1px;user-select:none;}
+.tap-row.readonly .tap-unit{font-size:15px;color:var(--muted);font-style:italic;}
+.tap-gap{width:14px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;}
+.tap-gap::before{content:'';width:2px;height:14px;background:var(--line);border-radius:2px;transition:all .15s;}
+.tap-gap:hover::before{background:var(--gold);height:20px;}
+.tap-gap.active::before{background:var(--gold-bright);width:3px;height:22px;}
+.tap-gap.g-correct::before{background:var(--correct);width:3px;height:24px;}
+.tap-gap.g-wrong::before{background:var(--incorrect);width:3px;height:24px;}
+.tap-gap.g-missed::before{background:var(--acceptable);width:3px;height:24px;box-shadow:0 0 0 2px rgba(242,195,104,.18);}
+.hint-line{font-size:13.5px;color:var(--muted);font-style:italic;padding:6px 2px;}
+.mode-switch{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.mode-btn{background:none;border:1px solid var(--line);color:var(--muted);padding:8px 16px;border-radius:8px;font-size:13px;}
+.mode-btn.active{border-color:var(--gold);color:var(--gold-bright);background:var(--gold-dim);}
+
+.score-banner{text-align:center;padding:22px;border-radius:var(--radius);margin-bottom:22px;}
+.score-banner.good{background:var(--correct-bg);border:1px solid var(--correct);}
+.score-banner.bad{background:var(--incorrect-bg);border:1px solid var(--incorrect);}
+.score-banner .big{font-family:var(--font-display);font-size:36px;color:var(--gold-bright);}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:6px;}
+.legend span{display:inline-flex;align-items:center;gap:5px;}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+/* ---------- audio player (shared) ---------- */
+.player-box{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px;}
+.lyric-stage{
+  min-height:150px;background:radial-gradient(ellipse at center,var(--surface-3) 0%,var(--surface-2) 75%);
+  border:1px solid var(--line);border-radius:12px;padding:26px 20px;display:flex;flex-direction:column;
+  justify-content:center;gap:12px;font-family:var(--font-display);text-align:center;
+  overflow-y:auto;max-height:280px;margin-bottom:18px;
+}
+.lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;}
+.syll{display:inline-block;padding:1px 2px;border-radius:5px;transition:all .12s ease;}
+.syll.sung{color:var(--gold);}
+.syll.active{color:#1a1206;background:var(--gold);box-shadow:0 0 0 4px var(--gold-dim);transform:scale(1.08);}
+.syll.upcoming{color:var(--muted);}
+.beat-rail-wrap{margin-bottom:18px;}
+.beat-rail-label{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:9px;display:flex;justify-content:space-between;}
+.beat-rail{display:flex;gap:6px;justify-content:center;align-items:center;padding:14px 10px;background:var(--surface-3);border-radius:12px;border:1px solid var(--line);flex-wrap:wrap;}
+.beat-dot{flex:1;max-width:56px;display:flex;flex-direction:column;align-items:center;}
+.beat-num{font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);transition:all .08s ease;}
+.beat-num.active{color:#1a1206;background:var(--gold);border-color:var(--gold);transform:scale(1.15);box-shadow:0 0 12px var(--gold);}
+.seek-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.time-lbl{font-family:var(--font-mono);font-size:12px;color:var(--muted);width:44px;}
+input[type=range]{-webkit-appearance:none;flex:1;height:5px;border-radius:99px;background:var(--line);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid #1a1206;}
+.transport-controls{display:flex;align-items:center;justify-content:center;gap:14px;}
+.play-btn{width:54px;height:54px;border-radius:50%;background:var(--gold);border:none;display:flex;align-items:center;justify-content:center;color:#1a1206;box-shadow:0 4px 18px var(--gold-dim);flex:0 0 auto;}
+.play-btn svg{width:20px;height:20px;}
+.toggle-row{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.loop-row{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.loop-row input[type=number]{width:56px;padding:6px 4px;text-align:center;font-family:var(--font-mono);font-size:12.5px;}
+.volume-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.volume-panel .volume-row:first-child{margin-top:0;}
+.volume-row input[type=range]:disabled{opacity:.35;}
+.volume-row .vol-lbl{font-size:11px;white-space:nowrap;flex:0 0 auto;}
+.volume-row .vol-pct{font-size:11px;width:36px;flex:0 0 auto;text-align:right;}
+.volume-row input[type=range]{flex:1;}
+.toggle-btn{font-family:var(--font-mono);font-size:12px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface-3);color:var(--muted);}
+.toggle-btn.on{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+.speed-select{font-family:var(--font-mono);font-size:12px;background:var(--surface-3);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:7px 12px;}
+.no-audio-note{font-size:12px;color:var(--muted);text-align:center;padding:10px;background:var(--surface-3);border-radius:8px;border:1px dashed var(--line);}
+
+/* ---------- beat quiz grid ---------- */
+.beatquiz-grid{display:flex;flex-direction:column;gap:10px;}
+.beatquiz-line{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;}
+.beatquiz-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;}
+.beatquiz-item .txt{font-family:var(--font-display);font-size:16px;}
+.beatquiz-item input{width:64px;text-align:center;padding:7px 4px;font-size:12.5px;}
+.beatquiz-item .mb-row{display:flex;gap:3px;}
+.beatquiz-item.bq-correct input{border-color:var(--correct);color:var(--correct);}
+.beatquiz-item.bq-wrong input{border-color:var(--incorrect);color:var(--incorrect);}
+.beatquiz-item .answer-lbl{font-size:10px;color:var(--muted);font-family:var(--font-mono);min-height:12px;}
+.syl-notes-line{gap:1px;align-items:flex-end;}
+.beatquiz-item.syl-note-item{min-width:0;padding:0 2px;}
+.syl-note-item .syl-note-txt{white-space:nowrap;}
+.syl-note-input{width:44px !important;padding:6px 2px !important;}
+
+/* ---------- root/scale quiz ---------- */
+.note-wheel{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
+.note-btn{padding:14px 4px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--text);font-family:var(--font-mono);font-weight:700;font-size:14px;}
+.note-btn.sel{border-color:var(--gold);background:var(--gold-dim);color:var(--gold-bright);}
+.scale-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.scale-btn{padding:9px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12.5px;font-weight:600;}
+.scale-btn.sel{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+.reveal-box{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:16px;}
+.reveal-box .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.reveal-box .val{font-family:var(--font-mono);font-size:14px;line-height:1.8;color:var(--gold-bright);white-space:pre-wrap;}
+.mini-piano-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;}
+.mini-piano{display:flex;position:relative;height:150px;margin:14px 0;user-select:none;min-width:480px;}
+.mini-white{flex:1;background:#f3efe3;border:1px solid #2b2d3a;border-radius:0 0 6px 6px;position:relative;color:#0c0d12;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:var(--font-mono);font-size:10px;font-weight:700;min-width:32px;}
+.mini-white:active{background:var(--gold-bright);}
+.mini-black{position:absolute;top:0;width:7%;height:88px;background:#1a1206;border-radius:0 0 4px 4px;z-index:2;}
+.mini-black:active{background:var(--gold);}
+
+/* ---------- chord practice grid ---------- */
+.chord-track-line{margin-bottom:22px;overflow-x:auto;padding-bottom:6px;}
+.chord-track{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(44px,1fr);gap:1px;}
+.chord-cell{padding-bottom:6px;}
+.chord-slot{width:100%;background:var(--surface-2);border:1.5px dashed var(--line);color:var(--muted);border-radius:7px;padding:6px 3px;font-family:var(--font-mono);font-size:12.5px;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;}
+.chord-slot:hover{border-color:var(--gold);}
+.chord-slot.answered{border-style:solid;border-color:var(--gold);color:var(--gold-bright);background:var(--gold-dim);}
+.chord-slot.correct{border-style:solid;border-color:var(--correct);color:var(--correct);background:var(--correct-bg);}
+.chord-slot.acceptable{border-style:solid;border-color:var(--acceptable);color:var(--acceptable);background:var(--acceptable-bg);}
+.chord-slot.incorrect{border-style:solid;border-color:var(--incorrect);color:var(--incorrect);background:var(--incorrect-bg);}
+.lyric-row,.note-row,.beatlbl-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(44px,1fr);gap:1px;}
+.lyric-row{font-size:13px;}
+.lyric-row .cell{text-align:center;padding-top:4px;color:var(--text);font-family:var(--font-display);}
+.note-row .cell{text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--purple);padding-top:2px;}
+.beatlbl-row .cell{text-align:center;font-family:var(--font-mono);font-size:9.5px;color:var(--muted-2);padding-top:2px;}
+.chord-reveal{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;max-width:220px;}
+.chord-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin:14px 0;}
+
+/* ---------- teacher editor ---------- */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.tab-btn{padding:11px 18px;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);font-size:13.5px;font-weight:600;}
+.tab-btn.active{color:var(--gold-bright);border-bottom-color:var(--gold);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.line-block{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;}
+.line-block-head{margin-bottom:10px;}
+.segments-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+.segment-card{background:var(--surface-3);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:158px;position:relative;flex:0 0 auto;}
+.segment-card label{margin-bottom:3px;font-size:9.5px;}
+.segment-card input,.segment-card select{padding:7px 8px;font-size:13px;margin-bottom:7px;}
+.segment-card input.native-input{font-size:15px;}
+.segments-full-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-items:start;}
+.segment-full{background:var(--surface-3);border:1px solid var(--line);border-radius:12px;padding:14px;}
+.segment-full .field{margin-bottom:10px;}
+.segment-full label{margin-bottom:4px;font-size:10px;}
+.segment-full input.native-input{font-size:16px;}
+
+/* ---- lead-sheet score grid: Chord / Note / Native / Translit / Beat, column-aligned ---- */
+.score-line{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:4px;}
+.score-gutter{flex:0 0 82px;background:var(--surface-3);padding:10px 10px;display:flex;flex-direction:column;border-right:1px solid var(--line);}
+.score-gutter .g-row{height:40px;display:flex;align-items:center;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:700;}
+.score-scroll{overflow-x:auto;flex:1;}
+.score-cols{display:flex;padding:10px 10px;gap:8px;min-height:1px;}
+.score-col{display:flex;flex-direction:column;min-width:66px;position:relative;flex:0 0 auto;}
+.score-col .c-row{height:40px;display:flex;align-items:center;}
+.score-col input{width:100%;text-align:center;padding:4px 3px;font-size:12.5px;height:32px;border-radius:7px;}
+.score-col input.chord-cell{color:var(--gold-bright);font-weight:700;border-color:var(--gold-dim);}
+.chord-cell-btn{width:100%;height:32px;border-radius:7px;border:1.5px solid var(--gold-dim);background:var(--surface-2);color:var(--muted);font-family:var(--font-mono);font-size:12.5px;font-weight:700;cursor:pointer;}
+.chord-cell-btn.set{color:var(--gold-bright);background:var(--gold-dim);border-color:var(--gold);}
+.chord-cell-btn:hover{border-color:var(--gold);}
+.ce-chart-box{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:16px;}
+.ce-chart-box label{font-size:10.5px;}
+.ce-section{margin-bottom:16px;}
+.ce-section label{display:block;margin-bottom:8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+.ce-section .chip{margin-bottom:6px;margin-right:6px;}
+.score-col input.native-input{font-size:16px;font-family:var(--font-display);height:36px;}
+.score-col .remove-col{position:absolute;top:-9px;right:-6px;background:var(--surface);border:1px solid var(--line);border-radius:50%;width:17px;height:17px;font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;z-index:2;}
+.score-col .remove-col:hover{color:var(--incorrect);border-color:var(--incorrect);}
+.grading-details{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+.grading-details summary{cursor:pointer;font-size:12.5px;color:var(--gold-bright);font-weight:600;}
+.grading-details[open] summary{margin-bottom:6px;}
+.remove-x{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;}
+.remove-x:hover{color:var(--incorrect);}
+.seg-index{position:absolute;top:6px;left:9px;font-size:10px;color:var(--muted);font-family:var(--font-mono);}
+.para-divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--gold);font-size:11px;letter-spacing:.4px;text-transform:uppercase;}
+.para-divider::before,.para-divider::after{content:'';flex:1;height:1px;background:var(--line);}
+.quick-add-panel{background:var(--surface-3);border:1px dashed var(--gold);border-radius:10px;padding:14px;margin-bottom:14px;}
+.beat-row-edit{display:grid;grid-template-columns:1.3fr .8fr .8fr;gap:6px;padding:6px 0;border-bottom:1px solid var(--line-soft);align-items:center;}
+.beat-row-edit .syl{font-family:var(--font-display);font-size:14px;}
+.beat-row-edit input{padding:6px 8px;font-size:12px;}
+.chord-slot-editor{background:var(--surface-3);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-family:var(--font-mono);font-size:12px;display:flex;align-items:center;gap:6px;}
+.chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;}
+.chip button:hover{color:var(--incorrect);}
+.palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;}
+.palette-chip:hover{border-color:var(--gold);}
+
+/* ---------- modal ---------- */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(8,9,13,.78);z-index:60;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
+.modal-backdrop.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;}
+.modal h3{font-size:19px;margin-bottom:4px;}
+.modal p.hint{color:var(--muted);font-size:12.5px;margin:0 0 18px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+
+.score-scroll,.segments-scroll,.chord-track-line,.lib-filters{-webkit-overflow-scrolling:touch;}
+
+@media(max-width:640px){
+  #app{padding:0 12px 70px;}
+  .topbar{padding:12px 12px;flex-wrap:wrap;gap:8px;}
+  .brand-mark{width:34px;height:34px;font-size:16px;}
+  .brand-text h1{font-size:17px;}
+  .brand-text span{font-size:10px;}
+  .top-actions{gap:6px;}
+  .card{padding:16px;}
+  .card.tight{padding:14px;}
+  .tap-unit{font-size:18px;}
+  .note-wheel{grid-template-columns:repeat(4,1fr);}
+  .role-choice{flex-direction:column;}
+  .song-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .song-card{padding:14px;}
+  .song-card .native{font-size:16px;}
+  .stage-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .stage-card{padding:16px;}
+  .guided-card{flex-direction:column;align-items:stretch;text-align:center;padding:18px;}
+  .hub-head .native{font-size:23px;}
+  .modal{padding:18px;}
+  .score-gutter{flex:0 0 66px;padding:10px 6px;}
+  .score-gutter .g-row{font-size:9px;}
+  .score-col input{font-size:11.5px;}
+  .btn.big{padding:12px 16px;font-size:13.5px;}
+  .lyric-stage{padding:18px 12px;}
+  .lyric-line{font-size:17px;}
+  .score-banner .big{font-size:28px;}
+  .mini-piano{height:130px;}
+  .mini-black{height:74px;}
+  .transport-controls{gap:8px;}
+  .play-btn{width:48px;height:48px;}
+  .btn-icon{width:36px;height:36px;font-size:12px;}
+  .loop-row input[type=number]{width:48px;}
+  .beatquiz-item{min-width:64px;}
+  .score-col,.chord-cell{min-width:56px;}
+}
+@media(max-width:400px){
+  .stage-grid{grid-template-columns:1fr;}
+  .song-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}
+  .note-wheel{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= TOPBAR ================= -->
+  <div class="topbar" id="topbar">
+    <div class="brand">
+      <div class="brand-mark">SS</div>
+      <div class="brand-text"><h1>Song Studio</h1><span id="brandSub">JGeneration Music Academy · Song Practice Studio</span></div>
+    </div>
+    <div class="top-actions" id="topActions"></div>
+  </div>
+
+  <!-- ================= LOGIN GATE ================= -->
+  <div id="login-view">
+    <p class="muted" style="font-size:13.5px;">One studio for lyrics, rhythm, melody &amp; chords — practised one step at a time.</p>
+    <div id="role-choice" class="role-choice">
+      <button type="button" class="role-btn" onclick="showTeacherLogin()">
+        <div class="icon">📋</div>
+        <h3>Teacher</h3>
+        <p>Build songs — lyrics, syllables, rhythm, scale &amp; chords</p>
+      </button>
+      <button type="button" class="role-btn" onclick="studentLogin()">
+        <div class="icon">🎓</div>
+        <h3>Student</h3>
+        <p>Practice a song, one skill at a time</p>
+      </button>
+    </div>
+    <div id="teacher-login" class="card hidden" style="text-align:left;max-width:420px;margin:0 auto;">
+      <h3 style="font-size:16px;margin-bottom:14px;">Teacher Login</h3>
+      <div class="field"><label>Email</label><input type="email" id="t-email" placeholder="you@example.com" autocomplete="username"></div>
+      <div class="field" style="margin-bottom:6px;"><label>Password</label><input type="password" id="t-password" placeholder="Enter password" autocomplete="current-password"></div>
+      <div class="error-msg hidden" id="t-error">❌ Wrong email or password.</div>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn ghost" type="button" onclick="backToRoles()">← Back</button>
+        <button class="btn gold" type="button" id="t-login-btn" onclick="teacherLogin()">Log In</button>
+      </div>
+    </div>
+    <p class="muted" style="max-width:420px;margin:16px auto 0;font-size:11px;text-align:center;">Teacher access uses Firebase Authentication — no password is stored in this page.</p>
+  </div>
+
+  <!-- ================= STUDENT: SONG LIBRARY ================= -->
+  <div id="view-library" class="hidden">
+    <div class="spread" style="margin-bottom:6px;">
+      <h2 style="font-size:20px;">Song Library</h2>
+    </div>
+    <p class="muted" style="font-size:13px;margin-bottom:16px;">Pick a song, then choose what to practice — or pick a skill first below.</p>
+    <div class="card" id="libSkillPicker" style="margin-bottom:22px;"></div>
+    <h3 style="font-size:15px;margin-bottom:10px;">Or browse all songs</h3>
+    <div class="lib-filters" id="libFilters"></div>
+    <div class="card tight hidden" id="libPendingBanner" style="border-color:var(--gold);margin-bottom:14px;"></div>
+    <div class="song-grid" id="libraryGrid"></div>
+  </div>
+
+  <!-- ================= STUDENT: PRACTICE HUB ================= -->
+  <div id="view-hub" class="hidden">
+    <button class="btn ghost small" onclick="backToLibrary()">← All songs</button>
+    <div class="hub-head">
+      <div class="translit" id="hubTranslit"></div>
+      <div class="native" id="hubNative"></div>
+    </div>
+    <div class="guided-card">
+      <div>
+        <h3>🚀 Practice All — Guided</h3>
+        <p>We'll walk you through all four skills in order: syllables → rhythm → scale → chords.</p>
+      </div>
+      <button class="btn gold big" onclick="startFlow(currentHubSongId,['syllable','beat','rootscale','chord'])">Start Guided Practice</button>
+    </div>
+    <div class="stage-grid">
+      <button class="stage-card" onclick="startFlow(currentHubSongId,['syllable'])">
+        <span class="icon">✂️</span>
+        <span class="num">STEP 1</span>
+        <span class="ttl">Syllable Split</span>
+        <span class="desc">Tap between letters to mark where each syllable breaks.</span>
+      </button>
+      <button class="stage-card" onclick="startFlow(currentHubSongId,['beat'])">
+        <span class="icon">🥁</span>
+        <span class="num">STEP 2</span>
+        <span class="ttl">Beat &amp; Measure</span>
+        <span class="desc">Find which measure and beat each syllable falls on.</span>
+      </button>
+      <button class="stage-card" onclick="startFlow(currentHubSongId,['rootscale'])">
+        <span class="icon">🎹</span>
+        <span class="num">STEP 3</span>
+        <span class="ttl">Root Note &amp; Scale</span>
+        <span class="desc">Listen and identify the root note, scale, and lead notes.</span>
+      </button>
+      <button class="stage-card" onclick="startFlow(currentHubSongId,['chord'])">
+        <span class="icon">🎸</span>
+        <span class="num">STEP 4</span>
+        <span class="ttl">Apply Chords</span>
+        <span class="desc">Choose the right chord for each measure of the melody.</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= STUDENT: PRACTICE FLOW (any single stage or guided) ================= -->
+  <div id="view-flow" class="hidden">
+    <div class="spread" style="margin-bottom:10px;">
+      <button class="btn ghost small" onclick="exitFlow()">← Back</button>
+      <a class="btn outline small hidden" id="flowYoutubeBtn" href="#" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+    <div id="flowStepper" class="stepper hidden"></div>
+    <div class="hub-head" style="margin:4px 0 18px;">
+      <div class="translit" id="flowTranslit"></div>
+      <div class="native" id="flowNative"></div>
+    </div>
+
+    <!-- Stage panel: mounted dynamically -->
+    <div id="stagePanel"></div>
+  </div>
+
+  <!-- ================= TEACHER VIEW ================= -->
+  <div id="teacher-view" class="hidden">
+    <div id="teacher-songs-panel">
+      <div class="spread" style="margin-bottom:16px;">
+        <h2 style="font-size:19px;">Your Songs</h2>
+        <button class="btn gold" onclick="newSong()">+ New Song</button>
+      </div>
+      <div class="lib-filters" id="teacherFilters"></div>
+      <div id="teacherSongList"></div>
+    </div>
+
+    <div id="editor-view" class="hidden">
+      <div class="spread" style="margin-bottom:16px;">
+        <h2 style="font-size:19px;" id="editorTitle">New Song</h2>
+        <div class="row">
+          <button class="btn ghost" onclick="closeEditor()">Cancel</button>
+          <button class="btn gold" id="saveSongBtn" onclick="saveSong()">Save Song</button>
+        </div>
+      </div>
+      <p class="muted" style="font-size:13px;margin-bottom:18px;">Everything for this song lives on one page — type each syllable once, then set its beat, note, and chords right next to it. No re-typing.</p>
+
+      <!-- SONG DETAILS -->
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:14px;">🎵 Song Details</h3>
+        <div class="grid-2">
+          <div class="field"><label>Song Title — Transliteration</label><input type="text" id="song-title-translit" placeholder="e.g. Vaseegara"></div>
+          <div class="field"><label>Song Title — Native Script</label><input type="text" id="song-title-native" placeholder="e.g. வசீகரா"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Artist / Batch <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="song-artist" placeholder="Batch 4 · Keyboard"></div>
+          <div class="field"><label>Language</label>
+            <select id="song-language">
+              <option>English</option><option>Tamil</option><option>Telugu</option><option>Kannada</option><option>Hindi</option><option>Malayalam</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Song Audio File</label><input type="text" id="song-audio" placeholder="songs/vaseegara.mp3  or  https://..." onchange="onAudioPathChange()"></div>
+        <div class="help" style="margin-top:-6px;">Use <b>songs/your-file.mp3</b> if the audio is in the <b>songs/</b> folder next to this app, or a full URL if hosted elsewhere.</div>
+        <div class="grid-3">
+          <div class="field"><label>BPM</label><input type="number" id="song-bpm" value="100" min="20" max="300"></div>
+          <div class="field"><label>Beats per Measure</label><input type="number" id="song-timesig" value="4" min="1" max="12"></div>
+          <div class="field"><label>Start Offset (sec)</label><input type="number" id="song-offset" value="0" step="0.01"></div>
+        </div>
+      </div>
+
+      <!-- KEY, SCALE & LEAD NOTES -->
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:14px;">🎹 Root Note, Scale &amp; Lead Notes</h3>
+        <div class="grid-2">
+          <div class="field"><label>Root Note (answer key)</label><select id="song-rootnote"></select></div>
+          <div class="field"><label>Scale Type (answer key)</label><select id="song-scaletype"></select></div>
+        </div>
+        <div class="field"><label>Key Signature <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="song-keysig" placeholder="e.g. 2 sharps"></div>
+        <div class="field"><label>Full Lead Notes of the Song</label><textarea id="song-leadnotes" placeholder="e.g. C D E F G A B C — or full solfa / staff description"></textarea></div>
+        <div class="field"><label>YouTube Link — Root &amp; Scale Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-rootscale" placeholder="https://youtube.com/watch?v=..."></div>
+      </div>
+
+      <!-- CHORD PALETTE -->
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:14px;">🎸 Chord Palette</h3>
+        <div class="grid-2">
+          <div class="field"><label>Chord Key Center</label><select id="chord-keyroot"></select></div>
+          <div class="field"><label>Palette Level</label>
+            <select id="chord-difficulty">
+              <option value="beginner">Beginner (triads)</option>
+              <option value="pro">Pro (7ths, sus, 9ths…)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn outline small" onclick="generateChordPalette()">Generate Palette from Key</button>
+          <input type="text" id="custom-chord-input" placeholder="Add custom chord e.g. Csus2" style="max-width:200px;">
+          <button class="btn ghost small" onclick="addCustomChord()">+ Add</button>
+        </div>
+        <div class="chip-row" id="palette-chips" style="margin-top:10px;"></div>
+        <div class="field" style="margin-top:14px;"><label>YouTube Link — Chords Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-chord" placeholder="https://youtube.com/watch?v=..."></div>
+      </div>
+
+      <!-- BEAT TAP HELPER -->
+      <div class="card tight" id="beatTapCard">
+        <h3 style="font-size:15px;margin-bottom:12px;">🥁 Beat-Tap Helper <span class="muted" style="font-size:12px;font-weight:400;">(optional — fills Measure &amp; Beat below automatically)</span></h3>
+        <div class="row" style="margin-bottom:10px;">
+          <audio id="beatEditAudio" preload="metadata"></audio>
+          <button class="btn-icon" id="beatEditPlayBtn">▶</button>
+          <input type="range" id="beatEditSeek" min="0" max="100" value="0" step="0.01" style="flex:1;">
+          <span class="time-lbl mono" id="beatEditTime">0:00</span>
+        </div>
+        <div class="row">
+          <button class="btn outline small" id="beatTapBtn">TAP each syllable in rhythm (or press Space)</button>
+          <button class="btn ghost small" id="beatTapResetBtn">Reset tap position</button>
+        </div>
+        <div class="mono muted" style="font-size:12px;margin-top:8px;" id="beatTapPreview"></div>
+        <div class="field" style="margin-top:12px;max-width:420px;"><label>YouTube Link — Beat &amp; Measure Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-beat" placeholder="https://youtube.com/watch?v=..."></div>
+      </div>
+
+      <!-- LYRICS + SYLLABLES + RHYTHM + NOTE + CHORDS, ALL TOGETHER -->
+      <div class="spread" style="margin:24px 0 6px;">
+        <h3 style="font-size:16px;">🎼 Lyrics, Chords, Notes &amp; Rhythm</h3>
+      </div>
+      <p class="muted" style="font-size:13px;margin-bottom:6px;">Written like a lead sheet — one column per syllable, stacked top to bottom: <b>Chord</b> · <b>Note</b> · <b>Native</b> · <b>Translit</b> · <b>Beat</b>. Use Quick Add to split a pasted line into syllable columns, then fill straight down each column. Beat format is <code>measure:beat</code> — e.g. <code>1:1</code>, <code>2:3.5</code> for a half-beat. Leave the Chord cell blank if there's no chord change there; type one to mark it as a chord slot (open "Chord grading details" below the line to add acceptable/wrong alternatives).</p>
+      <div class="field" style="max-width:420px;margin-bottom:16px;"><label>YouTube Link — Lyrics &amp; Syllable Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-syllable" placeholder="https://youtube.com/watch?v=..."></div>
+      <div id="lines-container"></div>
+      <button class="btn outline" onclick="addLine()">+ Add Lyric Line</button>
+    </div>
+  </div>
+
+  <!-- ================= AUDIO used by student flow (single shared element) ================= -->
+  <audio id="flowAudio" preload="metadata"></audio>
+
+</div>
+
+
+<!-- ============ CHORD EDITOR MODAL — opened by clicking a Chord cell in the lead-sheet grid ============ -->
+<div class="modal-backdrop" id="chord-editor-modal">
+  <div class="modal" style="max-width:520px;">
+    <h3>Chords for "<span id="ce-syllable"></span>"</h3>
+    <p class="hint">Type chords manually into any list below. Tap a chart chord to add it as Correct.</p>
+
+    <div class="ce-chart-box">
+      <label style="margin-bottom:6px;">Chord Chart <span class="muted" style="text-transform:none;">(your song's palette)</span></label>
+      <div class="chip-row" id="ce-chart-chips"></div>
+    </div>
+
+    <div class="ce-section">
+      <label style="color:var(--correct);">✓ Right / Correct Chords</label>
+      <div id="ce-correct-chips"></div>
+      <div class="row" style="gap:8px;">
+        <input type="text" id="ce-correct-input" placeholder="e.g. C" style="flex:1;">
+        <button class="btn small" type="button" onclick="ceAddManual('correct')">+ Add</button>
+      </div>
+    </div>
+
+    <div class="ce-section">
+      <label style="color:var(--acceptable);">~ Acceptable Chords</label>
+      <div id="ce-acceptable-chips"></div>
+      <div class="row" style="gap:8px;">
+        <input type="text" id="ce-acceptable-input" placeholder="e.g. Am" style="flex:1;">
+        <button class="btn small" type="button" onclick="ceAddManual('acceptable')">+ Add</button>
+      </div>
+    </div>
+
+    <div class="ce-section">
+      <label style="color:var(--incorrect);">✕ Wrong Chords / Dischords</label>
+      <div id="ce-wrong-chips"></div>
+      <div class="row" style="gap:8px;">
+        <input type="text" id="ce-wrong-input" placeholder="e.g. F#" style="flex:1;">
+        <button class="btn small" type="button" onclick="ceAddManual('wrong')">+ Add</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn gold" onclick="closeChordEditor()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHORD PICKER MODAL — student side, click a chord slot in Apply Chords ============ -->
+<div class="modal-backdrop" id="chord-picker-modal">
+  <div class="modal" style="max-width:420px;">
+    <h3>Pick a Chord</h3>
+    <p class="hint">Tap a chord from the chart to place it here.</p>
+    <div class="chip-row" id="cp-chart-chips"></div>
+    <div class="modal-actions">
+      <button class="btn danger small" onclick="cpClear()">Clear</button>
+      <button class="btn ghost small" onclick="closeChordPicker()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================================
+   SONG STUDIO — unified song-practice studio
+   FIREBASE CONFIG — shared project used across JGeneration Music Academy apps
+============================================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const SONGS_COLLECTION = 'swaralayaSongs';
+const TEACHER_EMAIL = 'josepath.andrew@gmail.com';
+
+/* ============================================================================
+   GLOBAL STATE
+============================================================================ */
+let isTeacher = false;
+let allSongs = [];              // cached song list (student + teacher)
+let libraryLangFilter = 'All';
+let currentHubSongId = null;
+
+/* ============================================================================
+   GENERIC HELPERS
+============================================================================ */
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+function graphemes(str){
+  str = str || '';
+  if(typeof Intl !== 'undefined' && Intl.Segmenter){
+    try{
+      const seg = new Intl.Segmenter('en', {granularity:'grapheme'});
+      return Array.from(seg.segment(str), s => s.segment);
+    }catch(e){ /* fall through */ }
+  }
+  return Array.from(str);
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+function fmtTime(s){
+  if(!isFinite(s)) return '0:00';
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function songTitleNative(s){ return s.titleNative || ''; }
+function songTitleTranslit(s){ return s.titleTranslit || s.title || ''; }
+function songDisplayName(s){ return songTitleTranslit(s) || songTitleNative(s) || 'Untitled'; }
+function titleStackHtml(s){
+  const tt = songTitleTranslit(s), nt = songTitleNative(s);
+  let html = '';
+  if(tt) html += `<div class="translit">${escapeHtml(tt)}</div>`;
+  if(nt) html += `<div class="native">${escapeHtml(nt)}</div>`;
+  if(!tt && !nt) html += `<div class="native">Untitled</div>`;
+  return html;
+}
+
+// Flatten all segments across all lines, tagging their line/segment index —
+// used by rhythm/chord logic that needs to scan the whole song.
+function flattenSegments(song){
+  const out = [];
+  (song.lines||[]).forEach((line,li)=>{
+    (line.segments||[]).forEach((seg,si)=>{
+      out.push({seg, li, si});
+    });
+  });
+  return out;
+}
+
+/* ============================================================================
+   BEAT / MEASURE MATH
+   Continuous beat is 1-indexed across the whole song (measure 2 beat 1 in
+   4/4 = continuous beat 5). measure/beat (per segment) <-> continuous beat
+   <-> absolute time in the audio, via bpm + startOffset.
+============================================================================ */
+function measureBeatToContinuous(measure, beat, timeSigTop){
+  return (measure-1)*timeSigTop + beat;
+}
+function continuousToMeasureBeat(cbeat, timeSigTop){
+  const measure = Math.floor((cbeat-1)/timeSigTop) + 1;
+  let beat = ((cbeat-1) % timeSigTop) + 1;
+  if(beat < 0) beat += timeSigTop;
+  return {measure, beat};
+}
+function continuousBeatToTime(cbeat, bpm, offset){
+  return offset + (cbeat-1)*60/bpm;
+}
+function timeToContinuousBeat(t, bpm, offset){
+  return (t-offset)/(60/bpm) + 1;
+}
+function measureBeatToTime(measure, beat, song){
+  const cbeat = measureBeatToContinuous(measure, beat, song.timeSigTop||4);
+  return continuousBeatToTime(cbeat, song.bpm||100, song.startOffset||0);
+}
+function timeToMeasureBeat(t, song){
+  const cbeat = timeToContinuousBeat(t, song.bpm||100, song.startOffset||0);
+  return continuousToMeasureBeat(cbeat, song.timeSigTop||4);
+}
+
+/* ============================================================================
+   CHORD THEORY ENGINE (ported & adapted)
+============================================================================ */
+const CIRCLE_OF_FIFTHS = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
+const MAJOR_KEYS = {
+  'C':['C','D','E','F','G','A','B'], 'G':['G','A','B','C','D','E','F#'],
+  'D':['D','E','F#','G','A','B','C#'], 'A':['A','B','C#','D','E','F#','G#'],
+  'E':['E','F#','G#','A','B','C#','D#'], 'B':['B','C#','D#','E','F#','G#','A#'],
+  'F#':['F#','G#','A#','B','C#','D#','F'], 'Db':['Db','Eb','F','Gb','Ab','Bb','C'],
+  'Ab':['Ab','Bb','C','Db','Eb','F','G'], 'Eb':['Eb','F','G','Ab','Bb','C','D'],
+  'Bb':['Bb','C','D','Eb','F','G','A'], 'F':['F','G','A','Bb','C','D','E']
+};
+const DIATONIC_QUALITIES = ['maj','min','min','maj','maj','min','dim'];
+const NOTE_INDEX = {'C':0,'B#':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'Cb':11};
+const CHORD_INTERVALS = {
+  maj:[0,4,7], min:[0,3,7], dim:[0,3,6], aug:[0,4,8], '5':[0,7],
+  sus2:[0,2,7], sus4:[0,5,7], '6':[0,4,7,9], m6:[0,3,7,9],
+  maj7:[0,4,7,11], '7':[0,4,7,10], m7:[0,3,7,10],
+  '9':[0,4,7,10,2], m9:[0,3,7,10,2], '11':[0,4,7,10,5], m11:[0,3,7,10,5]
+};
+const PC_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+function diatonicChords(keyRoot){
+  const scale = MAJOR_KEYS[keyRoot];
+  if(!scale) return [];
+  return scale.map((note,i)=>({degree:i+1, root:note, quality:DIATONIC_QUALITIES[i]}));
+}
+function chordName(root, quality){
+  if(quality==='maj') return root;
+  if(quality==='min') return root+'m';
+  if(quality==='dim') return root+'dim';
+  return root;
+}
+function generateBeginnerPalette(keyRoot){
+  return diatonicChords(keyRoot).filter(c=>c.degree!==7).map(c=>chordName(c.root,c.quality));
+}
+function generateProPalette(keyRoot){
+  const base = diatonicChords(keyRoot).filter(c=>c.degree!==7);
+  const out = [];
+  base.forEach(c=>{
+    out.push(chordName(c.root,c.quality));
+    out.push(c.root+'sus2'); out.push(c.root+'sus4');
+    if(c.quality==='maj'){ out.push(c.root+'6'); out.push(c.degree===5?c.root+'7':c.root+'maj7'); out.push(c.root+'9'); }
+    else { out.push(c.root+'m6'); out.push(c.root+'m7'); out.push(c.root+'m9'); }
+  });
+  return out;
+}
+function generatePalette(keyRoot, difficulty){
+  return difficulty==='pro' ? generateProPalette(keyRoot) : generateBeginnerPalette(keyRoot);
+}
+function parseChordSymbol(sym){
+  const m = String(sym||'').match(/^([A-Ga-g])([#b]?)(.*)$/);
+  if(!m) return null;
+  const root = m[1].toUpperCase()+m[2];
+  const rest = m[3];
+  let quality = 'maj';
+  if(['','maj'].includes(rest)) quality='maj';
+  else if(rest==='m') quality='min';
+  else quality = rest;
+  return {root, quality};
+}
+function noteToPitchClass(noteStr){
+  const m = String(noteStr||'').trim().match(/^([A-Ga-g])([#b]?)/);
+  if(!m) return null;
+  const key = m[1].toUpperCase()+m[2];
+  return NOTE_INDEX.hasOwnProperty(key) ? NOTE_INDEX[key] : null;
+}
+function intervalsForSuffix(qualitySuffix){
+  if(CHORD_INTERVALS[qualitySuffix]) return CHORD_INTERVALS[qualitySuffix];
+  if(String(qualitySuffix).startsWith('m')) return CHORD_INTERVALS.min;
+  return CHORD_INTERVALS.maj;
+}
+function noteLetterOnly(note){
+  const m = String(note||'').trim().match(/^([A-Ga-g])([#b]?)/);
+  return m ? (m[1].toUpperCase()+m[2]) : String(note||'').trim();
+}
+// notes for a given measure number, scanning the *whole song* (flattened segments)
+function getMeasureNotes(flatSegs, measureNum){
+  return flatSegs.filter(f=>f.seg.measure===measureNum && f.seg.note && f.seg.note.trim())
+                 .map(f=>f.seg.note.trim());
+}
+function analyzeMeasureCoverage(flatSegs, measureNum, chordSymbol){
+  const parsed = parseChordSymbol(chordSymbol);
+  if(!parsed) return null;
+  const rootPc = NOTE_INDEX[parsed.root];
+  if(rootPc===undefined) return null;
+  const intervals = intervalsForSuffix(parsed.quality);
+  const chordPcs = intervals.map(iv=>(rootPc+iv)%12);
+  const chordNoteNames = intervals.map(iv=>PC_NAMES[(rootPc+iv)%12]);
+  const measureNotesRaw = getMeasureNotes(flatSegs, measureNum);
+  const measureLetters = measureNotesRaw.map(noteLetterOnly);
+  const letterCounts = {};
+  measureLetters.forEach(l=>{ letterCounts[l]=(letterCounts[l]||0)+1; });
+  const distinctLetters = Object.keys(letterCounts);
+  const maxCount = distinctLetters.length ? Math.max(...distinctLetters.map(l=>letterCounts[l])) : 0;
+  let dominant = distinctLetters.filter(l=>letterCounts[l]===maxCount && maxCount>1);
+  if(!dominant.length) dominant = distinctLetters.slice();
+  const chordPcSet = new Set(chordPcs);
+  const dominantInChord = dominant.filter(l=>{ const pc=noteToPitchClass(l); return pc!==null && chordPcSet.has(pc); });
+  const dominantMissing = dominant.filter(l=>!dominantInChord.includes(l));
+  const rootInMeasure = distinctLetters.some(l=>noteToPitchClass(l)===rootPc);
+  return {measureLetters, dominant, dominantInChord, dominantMissing, rootInMeasure, chordNoteNames, root:parsed.root};
+}
+function generateAutoExplanation(flatSegs, measureNum, chordSymbol, isWrong){
+  const a = analyzeMeasureCoverage(flatSegs, measureNum, chordSymbol);
+  if(!a || !a.measureLetters.length) return isWrong ? `${chordSymbol} doesn't fit the notes in this measure.` : `${chordSymbol} fits the notes in this measure.`;
+  const measureDesc = a.measureLetters.join(', ');
+  const domDesc = a.dominant.join(', ');
+  if(!isWrong){
+    if(!a.dominantMissing.length && a.dominant.length){
+      if(a.rootInMeasure) return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it covers the repeated note(s) and its root ${a.root} is one of them, so it's a strong fit.`;
+      return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it covers the repeated note(s), but its root ${a.root} doesn't appear in this measure, so it's acceptable but not the strongest choice.`;
+    }
+    if(a.dominantInChord.length) return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it only covers ${a.dominantInChord.join(', ')} of the repeated notes, missing ${a.dominantMissing.join(', ')}.`;
+  }
+  const missing = a.measureLetters.filter(l=>{ const pc=noteToPitchClass(l); const chordPcSet=new Set(a.chordNoteNames.map(noteToPitchClass)); return pc!==null && !chordPcSet.has(pc); });
+  const uniqMissing = [...new Set(missing)];
+  if(!uniqMissing.length) return `${chordSymbol} actually contains all the notes in this measure (${measureDesc}).`;
+  return `In this measure the notes are ${measureDesc}. ${chordSymbol} has ${a.chordNoteNames.join(', ')} — ${uniqMissing.join(', ')} ${uniqMissing.length>1?'are':'is'} not in ${chordSymbol}, so it's a wrong chord (dischord) here.`;
+}
+
+/* ============================================================================
+   ROOT NOTE / SCALE DATA + SIMPLE OSCILLATOR SYNTH (reference piano)
+============================================================================ */
+const ROOT_NOTES = [
+  {value:'C',label:'C'},{value:'C#',label:'C♯/D♭'},{value:'D',label:'D'},{value:'D#',label:'D♯/E♭'},
+  {value:'E',label:'E'},{value:'F',label:'F'},{value:'F#',label:'F♯/G♭'},{value:'G',label:'G'},
+  {value:'G#',label:'G♯/A♭'},{value:'A',label:'A'},{value:'A#',label:'A♯/B♭'},{value:'B',label:'B'}
+];
+const SCALE_TYPES = ['Major','Natural Minor','Harmonic Minor','Melodic Minor','Dorian','Phrygian','Lydian','Mixolydian','Locrian','Major Pentatonic','Minor Pentatonic','Blues'];
+
+let synthCtx = null;
+let pianoVolumeLevel = 0.85;
+function getSynthCtx(){
+  if(!synthCtx) synthCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return synthCtx;
+}
+function noteFreq(noteName, octave){
+  const idx = NOTE_INDEX[noteName];
+  if(idx===undefined) return 440;
+  const midi = (octave+1)*12 + idx;
+  return 440 * Math.pow(2, (midi-69)/12);
+}
+// Additive-synthesis piano voice: harmonic stack + fast hammer attack + natural
+// decay/release, tuned louder than a plain oscillator so it reads clearly in
+// a classroom. No external sample files are loaded, so it always works offline.
+const PIANO_HARMONICS = [
+  {mult:1, gain:1.00}, {mult:2, gain:0.55}, {mult:3, gain:0.30},
+  {mult:4, gain:0.16}, {mult:5, gain:0.09}, {mult:6, gain:0.05}, {mult:8, gain:0.025}
+];
+function playSynthNote(noteName, octave){
+  try{
+    const ctx = getSynthCtx();
+    if(ctx.state==='suspended') ctx.resume();
+    const freq = noteFreq(noteName, octave||4);
+    const now = ctx.currentTime;
+    const dur = 1.7;
+
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+    const peak = Math.max(0.0001, 0.55 * pianoVolumeLevel);
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(peak, now+0.006);          // fast hammer strike
+    master.gain.exponentialRampToValueAtTime(peak*0.4, now+0.28);       // quick initial decay
+    master.gain.exponentialRampToValueAtTime(0.0001, now+dur);          // long natural tail
+
+    PIANO_HARMONICS.forEach(h=>{
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq*h.mult;
+      const hg = ctx.createGain();
+      hg.gain.value = h.gain;
+      osc.connect(hg); hg.connect(master);
+      osc.start(now); osc.stop(now+dur+0.05);
+    });
+
+    // brief high-frequency "hammer" transient for attack definition
+    const click = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    click.type = 'square';
+    click.frequency.value = freq*2.02;
+    clickGain.gain.setValueAtTime(Math.max(0.0001, 0.12*pianoVolumeLevel), now);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, now+0.035);
+    click.connect(clickGain); clickGain.connect(ctx.destination);
+    click.start(now); click.stop(now+0.05);
+  }catch(e){ /* audio not available */ }
+}
+
+// Builds a piano keyboard spanning the given octaves (e.g. [4,5] = two
+// octaves) inside pianoEl. White keys are laid out with flexbox; black keys
+// are positioned proportionally so the layout scales cleanly to any number
+// of octaves. Keys trigger on press (mousedown/touchstart), not on release.
+function buildMiniPiano(pianoEl, octaves){
+  const noteOrder = ['C','D','E','F','G','A','B'];
+  const blackAfter = {'C':'C#','D':'D#','F':'F#','G':'G#','A':'A#'};
+  const whiteKeys = [];
+  octaves.forEach(oct=>{ noteOrder.forEach(n=>whiteKeys.push({note:n, octave:oct})); });
+  const N = whiteKeys.length;
+  const whiteWidthPct = 100/N;
+  const blackWidthPct = whiteWidthPct*0.62;
+  let html = '';
+  whiteKeys.forEach(wk=>{
+    const label = wk.note==='C' ? `C${wk.octave}` : wk.note;
+    html += `<div class="mini-white" data-note="${wk.note}" data-oct="${wk.octave}">${label}</div>`;
+  });
+  pianoEl.innerHTML = html;
+  function wireKeyPress(el, note, oct){
+    el.addEventListener('mousedown', (e)=>{ e.preventDefault(); playSynthNote(note,oct); });
+    el.addEventListener('touchstart', (e)=>{ e.preventDefault(); playSynthNote(note,oct); }, {passive:false});
+  }
+  pianoEl.querySelectorAll('.mini-white').forEach(el=>wireKeyPress(el, el.dataset.note, parseInt(el.dataset.oct,10)));
+  whiteKeys.forEach((wk,i)=>{
+    if(blackAfter[wk.note]){
+      const b = document.createElement('div');
+      b.className='mini-black';
+      b.style.left = ((i+1)*whiteWidthPct - blackWidthPct/2) + '%';
+      b.style.width = blackWidthPct + '%';
+      wireKeyPress(b, blackAfter[wk.note], wk.octave);
+      pianoEl.appendChild(b);
+    }
+  });
+}
+
+/* ============================================================================
+   AUTH + TOP-LEVEL ROUTING
+============================================================================ */
+function showTeacherLogin(){
+  document.getElementById('role-choice').classList.add('hidden');
+  document.getElementById('teacher-login').classList.remove('hidden');
+}
+function backToRoles(){
+  document.getElementById('teacher-login').classList.add('hidden');
+  document.getElementById('role-choice').classList.remove('hidden');
+}
+async function teacherLogin(){
+  const email = document.getElementById('t-email').value.trim();
+  const pass = document.getElementById('t-password').value;
+  const errEl = document.getElementById('t-error');
+  const btn = document.getElementById('t-login-btn');
+  errEl.classList.add('hidden');
+  if(!email || !pass){ errEl.textContent='❌ Please enter your email and password.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+  }catch(e){
+    errEl.textContent = '❌ ' + (['auth/invalid-credential','auth/wrong-password','auth/user-not-found'].includes(e.code) ? 'Wrong email or password.' : (e.message||'Login failed.'));
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Log In';
+  }
+}
+function studentLogin(){
+  sessionStorage.setItem('swrl-role','student');
+  enterStudentView();
+}
+async function logout(){
+  try{ await auth.signOut(); }catch(e){}
+  sessionStorage.clear();
+  location.reload();
+}
+document.getElementById('t-password').addEventListener('keydown', e=>{ if(e.key==='Enter') teacherLogin(); });
+
+auth.onAuthStateChanged(user=>{
+  isTeacher = !!(user && user.email === TEACHER_EMAIL);
+  if(isTeacher){
+    enterTeacherView();
+  } else if(sessionStorage.getItem('swrl-role') === 'student'){
+    enterStudentView();
+  }
+});
+
+function hideAllViews(){
+  ['login-view','view-library','view-hub','view-flow','teacher-view'].forEach(id=>{
+    document.getElementById(id).classList.add('hidden');
+  });
+}
+function renderTopActions(){
+  const el = document.getElementById('topActions');
+  if(isTeacher){
+    el.innerHTML = `<span class="pill">Teacher mode</span><button class="btn ghost small" onclick="logout()">Log out</button>`;
+  } else {
+    el.innerHTML = `<button class="btn ghost small" onclick="logout()">Exit</button>`;
+  }
+}
+function enterTeacherView(){
+  hideAllViews();
+  document.getElementById('teacher-view').classList.remove('hidden');
+  document.getElementById('brandSub').textContent = "Teacher — build songs, step by step";
+  renderTopActions();
+  populateRootScaleSelects();
+  loadSongsFromFirestore().then(()=>renderTeacherSongList());
+}
+function enterStudentView(){
+  hideAllViews();
+  document.getElementById('view-library').classList.remove('hidden');
+  document.getElementById('brandSub').textContent = "Practice a song, one skill at a time";
+  renderTopActions();
+  loadSongsFromFirestore().then(()=>renderLibrary());
+}
+
+/* ============================================================================
+   FIRESTORE — songs
+============================================================================ */
+async function loadSongsFromFirestore(){
+  try{
+    const snap = await db.collection(SONGS_COLLECTION).orderBy('createdAt','desc').get();
+    allSongs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){
+    console.error('Could not load songs', e);
+    allSongs = [];
+  }
+  return allSongs;
+}
+async function deleteSong(id, title){
+  if(!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  await db.collection(SONGS_COLLECTION).doc(id).delete();
+  await loadSongsFromFirestore();
+  if(isTeacher) renderTeacherSongList(); else renderLibrary();
+  showToast('🗑️ Song deleted.');
+}
+
+const LANGUAGES = ['All','English','Tamil','Telugu','Kannada','Hindi','Malayalam','Other'];
+
+/* ---------- STUDENT LIBRARY ---------- */
+let libraryPendingSkill = null;
+const SKILL_PICKER_META = {
+  syllable:  {icon:'✂️', title:'Syllable Split', num:'STEP 1', desc:'Start here — splits into rhythm, scale & chords step by step after.'},
+  beat:      {icon:'🥁', title:'Beat & Measure', num:'STEP 2', desc:'Jump straight in — find where each syllable falls on the beat.'},
+  rootscale: {icon:'🎹', title:'Root Note & Scale', num:'STEP 3', desc:'Jump straight in — find the root, the scale, then every note.'},
+  chord:     {icon:'🎸', title:'Apply Chords', num:'STEP 4', desc:'Jump straight in — place the right chord on each measure.'}
+};
+function renderLibrary(){
+  const filterEl = document.getElementById('libFilters');
+  filterEl.innerHTML = LANGUAGES.map(l=>`<button class="filter-chip ${libraryLangFilter===l?'active':''}" onclick="setLibFilter('${l}')">${l}</button>`).join('');
+
+  const skillEl = document.getElementById('libSkillPicker');
+  if(skillEl){
+    skillEl.innerHTML = `
+      <h3 style="font-size:15px;margin-bottom:6px;">🎯 Practice by Skill</h3>
+      <p class="muted" style="font-size:12.5px;margin-bottom:14px;">Pick a skill first, then choose a song for it. Starting from Syllable Split walks through all four in order — jumping to any other skill starts right there.</p>
+      <div class="stage-grid" style="margin-bottom:0;">
+        ${Object.keys(SKILL_PICKER_META).map(k=>{
+          const m = SKILL_PICKER_META[k];
+          return `<button class="stage-card" onclick="pickSkillFirst('${k}')">
+            <span class="icon">${m.icon}</span><span class="num">${m.num}</span>
+            <span class="ttl">${m.title}</span><span class="desc">${m.desc}</span>
+          </button>`;
+        }).join('')}
+      </div>`;
+  }
+
+  const grid = document.getElementById('libraryGrid');
+  const list = libraryLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===libraryLangFilter);
+
+  const bannerEl = document.getElementById('libPendingBanner');
+  if(libraryPendingSkill){
+    bannerEl.classList.remove('hidden');
+    bannerEl.innerHTML = `<div class="spread"><span>🎯 Choosing a song for <b style="color:var(--gold-bright);">${SKILL_PICKER_META[libraryPendingSkill].title}</b></span><button class="btn ghost small" onclick="clearPendingSkill()">✕ Cancel</button></div>`;
+  } else {
+    bannerEl.classList.add('hidden');
+    bannerEl.innerHTML = '';
+  }
+
+  if(!list.length){ grid.innerHTML = `<div class="empty-state">No songs here yet. Ask your teacher to add one.</div>`; return; }
+  grid.innerHTML = list.map(s=>{
+    const lineCount = (s.lines||[]).length;
+    const sylCount = (s.lines||[]).reduce((a,l)=>a+(l.segments||[]).length,0);
+    const actionBtn = libraryPendingSkill
+      ? `<button class="btn gold small" onclick="startPendingSkillForSong('${s.id}')">Start →</button>`
+      : `<button class="btn gold small" onclick="openHub('${s.id}')">Practice →</button>`;
+    return `
+    <div class="song-card">
+      <div class="rail"></div>
+      <span class="lang-tag">${escapeHtml(s.language||'—')}</span>
+      ${titleStackHtml(s)}
+      <div class="meta-row"><span>${lineCount} lines</span><span>${sylCount} syllables</span>${s.rootNote?`<span>${escapeHtml(s.rootNote)} ${escapeHtml(s.scaleType||'')}</span>`:''}</div>
+      <div class="song-card-actions">${actionBtn}</div>
+    </div>`;
+  }).join('');
+}
+function pickSkillFirst(skill){
+  libraryPendingSkill = skill;
+  renderLibrary();
+  document.getElementById('libraryGrid').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function clearPendingSkill(){ libraryPendingSkill = null; renderLibrary(); }
+function startPendingSkillForSong(songId){
+  const skill = libraryPendingSkill;
+  if(!skill) return;
+  libraryPendingSkill = null;
+  if(skill==='syllable') startFlow(songId, ['syllable','beat','rootscale','chord']);
+  else startFlow(songId, [skill]);
+}
+function setLibFilter(l){ libraryLangFilter = l; renderLibrary(); }
+function backToLibrary(){
+  hideAllViews();
+  document.getElementById('view-library').classList.remove('hidden');
+  renderLibrary();
+}
+
+function openHub(id){
+  currentHubSongId = id;
+  const s = allSongs.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('hubTranslit').textContent = songTitleTranslit(s);
+  document.getElementById('hubNative').textContent = songTitleNative(s);
+  hideAllViews();
+  document.getElementById('view-hub').classList.remove('hidden');
+}
+
+/* ---------- TEACHER SONG LIST ---------- */
+let teacherLangFilter = 'All';
+function renderTeacherSongList(){
+  const filterEl = document.getElementById('teacherFilters');
+  filterEl.innerHTML = LANGUAGES.map(l=>`<button class="filter-chip ${teacherLangFilter===l?'active':''}" onclick="setTeacherFilter('${l}')">${l}</button>`).join('');
+  const listEl = document.getElementById('teacherSongList');
+  const list = teacherLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===teacherLangFilter);
+  if(!list.length){ listEl.innerHTML = `<div class="empty-state">No songs yet. Click "+ New Song" to build your first one.</div>`; return; }
+  listEl.innerHTML = list.map(s=>{
+    const lineCount = (s.lines||[]).length;
+    const sylCount = (s.lines||[]).reduce((a,l)=>a+(l.segments||[]).length,0);
+    const chordSlots = (s.lines||[]).reduce((a,l)=>a+(l.segments||[]).filter(sg=>sg.isChordSlot).length,0);
+    return `
+    <div class="song-card" style="margin-bottom:12px;">
+      <div class="rail"></div>
+      <span class="lang-tag">${escapeHtml(s.language||'—')}</span>
+      ${titleStackHtml(s)}
+      <div class="meta-row">
+        <span>${lineCount} lines</span><span>${sylCount} syllables</span>
+        <span>${s.rootNote?escapeHtml(s.rootNote)+' '+escapeHtml(s.scaleType||''):'no key set'}</span>
+        <span>${chordSlots} chord slots</span>
+      </div>
+      <div class="song-card-actions">
+        <button class="btn outline small" onclick="editSong('${s.id}')">Edit</button>
+        <button class="btn ghost small" onclick="openHub('${s.id}');document.getElementById('view-hub').classList.remove('hidden');document.getElementById('teacher-view').classList.add('hidden');">Preview</button>
+        <button class="btn danger small" onclick="deleteSong('${s.id}','${escapeAttr(songDisplayName(s))}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setTeacherFilter(l){ teacherLangFilter = l; renderTeacherSongList(); }
+
+function populateRootScaleSelects(){
+  const rootSel = document.getElementById('song-rootnote');
+  const scaleSel = document.getElementById('song-scaletype');
+  const keyRootSel = document.getElementById('chord-keyroot');
+  if(rootSel && !rootSel.dataset.filled){
+    rootSel.innerHTML = '<option value="">— choose —</option>' + ROOT_NOTES.map(r=>`<option value="${r.value}">${r.label}</option>`).join('');
+    rootSel.dataset.filled = '1';
+  }
+  if(scaleSel && !scaleSel.dataset.filled){
+    scaleSel.innerHTML = '<option value="">— choose —</option>' + SCALE_TYPES.map(s=>`<option value="${s}">${s}</option>`).join('');
+    scaleSel.dataset.filled = '1';
+  }
+  if(keyRootSel && !keyRootSel.dataset.filled){
+    keyRootSel.innerHTML = Object.keys(MAJOR_KEYS).map(k=>`<option value="${k}">${k}</option>`).join('');
+    keyRootSel.dataset.filled = '1';
+  }
+}
+
+/* ============================================================================
+   TEACHER EDITOR — shared state
+   A "segment" (one syllable) carries data for ALL five steps at once:
+   {native, translit, measure, beat, note, isChordSlot, correctChords[], acceptableChords[], wrongChords[]}
+============================================================================ */
+let currentSongId = null;
+let currentLines = [];        // [{segments:[...], paragraphBreak}]
+let currentPalette = [];      // chord palette strings for this song
+let quickAddState = {};       // per line index, for syllable "quick add"
+function qaGet(li){
+  if(!quickAddState[li]) quickAddState[li] = {open:false, nativeText:'', translitText:'', nativeGaps:new Set(), translitGaps:new Set(), started:false};
+  return quickAddState[li];
+}
+function blankSegment(){ return {native:'', translit:'', measure:null, beat:null, note:'', isChordSlot:false, correctChords:[], acceptableChords:[], wrongChords:[]}; }
+function blankLine(){ return {segments:[], paragraphBreak:false}; }
+
+function newSong(){
+  currentSongId = null;
+  currentLines = [blankLine(), blankLine()];
+  currentPalette = [];
+  quickAddState = {};
+  document.getElementById('editorTitle').textContent = 'New Song';
+  document.getElementById('song-title-translit').value = '';
+  document.getElementById('song-title-native').value = '';
+  document.getElementById('song-artist').value = '';
+  document.getElementById('song-language').value = 'Tamil';
+  document.getElementById('song-audio').value = '';
+  document.getElementById('song-bpm').value = 100;
+  document.getElementById('song-timesig').value = 4;
+  document.getElementById('song-offset').value = 0;
+  document.getElementById('yt-syllable').value = '';
+  document.getElementById('yt-beat').value = '';
+  document.getElementById('yt-rootscale').value = '';
+  document.getElementById('yt-chord').value = '';
+  document.getElementById('song-rootnote').value = '';
+  document.getElementById('song-scaletype').value = '';
+  document.getElementById('song-keysig').value = '';
+  document.getElementById('song-leadnotes').value = '';
+  document.getElementById('chord-keyroot').value = 'C';
+  document.getElementById('chord-difficulty').value = 'beginner';
+  document.getElementById('beatEditAudio').src = '';
+  renderLines(); renderPaletteChips();
+  document.getElementById('teacher-songs-panel').classList.add('hidden');
+  document.getElementById('editor-view').classList.remove('hidden');
+}
+
+function editSong(id){
+  const s = allSongs.find(x=>x.id===id);
+  if(!s) return;
+  currentSongId = id;
+  currentLines = JSON.parse(JSON.stringify(s.lines && s.lines.length ? s.lines : [blankLine(), blankLine()]));
+  currentLines.forEach(l=>{
+    if(l.paragraphBreak===undefined) l.paragraphBreak=false;
+    (l.segments||[]).forEach(seg=>{
+      if(seg.measure===undefined) seg.measure=null;
+      if(seg.beat===undefined) seg.beat=null;
+      if(seg.note===undefined) seg.note='';
+      if(seg.isChordSlot===undefined) seg.isChordSlot=false;
+      if(!seg.correctChords) seg.correctChords=[];
+      if(!seg.acceptableChords) seg.acceptableChords=[];
+      if(!seg.wrongChords) seg.wrongChords=[];
+    });
+  });
+  currentPalette = s.chordPalette ? s.chordPalette.slice() : [];
+  quickAddState = {};
+  document.getElementById('editorTitle').textContent = 'Edit Song';
+  document.getElementById('song-title-translit').value = songTitleTranslit(s);
+  document.getElementById('song-title-native').value = songTitleNative(s);
+  document.getElementById('song-artist').value = s.artist || '';
+  document.getElementById('song-language').value = s.language || 'Tamil';
+  document.getElementById('song-audio').value = s.audioUrl || '';
+  document.getElementById('song-bpm').value = s.bpm || 100;
+  document.getElementById('song-timesig').value = s.timeSigTop || 4;
+  document.getElementById('song-offset').value = s.startOffset || 0;
+  document.getElementById('yt-syllable').value = s.ytSyllable || '';
+  document.getElementById('yt-beat').value = s.ytBeat || '';
+  document.getElementById('yt-rootscale').value = s.ytRootScale || '';
+  document.getElementById('yt-chord').value = s.ytChord || '';
+  document.getElementById('song-rootnote').value = s.rootNote || '';
+  document.getElementById('song-scaletype').value = s.scaleType || '';
+  document.getElementById('song-keysig').value = s.keySig || '';
+  document.getElementById('song-leadnotes').value = s.leadNotesText || '';
+  document.getElementById('chord-keyroot').value = s.chordKeyRoot || 'C';
+  document.getElementById('chord-difficulty').value = s.chordDifficulty || 'beginner';
+  document.getElementById('beatEditAudio').src = s.audioUrl || '';
+  renderLines(); renderPaletteChips();
+  document.getElementById('teacher-songs-panel').classList.add('hidden');
+  document.getElementById('editor-view').classList.remove('hidden');
+}
+
+function closeEditor(){
+  document.getElementById('editor-view').classList.add('hidden');
+  document.getElementById('teacher-songs-panel').classList.remove('hidden');
+  renderTeacherSongList();
+}
+
+async function saveSong(){
+  const translitTitle = document.getElementById('song-title-translit').value.trim();
+  const nativeTitle = document.getElementById('song-title-native').value.trim();
+  if(!translitTitle && !nativeTitle){ alert('Please enter a song title (native script, transliteration, or both).'); return; }
+  const ytFields = ['yt-syllable','yt-beat','yt-rootscale','yt-chord'];
+  for(const id of ytFields){
+    const v = document.getElementById(id).value.trim();
+    if(v && !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(v)){
+      alert("One of the YouTube links doesn't look valid. Please paste a full youtube.com or youtu.be URL, or leave it blank.");
+      return;
+    }
+  }
+  syncAllSegmentsFromDOM();
+  const cleanLines = currentLines
+    .map(l=>({segments:(l.segments||[]).filter(s=>(s.native||'').trim()||(s.translit||'').trim()), paragraphBreak:!!l.paragraphBreak}))
+    .filter(l=>l.segments.length>0);
+  if(!cleanLines.length){ alert('Please add at least one line with syllable chunks (Step 2 · Syllables).'); return; }
+
+  const data = {
+    titleTranslit: translitTitle,
+    titleNative: nativeTitle,
+    artist: document.getElementById('song-artist').value.trim(),
+    language: document.getElementById('song-language').value,
+    audioUrl: document.getElementById('song-audio').value.trim(),
+    bpm: parseFloat(document.getElementById('song-bpm').value)||100,
+    timeSigTop: parseInt(document.getElementById('song-timesig').value)||4,
+    startOffset: parseFloat(document.getElementById('song-offset').value)||0,
+    ytSyllable: document.getElementById('yt-syllable').value.trim(),
+    ytBeat: document.getElementById('yt-beat').value.trim(),
+    ytRootScale: document.getElementById('yt-rootscale').value.trim(),
+    ytChord: document.getElementById('yt-chord').value.trim(),
+    rootNote: document.getElementById('song-rootnote').value,
+    scaleType: document.getElementById('song-scaletype').value,
+    keySig: document.getElementById('song-keysig').value.trim(),
+    leadNotesText: document.getElementById('song-leadnotes').value,
+    chordKeyRoot: document.getElementById('chord-keyroot').value,
+    chordDifficulty: document.getElementById('chord-difficulty').value,
+    chordPalette: currentPalette,
+    lines: cleanLines,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const btn = document.getElementById('saveSongBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    if(currentSongId){
+      delete data.createdAt;
+      await db.collection(SONGS_COLLECTION).doc(currentSongId).update(data);
+    } else {
+      await db.collection(SONGS_COLLECTION).add(data);
+    }
+    showToast('✅ Song saved.');
+    await loadSongsFromFirestore();
+    closeEditor();
+  }catch(e){
+    console.error('Save failed', e);
+    alert('Could not save the song. ' + (e.message || 'Check your Firebase config and Firestore rules, then try again.'));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Song';
+  }
+}
+
+function parseMB(str){
+  str = (str||'').trim();
+  if(!str) return {measure:null, beat:null};
+  const parts = str.split(':');
+  if(parts.length<2) return {measure:null, beat:null};
+  const measure = parseInt(parts[0],10);
+  const beat = parseFloat(parts.slice(1).join(':'));
+  return {measure:isNaN(measure)?null:measure, beat:isNaN(beat)?null:beat};
+}
+function formatMB(measure,beat){
+  if(measure==null || beat==null) return '';
+  return `${measure}:${beat}`;
+}
+function syncAllSegmentsFromDOM(){
+  currentLines.forEach((line, li)=>{
+    line.segments.forEach((seg, si)=>{
+      const prefix = `l${li}s${si}`;
+      const nativeEl = document.getElementById(prefix+'-native');
+      if(nativeEl){
+        seg.native = nativeEl.value;
+        const translitEl = document.getElementById(prefix+'-translit');
+        if(translitEl) seg.translit = translitEl.value;
+      }
+      const mbEl = document.getElementById(prefix+'-mb');
+      if(mbEl){
+        const {measure, beat} = parseMB(mbEl.value);
+        seg.measure = measure; seg.beat = beat;
+      }
+      const noteEl = document.getElementById(prefix+'-note');
+      if(noteEl){ seg.note = noteEl.value; }
+    });
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   TAB 2 · SYLLABLE SPLIT builder (lines / segments / quick-add)
+--------------------------------------------------------------------------- */
+function addLine(){ syncAllSegmentsFromDOM(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
+function insertLineAfter(li){ syncAllSegmentsFromDOM(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
+function removeLine(li){ syncAllSegmentsFromDOM(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
+function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
+function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
+function toggleParagraphBreak(li){ currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
+function addSegment(li){ syncAllSegmentsFromDOM(); currentLines[li].segments.push(blankSegment()); renderLines(); }
+function removeSegment(li,si){ syncAllSegmentsFromDOM(); currentLines[li].segments.splice(si,1); renderLines(); }
+
+function toggleQuickAdd(li){ syncAllSegmentsFromDOM(); const st=qaGet(li); st.open=!st.open; renderLines(); }
+function cancelQuickAdd(li){ delete quickAddState[li]; renderLines(); }
+function startTapSplit(li){
+  const st = qaGet(li);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
+  if(!st.nativeText.trim() && !st.translitText.trim()){ alert('Paste at least one line (native script or transliteration) first.'); return; }
+  st.started = true; st.nativeGaps = new Set(); st.translitGaps = new Set();
+  renderLines();
+}
+function toggleQaGap(li, field, gapIdx){
+  const st = qaGet(li);
+  const set = field==='native'?st.nativeGaps:st.translitGaps;
+  if(set.has(gapIdx)) set.delete(gapIdx); else set.add(gapIdx);
+  renderLines();
+}
+function chunksFromGaps(units, gapsSet){
+  const boundaries = [0, ...Array.from(gapsSet).sort((a,b)=>a-b), units.length];
+  const chunks = [];
+  for(let i=0;i<boundaries.length-1;i++) chunks.push(units.slice(boundaries[i],boundaries[i+1]).join(''));
+  return chunks;
+}
+function applyQuickSegments(li, nativeChunks, translitChunks){
+  const hasNative=!!nativeChunks, hasTranslit=!!translitChunks;
+  if(hasNative && hasTranslit && nativeChunks.length!==translitChunks.length){
+    alert(`Split counts don't match — native has ${nativeChunks.length} syllables, transliteration has ${translitChunks.length}.`);
+    return false;
+  }
+  const count = hasNative?nativeChunks.length:translitChunks.length;
+  const existing = currentLines[li].segments;
+  const newSegments = [];
+  for(let i=0;i<count;i++){
+    const base = existing[i] ? {...existing[i]} : blankSegment();
+    base.native = hasNative?nativeChunks[i]:base.native||'';
+    base.translit = hasTranslit?translitChunks[i]:base.translit||'';
+    newSegments.push(base);
+  }
+  if(existing.length>0 && !confirm('This will replace the existing syllable boxes for this line (rhythm/note/chord data on kept positions is preserved where possible). Continue?')) return false;
+  currentLines[li].segments = newSegments;
+  delete quickAddState[li];
+  return true;
+}
+function convertQuickAdd(li){
+  const st = qaGet(li);
+  const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
+  const nativeChunks = hasNative ? chunksFromGaps(graphemes(st.nativeText), st.nativeGaps) : null;
+  const translitChunks = hasTranslit ? chunksFromGaps(graphemes(st.translitText), st.translitGaps) : null;
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+}
+function quickDelimiterSplit(li){
+  const st = qaGet(li);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
+  const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
+  if(!hasNative && !hasTranslit){ alert('Paste at least one line first.'); return; }
+  const splitFn = txt => txt.split(/[-\s]+/).map(s=>s.trim()).filter(Boolean);
+  const nativeChunks = hasNative ? splitFn(st.nativeText) : null;
+  const translitChunks = hasTranslit ? splitFn(st.translitText) : null;
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+}
+function qaTapRowsHtml(li, st){
+  const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
+  let nativeCount=0, translitCount=0;
+  let html = '<div style="margin-top:14px;">';
+  if(hasNative){
+    const units = graphemes(st.nativeText); nativeCount = st.nativeGaps.size+1;
+    html += `<div class="practice-line-label">Native — tap between letters</div><div class="tap-row" style="padding:10px 8px;">`;
+    units.forEach((u,ui)=>{
+      if(ui>0){ const active = st.nativeGaps.has(ui); html += `<div class="tap-gap ${active?'active':''}" onclick="toggleQaGap(${li},'native',${ui})"></div>`; }
+      html += `<span class="tap-unit" style="font-size:18px;">${escapeHtml(u)}</span>`;
+    });
+    html += `</div><div class="muted" style="font-size:11px;margin-bottom:12px;">${nativeCount} syllable${nativeCount===1?'':'s'} marked</div>`;
+  }
+  if(hasTranslit){
+    const units = graphemes(st.translitText); translitCount = st.translitGaps.size+1;
+    html += `<div class="practice-line-label">Transliteration — tap between letters</div><div class="tap-row" style="padding:10px 8px;">`;
+    units.forEach((u,ui)=>{
+      if(ui>0){ const active = st.translitGaps.has(ui); html += `<div class="tap-gap ${active?'active':''}" onclick="toggleQaGap(${li},'translit',${ui})"></div>`; }
+      html += `<span class="tap-unit" style="font-size:18px;">${escapeHtml(u)}</span>`;
+    });
+    html += `</div><div class="muted" style="font-size:11px;margin-bottom:12px;">${translitCount} syllable${translitCount===1?'':'s'} marked</div>`;
+  }
+  const mismatch = hasNative && hasTranslit && nativeCount!==translitCount;
+  html += `<button class="btn small" type="button" ${mismatch?'disabled':''} onclick="convertQuickAdd(${li})">✓ Convert to Syllable Boxes</button>`;
+  if(mismatch) html += `<span style="color:var(--incorrect);font-size:12px;margin-left:10px;">Counts don't match (${nativeCount} vs ${translitCount})</span>`;
+  html += '</div>';
+  return html;
+}
+function renderLines(){
+  syncAllSegmentsFromDOM();
+  document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
+  const container = document.getElementById('lines-container');
+  container.innerHTML = '';
+  currentLines.forEach((line, li)=>{
+    if(li>0 && line.paragraphBreak){
+      const divider = document.createElement('div');
+      divider.className = 'para-divider';
+      divider.innerHTML = '<span>&para; new paragraph</span>';
+      container.appendChild(divider);
+    }
+    const block = document.createElement('div');
+    block.className = 'line-block';
+
+    // ---- lead-sheet grid: gutter labels + one scrollable column per syllable ----
+    let colsHtml = '';
+    line.segments.forEach((seg, si)=>{
+      const prefix = `l${li}s${si}`;
+      const chordLabel = seg.correctChords.length ? seg.correctChords.map(c=>c.chord).join('/') : '\u2014';
+      const chordSet = seg.isChordSlot;
+      colsHtml += `
+        <div class="score-col">
+          <button class="remove-col" type="button" title="Remove syllable" onclick="removeSegment(${li},${si})">&#10005;</button>
+          <div class="c-row"><button type="button" class="chord-cell-btn ${chordSet?'set':''}" onclick="openChordEditor(${li},${si})" title="Click to set Right/Acceptable/Wrong chords">${escapeHtml(chordLabel)}</button></div>
+          <div class="c-row"><input type="text" id="${prefix}-note" value="${escapeAttr(seg.note||'')}" placeholder="&mdash;" class="mono"></div>
+          <div class="c-row"><input type="text" class="native-input" id="${prefix}-native" value="${escapeAttr(seg.native)}" placeholder="\u0ba4"></div>
+          <div class="c-row"><input type="text" id="${prefix}-translit" value="${escapeAttr(seg.translit)}" placeholder="ta" style="font-size:11px;color:var(--muted);"></div>
+          <div class="c-row"><input type="text" id="${prefix}-mb" value="${escapeAttr(formatMB(seg.measure,seg.beat))}" placeholder="1:1" class="mono" style="font-size:11px;"></div>
+        </div>`;
+    });
+
+    const paraLabel = li>0 ? `<label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:12px;color:var(--muted);margin:0;">
+         <input type="checkbox" style="width:auto;" ${line.paragraphBreak?'checked':''} onchange="toggleParagraphBreak(${li})"> New paragraph before this line</label>` : '';
+    const isFirst=li===0, isLast=li===currentLines.length-1;
+    const st = qaGet(li);
+    const quickAddHtml = st.open ? `
+      <div class="quick-add-panel">
+        <div class="grid-2">
+          <div class="field"><label>Paste Native Line</label><input type="text" id="qa-native-${li}" value="${escapeAttr(st.nativeText)}" oninput="qaGet(${li}).nativeText=this.value" placeholder="\u0ba4\u0bae\u0bbf\u0bb4\u0bcd \u0bb5\u0bb0\u0bbf\u0b95\u0bb3\u0bcd"></div>
+          <div class="field"><label>Paste Transliteration Line</label><input type="text" id="qa-translit-${li}" value="${escapeAttr(st.translitText)}" oninput="qaGet(${li}).translitText=this.value" placeholder="tamizh varigal"></div>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <button class="btn outline small" type="button" onclick="startTapSplit(${li})">&#9986; Tap to Split</button>
+          <button class="btn outline small" type="button" onclick="quickDelimiterSplit(${li})">&#9889; Split by "-" or space</button>
+          <button class="btn ghost small" type="button" onclick="cancelQuickAdd(${li})">Close</button>
+        </div>
+        ${st.started ? qaTapRowsHtml(li, st) : '<p class="muted" style="font-size:11px;margin-top:8px;">Tip: type hyphens between syllables (e.g. "ta-mi-zh") for an instant split, or use "Tap to Split".</p>'}
+      </div>` : '';
+
+    block.innerHTML = `
+      <div class="spread line-block-head">
+        <div class="row" style="gap:8px;"><strong style="font-size:13px;color:var(--gold-bright);">Line ${li+1}</strong>
+          <button class="btn ghost small" type="button" title="Move up" ${isFirst?'disabled':''} onclick="moveLineUp(${li})">&uarr;</button>
+          <button class="btn ghost small" type="button" title="Move down" ${isLast?'disabled':''} onclick="moveLineDown(${li})">&darr;</button>
+        </div>
+        <div class="row" style="gap:14px;">${paraLabel}<button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button></div>
+      </div>
+      ${quickAddHtml}
+      <div class="score-line">
+        <div class="score-gutter">
+          <div class="g-row">Chord</div>
+          <div class="g-row">Note</div>
+          <div class="g-row">Native</div>
+          <div class="g-row">Translit</div>
+          <div class="g-row">Beat</div>
+        </div>
+        <div class="score-scroll"><div class="score-cols">${colsHtml || '<span class="muted" style="font-size:12px;padding:10px;">No syllables yet &mdash; use Quick Add or "+ Add Syllable".</span>'}</div></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
+        <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
+        <button class="btn outline small" type="button" onclick="toggleQuickAdd(${li})">&#9889; ${st.open?'Hide Quick Add':'Quick Add from Pasted Line'}</button>
+      </div>`;
+    container.appendChild(block);
+  });
+  if(!currentLines.length){
+    container.innerHTML = '<p class="muted" style="font-size:13px;">Click "+ Add Lyric Line" to begin.</p>';
+  }
+}
+function onAudioPathChange(){
+  document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
+}
+
+/* ---------------------------------------------------------------------------
+   CHORD PALETTE + chord-slot editing (used inline inside each syllable card)
+--------------------------------------------------------------------------- */
+function generateChordPalette(){
+  const keyRoot = document.getElementById('chord-keyroot').value;
+  const diff = document.getElementById('chord-difficulty').value;
+  currentPalette = generatePalette(keyRoot, diff);
+  renderPaletteChips();
+  showToast('\ud83c\udfbc Palette generated from key of '+keyRoot);
+}
+function addCustomChord(){
+  const input = document.getElementById('custom-chord-input');
+  const v = input.value.trim();
+  if(!v) return;
+  if(!currentPalette.includes(v)) currentPalette.push(v);
+  input.value = '';
+  renderPaletteChips();
+}
+function removeFromPalette(chord){
+  currentPalette = currentPalette.filter(c=>c!==chord);
+  renderPaletteChips();
+}
+function renderPaletteChips(){
+  const el = document.getElementById('palette-chips');
+  if(!el) return;
+  if(!currentPalette.length){ el.innerHTML = '<span class="muted" style="font-size:12px;">Generate a palette from a key, or add chords manually.</span>'; return; }
+  el.innerHTML = currentPalette.map(c=>`<span class="chip mono">${escapeHtml(c)}<button onclick="removeFromPalette('${escapeAttr(c)}')">&#10005;</button></span>`).join('');
+}
+
+function removeTierChord(li, si, tier, idx){
+  const key = tier+'Chords';
+  currentLines[li].segments[si][key].splice(idx,1);
+  syncChordSlotFlag(li,si);
+  if(ceState.li===li && ceState.si===si) renderChordEditorModal(); else renderLines();
+}
+function updateTierExplanation(li, si, tier, idx, text){
+  const key = tier+'Chords';
+  currentLines[li].segments[si][key][idx].explanation = text;
+}
+function syncChordSlotFlag(li,si){
+  const seg = currentLines[li].segments[si];
+  seg.isChordSlot = (seg.correctChords.length + seg.acceptableChords.length + seg.wrongChords.length) > 0;
+}
+
+/* ---------------------------------------------------------------------------
+   CHORD EDITOR MODAL — click a Chord cell in the grid to open this.
+   Manually type Right / Acceptable / Wrong chords for that one syllable,
+   with the song's chord chart shown for reference.
+--------------------------------------------------------------------------- */
+let ceState = {li:null, si:null};
+function openChordEditor(li, si){
+  syncAllSegmentsFromDOM();
+  ceState = {li, si};
+  const seg = currentLines[li].segments[si];
+  document.getElementById('ce-syllable').textContent = seg.native || seg.translit || `syllable #${si+1}`;
+  const chartEl = document.getElementById('ce-chart-chips');
+  chartEl.innerHTML = currentPalette.length
+    ? currentPalette.map(c=>`<button type="button" class="palette-chip" onclick="ceAddChart('${escapeAttr(c)}')">${escapeHtml(c)}</button>`).join('')
+    : '<span class="muted" style="font-size:12px;">No palette yet &mdash; generate one in the Chord Palette section above, or just type chords manually below.</span>';
+  renderChordEditorModal();
+  document.getElementById('chord-editor-modal').classList.add('show');
+}
+function closeChordEditor(){
+  document.getElementById('chord-editor-modal').classList.remove('show');
+  renderLines();
+}
+function renderChordEditorModal(){
+  const {li, si} = ceState;
+  if(li===null) return;
+  const seg = currentLines[li].segments[si];
+  document.getElementById('ce-correct-chips').innerHTML = seg.correctChords.length ? tierChipsHtml(li,si,'correct',seg.correctChords,'var(--correct)') : '<span class="muted" style="font-size:12px;">None yet.</span>';
+  document.getElementById('ce-acceptable-chips').innerHTML = seg.acceptableChords.length ? tierChipsHtml(li,si,'acceptable',seg.acceptableChords,'var(--acceptable)') : '<span class="muted" style="font-size:12px;">None yet.</span>';
+  document.getElementById('ce-wrong-chips').innerHTML = seg.wrongChords.length ? tierChipsHtml(li,si,'wrong',seg.wrongChords,'var(--incorrect)') : '<span class="muted" style="font-size:12px;">None yet.</span>';
+}
+function ceAddManual(tier){
+  const input = document.getElementById('ce-'+tier+'-input');
+  const val = input.value.trim();
+  if(!val) return;
+  const key = tier+'Chords';
+  const seg = currentLines[ceState.li].segments[ceState.si];
+  if(!seg[key].some(c=>c.chord===val)) seg[key].push({chord:val, explanation:''});
+  input.value = '';
+  syncChordSlotFlag(ceState.li, ceState.si);
+  renderChordEditorModal();
+}
+function ceAddChart(chord){
+  const seg = currentLines[ceState.li].segments[ceState.si];
+  if(!seg.correctChords.some(c=>c.chord===chord)) seg.correctChords.push({chord, explanation:''});
+  syncChordSlotFlag(ceState.li, ceState.si);
+  renderChordEditorModal();
+}
+
+function tierChipsHtml(li, si, tier, items, colorVar){
+  return items.map((item,idx)=>{
+    const flat = flattenSegments({lines:currentLines});
+    const measure = currentLines[li].segments[si].measure;
+    const auto = generateAutoExplanation(flat, measure, item.chord, tier==='wrong');
+    return `
+    <div class="chip" style="border-color:${colorVar};margin-bottom:6px;width:100%;">
+      <span class="mono" style="color:${colorVar};font-size:13px;">${escapeHtml(item.chord)}</span>
+      <button onclick="removeTierChord(${li},${si},'${tier}',${idx})">&#10005;</button>
+    </div>
+    <textarea style="margin:-2px 0 8px;font-size:11px;min-height:44px;" placeholder="${escapeAttr(auto)}" oninput="updateTierExplanation(${li},${si},'${tier}',${idx},this.value)">${escapeHtml(item.explanation||'')}</textarea>`;
+  }).join('');
+}
+
+/* ---------------------------------------------------------------------------
+   BEAT-TAP HELPER (fills Measure & Beat fields on the syllable cards above)
+--------------------------------------------------------------------------- */
+let beatTapFlat = [];
+let beatTapIndex = 0;
+function refreshBeatTapFlat(){ beatTapFlat = flattenSegments({lines:currentLines}); }
+document.getElementById('beatEditPlayBtn').onclick = ()=>{
+  const a = document.getElementById('beatEditAudio');
+  if(a.paused) a.play(); else a.pause();
+};
+const beatEditAudioEl = document.getElementById('beatEditAudio');
+beatEditAudioEl.onloadedmetadata = ()=>{ document.getElementById('beatEditSeek').max = beatEditAudioEl.duration||0; };
+beatEditAudioEl.onerror = ()=>{
+  const path = document.getElementById('song-audio').value.trim();
+  if(path) showToast("⚠️ Can't load audio at \"" + path + "\" — check the exact spelling/case and that it's in your songs/ folder.");
+};
+let beatEditRaf = null;
+function beatEditLoop(){
+  document.getElementById('beatEditTime').textContent = fmtTime(beatEditAudioEl.currentTime);
+  const bar = document.getElementById('beatEditSeek');
+  if(!bar.matches(':active')) bar.value = beatEditAudioEl.currentTime;
+  beatEditRaf = requestAnimationFrame(beatEditLoop);
+}
+beatEditAudioEl.onplay = function(){ document.getElementById('beatEditPlayBtn').textContent='\u23f8'; cancelAnimationFrame(beatEditRaf); beatEditRaf=requestAnimationFrame(beatEditLoop); };
+beatEditAudioEl.onpause = function(){ document.getElementById('beatEditPlayBtn').textContent='\u25b6'; cancelAnimationFrame(beatEditRaf); };
+document.getElementById('beatEditSeek').oninput = (e)=>{ beatEditAudioEl.currentTime = parseFloat(e.target.value); };
+document.getElementById('beatTapResetBtn').onclick = ()=>{ beatTapIndex = 0; updateBeatTapPreview(); };
+function updateBeatTapPreview(){
+  refreshBeatTapFlat();
+  const el = document.getElementById('beatTapPreview');
+  if(!beatTapFlat.length){ el.textContent = 'Add syllables below first.'; return; }
+  const prev = beatTapFlat.slice(Math.max(0,beatTapIndex-3), beatTapIndex).map(f=>f.seg.native||f.seg.translit).join(' ');
+  const cur = beatTapFlat[beatTapIndex] ? (beatTapFlat[beatTapIndex].seg.native||beatTapFlat[beatTapIndex].seg.translit) : '\u2014 done \u2014';
+  const next = beatTapFlat.slice(beatTapIndex+1, beatTapIndex+4).map(f=>f.seg.native||f.seg.translit).join(' ');
+  el.textContent = `${prev}  \u25b6 ${cur} \u25c0  ${next}`;
+}
+function doBeatTap(){
+  refreshBeatTapFlat();
+  if(!beatTapFlat.length || beatTapIndex>=beatTapFlat.length) return;
+  const song = {bpm:parseFloat(document.getElementById('song-bpm').value)||100, timeSigTop:parseInt(document.getElementById('song-timesig').value)||4, startOffset:parseFloat(document.getElementById('song-offset').value)||0};
+  const {measure,beat} = timeToMeasureBeat(beatEditAudioEl.currentTime, song);
+  const f = beatTapFlat[beatTapIndex];
+  f.seg.measure = measure;
+  f.seg.beat = Math.round(beat*2)/2; // snap to nearest half-beat
+  beatTapIndex++;
+  updateBeatTapPreview();
+  renderLines();
+}
+document.getElementById('beatTapBtn').onclick = doBeatTap;
+document.addEventListener('keydown', (e)=>{
+  const editorVisible = document.getElementById('editor-view') && !document.getElementById('editor-view').classList.contains('hidden');
+  if(e.code==='Space' && editorVisible){
+    const tag = document.activeElement.tagName;
+    if(tag!=='INPUT' && tag!=='TEXTAREA'){ e.preventDefault(); doBeatTap(); }
+  }
+});
+
+/* ============================================================================
+   STUDENT PRACTICE FLOW CONTROLLER
+   Drives one stage at a time (syllable / beat / rootscale / chord). Works
+   identically whether launched solo (one stage) or guided (all four).
+============================================================================ */
+const STAGE_META = {
+  syllable:  {label:'Syllables',    yt:'ytSyllable'},
+  beat:      {label:'Beat & Measure', yt:'ytBeat'},
+  rootscale: {label:'Root & Scale', yt:'ytRootScale'},
+  chord:     {label:'Chords',       yt:'ytChord'}
+};
+let flowState = { song:null, stages:[], index:0 };
+
+function startFlow(songId, stages){
+  const song = allSongs.find(s=>s.id===songId);
+  if(!song){ showToast('Song not found.'); return; }
+  flowState = { song, stages, index:0 };
+  document.getElementById('flowAudio').pause();
+  hideAllViews();
+  document.getElementById('view-flow').classList.remove('hidden');
+  document.getElementById('flowTranslit').textContent = songTitleTranslit(song);
+  document.getElementById('flowNative').textContent = songTitleNative(song);
+  renderStepper();
+  renderCurrentStage();
+}
+function exitFlow(){
+  document.getElementById('flowAudio').pause();
+  hideAllViews();
+  document.getElementById('view-hub').classList.remove('hidden');
+}
+function renderStepper(){
+  const el = document.getElementById('flowStepper');
+  if(flowState.stages.length<2){ el.classList.add('hidden'); el.innerHTML=''; return; }
+  el.classList.remove('hidden');
+  el.innerHTML = flowState.stages.map((st,i)=>{
+    const cls = i<flowState.index ? 'done' : (i===flowState.index ? 'current':'');
+    const html = `<span class="step-dot ${cls}">${i<flowState.index?'✓ ':''}${i+1} · ${STAGE_META[st].label}</span>`;
+    return html + (i<flowState.stages.length-1 ? '<span class="step-sep"></span>' : '');
+  }).join('');
+}
+function advanceFlow(){
+  if(flowState.index < flowState.stages.length-1){
+    flowState.index++;
+    renderStepper();
+    renderCurrentStage();
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    exitFlow();
+    showToast('🎉 Nice work — all steps complete!');
+  }
+}
+function renderCurrentStage(){
+  document.getElementById('flowAudio').pause();
+  const stage = flowState.stages[flowState.index];
+  const song = flowState.song;
+  const ytUrl = song[STAGE_META[stage].yt];
+  const ytBtn = document.getElementById('flowYoutubeBtn');
+  if(ytUrl){ ytBtn.href = ytUrl; ytBtn.classList.remove('hidden'); } else { ytBtn.classList.add('hidden'); ytBtn.removeAttribute('href'); }
+  const panel = document.getElementById('stagePanel');
+  panel.innerHTML = '';
+  if(stage==='syllable') stageRenderSyllable(panel, song);
+  if(stage==='beat') stageRenderBeat(panel, song);
+  if(stage==='rootscale') stageRenderRootScale(panel, song);
+  if(stage==='chord') stageRenderChord(panel, song);
+}
+const STAGE_ORDER = ['syllable','beat','rootscale','chord'];
+function flowFooterHtml(){
+  const isLast = flowState.index >= flowState.stages.length-1;
+  const guided = flowState.stages.length>1;
+  const currentStage = flowState.stages[flowState.index];
+  const orderIdx = STAGE_ORDER.indexOf(currentStage);
+  const nextStageKey = orderIdx>=0 && orderIdx<STAGE_ORDER.length-1 ? STAGE_ORDER[orderIdx+1] : null;
+
+  let continueBtn = '';
+  if(guided && !isLast){
+    continueBtn = `<button class="btn gold" onclick="advanceFlow()">Continue → ${STAGE_META[flowState.stages[flowState.index+1]].label}</button>`;
+  } else if(guided && isLast){
+    continueBtn = `<button class="btn gold" onclick="advanceFlow()">🎉 Finish</button>`;
+  } else if(!guided && nextStageKey){
+    continueBtn = `<button class="btn gold" onclick="continueToStage('${nextStageKey}')">Continue → ${STAGE_META[nextStageKey].label}</button>`;
+  }
+
+  return `<div class="card tight" style="margin-top:18px;text-align:center;">
+    <p class="muted" style="font-size:13px;margin:0 0 12px;">${continueBtn ? "What's next?" : 'Nice work!'}</p>
+    <div class="row" style="justify-content:center;flex-wrap:wrap;">
+      <button class="btn ghost" onclick="renderCurrentStage()">↺ Try Again</button>
+      ${continueBtn}
+      <button class="btn outline" onclick="exitFlow()">🏠 This Song's Menu</button>
+      <button class="btn outline" onclick="backToLibraryFromFlow()">📚 Choose Another Song</button>
+    </div>
+  </div>`;
+}
+function continueToStage(stageKey){
+  startFlow(flowState.song.id, [stageKey]);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function backToLibraryFromFlow(){
+  document.getElementById('flowAudio').pause();
+  backToLibrary();
+}
+
+/* ---------------------------------------------------------------------------
+   STAGE 1 · SYLLABLE SPLIT (tap-to-split, scored)
+--------------------------------------------------------------------------- */
+let sp1Song=null, sp1Mode='native', sp1Gaps=[], sp1Checked=false;
+function sp1LineUnits(line, field){
+  const segs = line.segments||[];
+  let full=''; const segLens=[];
+  segs.forEach(seg=>{ const g=graphemes(seg[field]||''); segLens.push(g.length); full += (seg[field]||''); });
+  const units = graphemes(full);
+  const correctGaps = new Set();
+  let running=0;
+  for(let i=0;i<segLens.length-1;i++){ running+=segLens[i]; if(running>0 && running<units.length) correctGaps.add(running); }
+  return {units, correctGaps};
+}
+function stageRenderSyllable(panel, song){
+  sp1Song = song; sp1Mode='native'; sp1Checked=false;
+  sp1Gaps = (song.lines||[]).map(()=>new Set());
+  panel.innerHTML = `
+    <div class="mode-switch">
+      <button type="button" class="mode-btn active" id="sp1-mode-native" onclick="sp1SetMode('native')">Practice: Native Script</button>
+      <button type="button" class="mode-btn" id="sp1-mode-translit" onclick="sp1SetMode('translit')">Practice: Transliteration</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--text);margin-bottom:16px;">
+      <input type="checkbox" id="sp1-hint" style="width:auto;" onchange="sp1Render()"> Show hint line (the other script)
+    </label>
+    <p class="muted" style="font-size:13px;margin-bottom:14px;">Tap between letters to place a syllable split. Tap again to remove it.</p>
+    <div id="sp1-banner"></div>
+    <div id="sp1-lines"></div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn gold" id="sp1-check-btn" onclick="sp1Check()">Check My Splits</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--correct);"></i> Correct split</span>
+      <span><i style="background:var(--incorrect);"></i> Wrong split</span>
+      <span><i style="background:var(--acceptable);"></i> Missed split</span>
+    </div>
+    <div id="sp1-footer"></div>`;
+  sp1Render();
+}
+function sp1SetMode(mode){ sp1Mode=mode; sp1Checked=false; sp1Gaps=(sp1Song.lines||[]).map(()=>new Set()); document.getElementById('sp1-banner').innerHTML=''; document.getElementById('sp1-footer').innerHTML=''; document.getElementById('sp1-check-btn').classList.remove('hidden'); document.getElementById('sp1-mode-native').classList.toggle('active',mode==='native'); document.getElementById('sp1-mode-translit').classList.toggle('active',mode==='translit'); sp1Render(); }
+function sp1Render(){
+  const container = document.getElementById('sp1-lines');
+  container.innerHTML = '';
+  const showHint = document.getElementById('sp1-hint').checked;
+  const hintField = sp1Mode==='native' ? 'translit' : 'native';
+  const modeLabel = sp1Mode==='native' ? 'Native script' : 'Transliteration';
+  (sp1Song.lines||[]).forEach((line, li)=>{
+    const {units, correctGaps} = sp1LineUnits(line, sp1Mode);
+    const wrap = document.createElement('div');
+    wrap.className = 'practice-line';
+    let html = `<div class="practice-line-label">Line ${li+1} · ${modeLabel}</div><div class="tap-row">`;
+    units.forEach((u,ui)=>{
+      if(ui>0){
+        const gapActive = sp1Gaps[li] && sp1Gaps[li].has(ui);
+        let cls = 'tap-gap';
+        if(sp1Checked){
+          const isCorrect = correctGaps.has(ui);
+          if(isCorrect && gapActive) cls+=' g-correct';
+          else if(!isCorrect && gapActive) cls+=' g-wrong';
+          else if(isCorrect && !gapActive) cls+=' g-missed';
+        } else if(gapActive) cls+=' active';
+        html += `<div class="${cls}" onclick="sp1Toggle(${li},${ui})"></div>`;
+      }
+      html += `<span class="tap-unit">${escapeHtml(u)}</span>`;
+    });
+    html += `</div>`;
+    wrap.innerHTML = html;
+    if(showHint){
+      const hintFull = (line.segments||[]).map(s=>s[hintField]||'').join(' ');
+      const hd = document.createElement('div');
+      hd.className = 'hint-line';
+      hd.textContent = (hintField==='native'?'Native: ':'Transliteration: ') + hintFull;
+      wrap.appendChild(hd);
+    }
+    container.appendChild(wrap);
+  });
+}
+function sp1Toggle(li, gapIdx){
+  if(sp1Checked) return;
+  if(!sp1Gaps[li]) sp1Gaps[li] = new Set();
+  if(sp1Gaps[li].has(gapIdx)) sp1Gaps[li].delete(gapIdx); else sp1Gaps[li].add(gapIdx);
+  sp1Render();
+}
+function sp1Check(){
+  sp1Checked = true;
+  let totalCorrect=0, totalAnswer=0, totalStudent=0;
+  (sp1Song.lines||[]).forEach((line, li)=>{
+    const {correctGaps} = sp1LineUnits(line, sp1Mode);
+    totalAnswer += correctGaps.size;
+    const sg = sp1Gaps[li]||new Set();
+    totalStudent += sg.size;
+    sg.forEach(g=>{ if(correctGaps.has(g)) totalCorrect++; });
+  });
+  sp1Render();
+  const pct = totalAnswer ? Math.round((totalCorrect/totalAnswer)*100) : 100;
+  const good = pct>=80;
+  document.getElementById('sp1-banner').innerHTML = `<div class="score-banner ${good?'good':'bad'}"><div class="big">${pct}%</div>
+    <div class="muted" style="margin-top:6px;font-size:13px;">${totalCorrect} of ${totalAnswer} syllable splits correct${totalStudent>totalCorrect?` · ${totalStudent-totalCorrect} extra/incorrect taps`:''}</div></div>`;
+  document.getElementById('sp1-check-btn').classList.add('hidden');
+  document.getElementById('sp1-footer').innerHTML = flowFooterHtml();
+}
+
+/* ---------------------------------------------------------------------------
+   STAGE 2 · BEAT & MEASURE — listen & follow, then a placement quiz
+--------------------------------------------------------------------------- */
+let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0;
+function measureRangeToTime(song, startM, endM){
+  const startTime = measureBeatToTime(startM, 1, song);
+  const endTime = measureBeatToTime(endM+1, 1, song);
+  return {startTime, endTime};
+}
+function stageRenderBeat(panel, song){
+  sp2Song = song;
+  sp2Flat = flattenSegments(song);
+  const a = document.getElementById('flowAudio');
+  const hasAudio = !!(song.audioUrl && song.audioUrl.trim());
+  let html = '';
+  if(hasAudio){
+    html += `
+    <div class="player-box">
+      <div class="lyric-stage" id="sp2-stage"></div>
+      <div class="beat-rail-wrap">
+        <div class="beat-rail-label"><span id="sp2-measure-lbl">Measure —</span><span id="sp2-beat-lbl">Beat —</span></div>
+        <div class="beat-rail" id="sp2-rail"></div>
+      </div>
+      <div class="seek-row">
+        <span class="time-lbl mono" id="sp2-cur">0:00</span>
+        <input type="range" id="sp2-seek" min="0" max="100" value="0" step="0.01">
+        <span class="time-lbl mono" id="sp2-dur">0:00</span>
+      </div>
+      <div class="transport-controls">
+        <button class="btn-icon" id="sp2-back5">«5</button>
+        <button class="play-btn" id="sp2-play"><svg viewBox="0 0 24 24" fill="currentColor" id="sp2-play-icon"><path d="M8 5v14l11-7L8 5Z"/></svg></button>
+        <button class="btn-icon" id="sp2-stop" title="Stop">⏹</button>
+        <button class="btn-icon" id="sp2-fwd5">5»</button>
+      </div>
+      <div class="loop-row">
+        <button class="toggle-btn" id="sp2-loop">🔁 Loop</button>
+        <span class="muted mono" style="font-size:11px;">Measure</span>
+        <input type="number" min="1" id="sp2-loopstart" placeholder="1">
+        <span class="muted mono" style="font-size:11px;">to</span>
+        <input type="number" min="1" id="sp2-loopend" placeholder="4">
+      </div>
+      <div class="toggle-row">
+        <button class="toggle-btn" id="sp2-half">Half beat: 1 &amp; 2 &amp; 3 &amp; 4 &amp;</button>
+        <select class="speed-select" id="sp2-speed"><option value="0.5">0.5×</option><option value="0.6">0.6×</option><option value="0.8">0.8×</option><option value="1" selected>1×</option><option value="1.2">1.2×</option><option value="1.5">1.5×</option></select>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="no-audio-note">No audio uploaded for this song yet — ask your teacher. You can still try the placement quiz below from memory.</div>`;
+  }
+  html += `
+    <h3 style="font-size:16px;margin:22px 0 6px;">Quiz: Place the Beat</h3>
+    <p class="muted" style="font-size:13px;margin-bottom:14px;">For each syllable, enter the measure number and beat number (e.g. 2 and 3.5 for a half-beat) it falls on.</p>
+    <div class="beatquiz-grid" id="sp2-quiz"></div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn gold" id="sp2-check-btn" onclick="sp2Check()">Check Placements</button>
+    </div>
+    <div id="sp2-banner"></div>
+    <div id="sp2-footer"></div>`;
+  panel.innerHTML = html;
+
+  // quiz grid
+  const quizEl = document.getElementById('sp2-quiz');
+  quizEl.innerHTML = (song.lines||[]).map((line,li)=>{
+    const items = (line.segments||[]).map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      return `<div class="beatquiz-item" id="sp2-item-${li}-${si}">
+        <div class="txt">${escapeHtml(label)}</div>
+        <div class="mb-row">
+          <input type="number" min="1" id="sp2-m-${li}-${si}" placeholder="m">
+          <input type="number" step="0.5" min="1" id="sp2-b-${li}-${si}" placeholder="beat">
+        </div>
+        <div class="answer-lbl" id="sp2-a-${li}-${si}"></div>
+      </div>`;
+    }).join('');
+    return `<div class="beatquiz-line">${items}</div>`;
+  }).join('');
+
+  if(!hasAudio) return;
+
+  a.src = song.audioUrl;
+  a.playbackRate = 1;
+  a.pause();
+  sp2HalfBeat = false;
+  sp2LoopOn = false;
+  sp2RenderRail();
+  sp2RenderLyricStage();
+
+  document.getElementById('sp2-play').onclick = ()=>{ if(a.paused) a.play(); else a.pause(); };
+  a.onplay = ()=>{ document.getElementById('sp2-play-icon').innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; cancelAnimationFrame(sp2Raf); sp2Raf=requestAnimationFrame(sp2Loop); };
+  a.onpause = ()=>{ document.getElementById('sp2-play-icon').innerHTML='<path d="M8 5v14l11-7L8 5Z"/>'; cancelAnimationFrame(sp2Raf); };
+  a.onloadedmetadata = ()=>{ document.getElementById('sp2-seek').max = a.duration||0; document.getElementById('sp2-dur').textContent = fmtTime(a.duration); };
+  a.onerror = ()=>{ document.querySelector('#sp2-stage')?.insertAdjacentHTML('beforebegin', `<div class="no-audio-note" style="border-color:var(--incorrect);color:var(--incorrect);margin-bottom:12px;">⚠️ Couldn't load the audio file at <code>${escapeHtml(song.audioUrl)}</code> — check the path exactly matches the file in your songs/ folder (spelling, dashes, and capitalization all matter), and that it was saved.</div>`); };
+  document.getElementById('sp2-seek').oninput = (e)=>{ a.currentTime = parseFloat(e.target.value); };
+  document.getElementById('sp2-back5').onclick = ()=>{ a.currentTime = Math.max(0,a.currentTime-5); };
+  document.getElementById('sp2-fwd5').onclick = ()=>{ a.currentTime = Math.min(a.duration||0,a.currentTime+5); };
+  document.getElementById('sp2-stop').onclick = ()=>{ a.pause(); a.currentTime = sp2LoopOn ? sp2LoopStart : 0; };
+  document.getElementById('sp2-half').onclick = ()=>{ sp2HalfBeat=!sp2HalfBeat; document.getElementById('sp2-half').classList.toggle('on',sp2HalfBeat); sp2RenderRail(); };
+  document.getElementById('sp2-speed').onchange = (e)=>{ a.playbackRate = parseFloat(e.target.value); };
+  document.getElementById('sp2-loop').onclick = ()=>{
+    const btn = document.getElementById('sp2-loop');
+    if(sp2LoopOn){ sp2LoopOn=false; btn.classList.remove('on'); return; }
+    const sM = parseInt(document.getElementById('sp2-loopstart').value,10);
+    const eM = parseInt(document.getElementById('sp2-loopend').value,10);
+    if(!sM || !eM || eM<sM){ alert('Enter a valid start and end measure first (end \u2265 start).'); return; }
+    const bounds = measureRangeToTime(sp2Song, sM, eM);
+    sp2LoopStart = bounds.startTime; sp2LoopEnd = bounds.endTime;
+    sp2LoopOn = true; btn.classList.add('on');
+    a.currentTime = sp2LoopStart;
+  };
+}
+function sp2RenderRail(){
+  const top = sp2Song.timeSigTop||4;
+  const rail = document.getElementById('sp2-rail');
+  let items = [];
+  for(let b=1;b<=top;b++){ items.push({label:String(b),val:b}); if(sp2HalfBeat) items.push({label:'&',val:b+0.5}); }
+  rail.innerHTML = items.map(it=>`<div class="beat-dot"><div class="beat-num" data-val="${it.val}">${it.label}</div></div>`).join('');
+}
+function sp2RenderLyricStage(){
+  const stage = document.getElementById('sp2-stage');
+  if(!sp2Flat.length){ stage.innerHTML = '<div class="lyric-line">No lyrics yet.</div>'; return; }
+  let html = '<div class="lyric-line current-line">';
+  let lastLi = 0;
+  sp2Flat.forEach((f,i)=>{
+    if(f.li !== lastLi && f.si===0){ html += '</div><div class="lyric-line">'; lastLi = f.li; }
+    const label = f.seg.native || f.seg.translit || '·';
+    html += ` <span class="syll upcoming" data-i="${i}">${escapeHtml(label)}</span>`;
+  });
+  html += '</div>';
+  stage.innerHTML = html;
+}
+function sp2Loop(){
+  const a = document.getElementById('flowAudio');
+  if(sp2LoopOn && a.currentTime>=sp2LoopEnd){ a.currentTime = sp2LoopStart; }
+  const t = a.currentTime;
+  document.getElementById('sp2-cur').textContent = fmtTime(t);
+  const bar = document.getElementById('sp2-seek');
+  if(!bar.matches(':active')) bar.value = t;
+  const {measure, beat} = timeToMeasureBeat(t, sp2Song);
+  document.getElementById('sp2-measure-lbl').textContent = t < (sp2Song.startOffset||0) ? 'Measure —' : `Measure ${measure}`;
+  document.getElementById('sp2-beat-lbl').textContent = t < (sp2Song.startOffset||0) ? '' : `Beat ${beat.toFixed(2)}`;
+  document.querySelectorAll('#sp2-rail .beat-num').forEach(el=>{
+    const val = parseFloat(el.dataset.val);
+    const nextVal = sp2HalfBeat ? val+0.5 : val+1;
+    el.classList.toggle('active', t>=(sp2Song.startOffset||0) && beat>=val && beat<nextVal);
+  });
+  let activeIdx = -1;
+  for(let i=0;i<sp2Flat.length;i++){
+    const seg = sp2Flat[i].seg;
+    if(seg.measure!=null && seg.beat!=null){
+      const segTime = measureBeatToTime(seg.measure, seg.beat, sp2Song);
+      if(segTime<=t) activeIdx=i; else break;
+    }
+  }
+  document.querySelectorAll('#sp2-stage .syll').forEach(el=>{
+    const i = parseInt(el.dataset.i);
+    el.classList.remove('sung','active','upcoming');
+    if(i<activeIdx) el.classList.add('sung'); else if(i===activeIdx) el.classList.add('active'); else el.classList.add('upcoming');
+  });
+  sp2Raf = requestAnimationFrame(sp2Loop);
+}
+function sp2Check(){
+  let correct=0, total=0;
+  sp2Flat.forEach(f=>{
+    if(f.seg.measure==null || f.seg.beat==null) return;
+    total++;
+    const mEl = document.getElementById(`sp2-m-${f.li}-${f.si}`);
+    const bEl = document.getElementById(`sp2-b-${f.li}-${f.si}`);
+    const itemEl = document.getElementById(`sp2-item-${f.li}-${f.si}`);
+    const ansEl = document.getElementById(`sp2-a-${f.li}-${f.si}`);
+    const mVal = parseInt(mEl.value,10), bVal = parseFloat(bEl.value);
+    const ok = mVal===f.seg.measure && Math.abs(bVal-f.seg.beat) < 0.26;
+    itemEl.classList.remove('bq-correct','bq-wrong');
+    itemEl.classList.add(ok?'bq-correct':'bq-wrong');
+    if(ok) correct++; else ansEl.textContent = `Answer: m${f.seg.measure}·b${f.seg.beat}`;
+  });
+  const pct = total ? Math.round((correct/total)*100) : 100;
+  const good = pct>=80;
+  document.getElementById('sp2-banner').innerHTML = `<div class="score-banner ${good?'good':'bad'}" style="margin-top:18px;"><div class="big">${pct}%</div>
+    <div class="muted" style="margin-top:6px;font-size:13px;">${correct} of ${total} syllables placed correctly</div></div>`;
+  document.getElementById('sp2-check-btn').classList.add('hidden');
+  document.getElementById('sp2-footer').innerHTML = flowFooterHtml();
+}
+
+/* ---------------------------------------------------------------------------
+   STAGE 3 · ROOT NOTE & SCALE — three steps: Root -> Major/Minor -> apply a
+   note to every syllable of the song. Full answer key reveals only at the end.
+--------------------------------------------------------------------------- */
+const MAJOR_FAMILY = ['Major','Lydian','Mixolydian','Major Pentatonic'];
+function majorMinorAnswer(scaleType){
+  return MAJOR_FAMILY.includes(scaleType) ? 'Major' : 'Minor';
+}
+function normalizeNoteForCompare(str){
+  const m = String(str||'').trim().match(/^([A-Ga-g])([#b]?)/);
+  return m ? (m[1].toUpperCase()+m[2]) : '';
+}
+let sp3Song=null, sp3Step='root', sp3Root=null, sp3MajorMinor=null, sp3LoopOn=false, sp3LoopStart=0, sp3LoopEnd=0;
+function stageRenderRootScale(panel, song){
+  sp3Song = song; sp3Step='root'; sp3Root=null; sp3MajorMinor=null; sp3LoopOn=false;
+  const hasAudio = !!(song.audioUrl && song.audioUrl.trim());
+  let html = `
+    <div class="card tight volume-panel">
+      <div class="volume-row">
+        <span class="mono muted vol-lbl">🔊 Song Volume</span>
+        <input type="range" id="sp3-song-vol" min="0" max="100" value="100" ${hasAudio?'':'disabled'}>
+        <span class="mono muted vol-pct" id="sp3-song-vol-lbl">100%</span>
+      </div>
+      <div class="volume-row">
+        <span class="mono muted vol-lbl">🎹 Piano Volume</span>
+        <input type="range" id="sp3-piano-vol" min="0" max="100" value="${Math.round(pianoVolumeLevel*100)}">
+        <span class="mono muted vol-pct" id="sp3-piano-vol-lbl">${Math.round(pianoVolumeLevel*100)}%</span>
+      </div>
+    </div>`;
+  if(hasAudio){
+    html += `
+    <div class="player-box">
+      <div class="seek-row">
+        <span class="time-lbl mono" id="sp3-cur">0:00</span>
+        <input type="range" id="sp3-seek" min="0" max="100" value="0" step="0.01">
+        <span class="time-lbl mono" id="sp3-dur">0:00</span>
+      </div>
+      <div class="transport-controls">
+        <button class="btn-icon" id="sp3-back5">«5</button>
+        <button class="play-btn" id="sp3-play"><svg viewBox="0 0 24 24" fill="currentColor" id="sp3-play-icon"><path d="M8 5v14l11-7L8 5Z"/></svg></button>
+        <button class="btn-icon" id="sp3-stop" title="Stop">⏹</button>
+        <button class="btn-icon" id="sp3-fwd5">5»</button>
+      </div>
+      <div class="loop-row">
+        <button class="toggle-btn" id="sp3-loop">🔁 Loop</button>
+        <span class="muted mono" style="font-size:11px;">Measure</span>
+        <input type="number" min="1" id="sp3-loopstart" placeholder="1">
+        <span class="muted mono" style="font-size:11px;">to</span>
+        <input type="number" min="1" id="sp3-loopend" placeholder="4">
+      </div>
+      <div class="toggle-row"><select class="speed-select" id="sp3-speed"><option value="0.5">0.5×</option><option value="0.7">0.7×</option><option value="0.85">0.85×</option><option value="1" selected>1×</option><option value="1.15">1.15×</option><option value="1.3">1.3×</option></select></div>
+    </div>`;
+  } else {
+    html += `<div class="no-audio-note">No audio uploaded for this song yet — ask your teacher.</div>`;
+  }
+  html += `
+    <p class="muted" style="font-size:12px;margin:14px 0 6px;">Reference piano (press a key to hear it):</p>
+    <div class="mini-piano-wrap"><div class="mini-piano" id="sp3-piano"></div></div>
+    <div id="sp3-stepArea" style="margin-top:18px;"></div>`;
+  panel.innerHTML = html;
+
+  const pianoVolSlider = document.getElementById('sp3-piano-vol');
+  pianoVolSlider.oninput = (e)=>{
+    const v = parseInt(e.target.value,10);
+    pianoVolumeLevel = v/100;
+    document.getElementById('sp3-piano-vol-lbl').textContent = v+'%';
+  };
+
+  // mini piano — two octaves, white + black keys, synthesized tone.
+  // Triggers on press (mousedown/touchstart), not on release/click, for an
+  // instant, responsive feel like a real keyboard.
+  const pianoEl = document.getElementById('sp3-piano');
+  buildMiniPiano(pianoEl, [4,5]);
+
+  sp3RenderStepArea();
+
+  if(!hasAudio) return;
+  const a = document.getElementById('flowAudio');
+  a.src = song.audioUrl; a.playbackRate=1; a.pause(); a.volume=1;
+  document.getElementById('sp3-play').onclick = ()=>{ if(a.paused) a.play(); else a.pause(); };
+  a.onplay = ()=>{ document.getElementById('sp3-play-icon').innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; sp3StartLoop(); };
+  a.onpause = ()=>{ document.getElementById('sp3-play-icon').innerHTML='<path d="M8 5v14l11-7L8 5Z"/>'; cancelAnimationFrame(sp3Raf); };
+  a.onloadedmetadata = ()=>{ document.getElementById('sp3-seek').max=a.duration||0; document.getElementById('sp3-dur').textContent=fmtTime(a.duration); };
+  a.onerror = ()=>{ document.querySelector('.player-box')?.insertAdjacentHTML('afterbegin', `<div class="no-audio-note" style="border-color:var(--incorrect);color:var(--incorrect);margin-bottom:12px;">⚠️ Couldn't load the audio file at <code>${escapeHtml(song.audioUrl)}</code> — check the path exactly matches the file in your songs/ folder (spelling, dashes, and capitalization all matter), and that it was saved.</div>`); };
+  document.getElementById('sp3-seek').oninput=(e)=>{ a.currentTime=parseFloat(e.target.value); };
+  document.getElementById('sp3-back5').onclick=()=>{ a.currentTime=Math.max(0,a.currentTime-5); };
+  document.getElementById('sp3-fwd5').onclick=()=>{ a.currentTime=Math.min(a.duration||0,a.currentTime+5); };
+  document.getElementById('sp3-stop').onclick=()=>{ a.pause(); a.currentTime = sp3LoopOn ? sp3LoopStart : 0; };
+  document.getElementById('sp3-speed').onchange=(e)=>{ a.playbackRate=parseFloat(e.target.value); };
+  document.getElementById('sp3-song-vol').oninput=(e)=>{
+    const v = parseInt(e.target.value,10);
+    a.volume = v/100;
+    document.getElementById('sp3-song-vol-lbl').textContent = v+'%';
+  };
+  document.getElementById('sp3-loop').onclick = ()=>{
+    const btn = document.getElementById('sp3-loop');
+    if(sp3LoopOn){ sp3LoopOn=false; btn.classList.remove('on'); return; }
+    const sM = parseInt(document.getElementById('sp3-loopstart').value,10);
+    const eM = parseInt(document.getElementById('sp3-loopend').value,10);
+    if(!sM || !eM || eM<sM){ alert('Enter a valid start and end measure first (end \u2265 start).'); return; }
+    const bounds = measureRangeToTime(sp3Song, sM, eM);
+    sp3LoopStart = bounds.startTime; sp3LoopEnd = bounds.endTime;
+    sp3LoopOn = true; btn.classList.add('on');
+    a.currentTime = sp3LoopStart;
+  };
+}
+let sp3Raf=null;
+function sp3StartLoop(){
+  cancelAnimationFrame(sp3Raf);
+  const step=()=>{
+    const a = document.getElementById('flowAudio');
+    if(sp3LoopOn && a.currentTime>=sp3LoopEnd){ a.currentTime = sp3LoopStart; }
+    document.getElementById('sp3-cur').textContent = fmtTime(a.currentTime);
+    const bar = document.getElementById('sp3-seek');
+    if(!bar.matches(':active')) bar.value = a.currentTime;
+    sp3Raf = requestAnimationFrame(step);
+  };
+  sp3Raf = requestAnimationFrame(step);
+}
+
+function sp3RenderStepArea(){
+  const el = document.getElementById('sp3-stepArea');
+  if(!sp3Song.rootNote || !sp3Song.scaleType){
+    el.innerHTML = `<div class="score-banner bad"><div class="muted">⚠️ This song has no Root Note / Scale answer key set yet — ask your teacher.</div></div>${flowFooterHtml()}`;
+    return;
+  }
+  if(sp3Step==='root') sp3RenderRootStep(el);
+  else if(sp3Step==='majorminor') sp3RenderMajorMinorStep(el);
+  else sp3RenderNotesStep(el);
+}
+function sp3SyllableRefHtml(){
+  const lines = sp3Song.lines||[];
+  if(!lines.length) return '';
+  const linesHtml = lines.map(line=>{
+    const segs = line.segments||[];
+    const text = segs.map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      return escapeHtml(label) + (si<segs.length-1 ? '-' : '');
+    }).join('');
+    return `<div class="lyric-line" style="font-size:16px;">${text}</div>`;
+  }).join('');
+  return `<div class="lyric-stage" style="min-height:auto;padding:16px;margin-bottom:16px;">${linesHtml}</div>`;
+}
+function sp3RenderRootStep(el){
+  el.innerHTML = `
+    <div class="step-dot current" style="margin-bottom:14px;">Step 1 of 3 · Root Note</div>
+    ${sp3SyllableRefHtml()}
+    <h3 style="font-size:16px;margin-bottom:10px;">Listen — which note is the root?</h3>
+    <div class="note-wheel" id="sp3-notewheel">${ROOT_NOTES.map(r=>`<button type="button" class="note-btn" data-v="${r.value}" onclick="sp3PickRoot('${r.value}')">${r.label}</button>`).join('')}</div>
+    <div class="row" style="margin-top:14px;"><button class="btn gold" id="sp3-root-check-btn" onclick="sp3CheckRoot()">Check Root Note</button></div>
+    <div id="sp3-root-banner"></div>`;
+}
+function sp3PickRoot(v){ sp3Root=v; document.querySelectorAll('#sp3-notewheel .note-btn').forEach(b=>b.classList.toggle('sel', b.dataset.v===v)); }
+function sp3CheckRoot(){
+  const ok = sp3Root===sp3Song.rootNote;
+  const rootLabel = (ROOT_NOTES.find(r=>r.value===sp3Song.rootNote)||{}).label || sp3Song.rootNote;
+  document.getElementById('sp3-root-banner').innerHTML = `
+    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
+      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
+      <div class="muted" style="margin-top:6px;font-size:13px;">Root note: ${escapeHtml(rootLabel)}</div>
+    </div>
+    <div class="row"><button class="btn gold" onclick="sp3GoStep('majorminor')">Next: Major or Minor →</button></div>`;
+  document.getElementById('sp3-root-check-btn').classList.add('hidden');
+}
+function sp3RenderMajorMinorStep(el){
+  el.innerHTML = `
+    <div class="step-dot current" style="margin-bottom:14px;">Step 2 of 3 · Major or Minor</div>
+    ${sp3SyllableRefHtml()}
+    <h3 style="font-size:16px;margin-bottom:10px;">Does it sound Major or Minor?</h3>
+    <div class="scale-list" id="sp3-mmlist">
+      <button type="button" class="scale-btn" data-v="Major" onclick="sp3PickMajorMinor('Major')">Major</button>
+      <button type="button" class="scale-btn" data-v="Minor" onclick="sp3PickMajorMinor('Minor')">Minor</button>
+    </div>
+    <div class="row" style="margin-top:14px;"><button class="btn gold" id="sp3-mm-check-btn" onclick="sp3CheckMajorMinor()">Check</button></div>
+    <div id="sp3-mm-banner"></div>`;
+}
+function sp3PickMajorMinor(v){ sp3MajorMinor=v; document.querySelectorAll('#sp3-mmlist .scale-btn').forEach(b=>b.classList.toggle('sel', b.dataset.v===v)); }
+function sp3CheckMajorMinor(){
+  const answer = majorMinorAnswer(sp3Song.scaleType);
+  const ok = sp3MajorMinor===answer;
+  document.getElementById('sp3-mm-banner').innerHTML = `
+    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
+      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
+      <div class="muted" style="margin-top:6px;font-size:13px;">${answer} &middot; exact scale: ${escapeHtml(sp3Song.scaleType)}${sp3Song.keySig?' &middot; '+escapeHtml(sp3Song.keySig):''}</div>
+    </div>
+    <div class="row"><button class="btn gold" onclick="sp3GoStep('notes')">Next: Apply Notes to Every Syllable →</button></div>`;
+  document.getElementById('sp3-mm-check-btn').classList.add('hidden');
+}
+function sp3GoStep(step){ sp3Step = step; sp3RenderStepArea(); window.scrollTo({top:document.getElementById('sp3-stepArea').offsetTop-20, behavior:'smooth'}); }
+function sp3RenderNotesStep(el){
+  const hasNotes = (sp3Song.lines||[]).some(l=>(l.segments||[]).some(s=>s.note&&s.note.trim()));
+  if(!hasNotes){
+    el.innerHTML = `<div class="step-dot current" style="margin-bottom:14px;">Step 3 of 3 · Apply Notes</div>
+      <div class="empty-state">No lead notes set for this song's syllables yet — ask your teacher.</div>${flowFooterHtml()}`;
+    return;
+  }
+  const gridHtml = (sp3Song.lines||[]).map((line,li)=>{
+    const segs = line.segments||[];
+    const items = segs.map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      const isLast = si===segs.length-1;
+      const displayLabel = escapeHtml(label) + (isLast ? '' : '-');
+      return `<div class="beatquiz-item syl-note-item" id="sp3n-item-${li}-${si}">
+        <input type="text" id="sp3n-note-${li}-${si}" placeholder="·" class="mono syl-note-input">
+        <div class="txt syl-note-txt">${displayLabel}</div>
+        <div class="answer-lbl" id="sp3n-a-${li}-${si}"></div>
+      </div>`;
+    }).join('');
+    return `<div class="beatquiz-line syl-notes-line">${items}</div>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="step-dot current" style="margin-bottom:14px;">Step 3 of 3 · Apply Notes</div>
+    <h3 style="font-size:16px;margin-bottom:6px;">Listen, then write the note above every syllable</h3>
+    <p class="muted" style="font-size:12.5px;margin-bottom:14px;">Type the note in the box above each syllable — just the letter is fine (C, D#, Bb), the octave number doesn't matter.</p>
+    <div class="beatquiz-grid">${gridHtml}</div>
+    <div class="row" style="margin-top:14px;"><button class="btn gold" id="sp3n-check-btn" onclick="sp3CheckNotes()">Check My Notes</button></div>
+    <div id="sp3n-banner"></div>`;
+}
+function sp3CheckNotes(){
+  let correct=0, total=0;
+  (sp3Song.lines||[]).forEach((line,li)=>{
+    (line.segments||[]).forEach((seg,si)=>{
+      if(!seg.note || !seg.note.trim()) return;
+      total++;
+      const input = document.getElementById(`sp3n-note-${li}-${si}`);
+      const itemEl = document.getElementById(`sp3n-item-${li}-${si}`);
+      const ansEl = document.getElementById(`sp3n-a-${li}-${si}`);
+      const ok = normalizeNoteForCompare(input.value) === normalizeNoteForCompare(seg.note);
+      itemEl.classList.remove('bq-correct','bq-wrong');
+      itemEl.classList.add(ok?'bq-correct':'bq-wrong');
+      if(ok) correct++; else ansEl.textContent = `Answer: ${seg.note}`;
+    });
+  });
+  const pct = total ? Math.round((correct/total)*100) : 100;
+  const good = pct>=70;
+  let leadBlock = '';
+  if(sp3Song.leadNotesText){
+    leadBlock = `<div class="reveal-box"><div class="lbl">Full lead notes of the song</div><div class="val">${escapeHtml(sp3Song.leadNotesText)}</div></div>`;
+  }
+  document.getElementById('sp3n-banner').innerHTML = `<div class="score-banner ${good?'good':'bad'}" style="margin-top:16px;"><div class="big">${pct}%</div>
+    <div class="muted" style="margin-top:6px;font-size:13px;">${correct} of ${total} notes correct</div></div>${leadBlock}${flowFooterHtml()}`;
+  document.getElementById('sp3n-check-btn').classList.add('hidden');
+}
+
+
+/* ---------------------------------------------------------------------------
+   STAGE 4 · CHORD APPLICATION
+--------------------------------------------------------------------------- */
+let sp4Song=null, sp4Checked=false, sp4ShowTranslit=false, sp4Answers={};
+function sp4ChordOptionsFor(seg){
+  // Always show a full chord chart to pick from — fall back to a
+  // key/difficulty-generated palette when the song has no explicit
+  // chordPalette saved, so students aren't just shown the one chord
+  // the teacher happened to type as the answer for this slot.
+  const base = (sp4Song.chordPalette && sp4Song.chordPalette.length)
+    ? sp4Song.chordPalette
+    : generatePalette(sp4Song.chordKeyRoot || 'C', sp4Song.chordDifficulty || 'beginner');
+  const set = new Set(base);
+  (seg.correctChords||[]).forEach(c=>set.add(c.chord));
+  (seg.acceptableChords||[]).forEach(c=>set.add(c.chord));
+  (seg.wrongChords||[]).forEach(c=>set.add(c.chord));
+  return Array.from(set);
+}
+function stageRenderChord(panel, song){
+  const isNewSong = !sp4Song || sp4Song.id!==song.id;
+  sp4Song = song; sp4Checked=false;
+  if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; }
+  const flat = flattenSegments(song);
+  const hasSlots = flat.some(f=>f.seg.isChordSlot);
+  if(!hasSlots){
+    panel.innerHTML = `<div class="empty-state">No chord slots set for this song yet — ask your teacher to mark chord points in Step 5.</div><div id="sp4-footer">${flowFooterHtml()}</div>`;
+    return;
+  }
+  let html = `
+    <div class="row" style="margin-bottom:14px;">
+      <button class="btn outline small" id="sp4-toggle-lyric" onclick="sp4ToggleLyric()">${sp4ShowTranslit?'Show native script':'Show transliteration'}</button>
+    </div>
+    <p class="muted" style="font-size:12.5px;margin-bottom:14px;">The lead note for each syllable is shown above it — pick the chord that fits.</p>`;
+  (song.lines||[]).forEach((line, li)=>{
+    let chordCells='', noteCells='', lyricCells='', beatCells='';
+    (line.segments||[]).forEach((seg,si)=>{
+      const label = sp4ShowTranslit ? (seg.translit||seg.native||'·') : (seg.native||seg.translit||'·');
+      const mLabel = (seg.measure!=null) ? seg.measure : '';
+      noteCells += `<div class="cell">${seg.note?escapeHtml(seg.note):''}</div>`;
+      lyricCells += `<div class="cell">${escapeHtml(label)}</div>`;
+      beatCells += `<div class="cell">${mLabel}</div>`;
+      if(seg.isChordSlot){
+        const key = li+'-'+si;
+        const chosen = sp4Answers[key] || '';
+        chordCells += `<div class="chord-cell"><button type="button" class="chord-slot ${chosen?'answered':''}" id="sp4-slot-${li}-${si}" onclick="sp4OpenPicker(${li},${si})">${chosen?escapeHtml(chosen):'&ndash;'}</button></div>`;
+      } else {
+        chordCells += `<div class="chord-cell"></div>`;
+      }
+    });
+    html += `
+    <div class="chord-track-line">
+      <div class="chord-track">${chordCells}</div>
+      <div class="note-row">${noteCells}</div>
+      <div class="lyric-row">${lyricCells}</div>
+      <div class="beatlbl-row">${beatCells}</div>
+      <div id="sp4-reveal-${li}"></div>
+    </div>`;
+  });
+  html += `
+    <div class="chord-legend">
+      <span><i style="background:var(--correct);width:10px;height:10px;border-radius:2px;display:inline-block;"></i> Correct</span>
+      <span><i style="background:var(--acceptable);width:10px;height:10px;border-radius:2px;display:inline-block;"></i> Acceptable</span>
+      <span><i style="background:var(--incorrect);width:10px;height:10px;border-radius:2px;display:inline-block;"></i> Wrong (dischord)</span>
+    </div>
+    <div class="row"><button class="btn gold" id="sp4-check-btn" onclick="sp4Check()">Check Chords</button></div>
+    <div id="sp4-banner"></div>
+    <div id="sp4-footer"></div>`;
+  panel.innerHTML = html;
+}
+function sp4ToggleLyric(){ sp4ShowTranslit=!sp4ShowTranslit; stageRenderChord(document.getElementById('stagePanel'), sp4Song); }
+
+/* ---- chord palette picker: click a chord-slot button to choose freely from the chart ---- */
+let cpState = {li:null, si:null};
+function sp4OpenPicker(li, si){
+  if(sp4Checked) return;
+  cpState = {li, si};
+  const seg = sp4Song.lines[li].segments[si];
+  const opts = sp4ChordOptionsFor(seg);
+  const chartEl = document.getElementById('cp-chart-chips');
+  chartEl.innerHTML = opts.length
+    ? opts.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')
+    : '<span class="muted" style="font-size:12.5px;">No chords available for this song yet — ask your teacher.</span>';
+  document.getElementById('chord-picker-modal').classList.add('show');
+}
+function closeChordPicker(){ document.getElementById('chord-picker-modal').classList.remove('show'); }
+function cpChoose(chord){
+  const key = cpState.li+'-'+cpState.si;
+  sp4Answers[key] = chord;
+  const btn = document.getElementById(`sp4-slot-${cpState.li}-${cpState.si}`);
+  btn.textContent = chord;
+  btn.classList.add('answered');
+  closeChordPicker();
+}
+function cpClear(){
+  const key = cpState.li+'-'+cpState.si;
+  delete sp4Answers[key];
+  const btn = document.getElementById(`sp4-slot-${cpState.li}-${cpState.si}`);
+  btn.textContent = '–';
+  btn.classList.remove('answered');
+  closeChordPicker();
+}
+function sp4Check(){
+  sp4Checked = true;
+  const flat = flattenSegments(sp4Song);
+  let correct=0, total=0;
+  (sp4Song.lines||[]).forEach((line, li)=>{
+    let revealHtml = '';
+    (line.segments||[]).forEach((seg,si)=>{
+      if(!seg.isChordSlot) return;
+      total++;
+      const key = li+'-'+si;
+      const chosen = sp4Answers[key] || '';
+      const sel = document.getElementById(`sp4-slot-${li}-${si}`);
+      sel.classList.remove('correct','acceptable','incorrect');
+      const isCorrect = (seg.correctChords||[]).some(c=>c.chord===chosen);
+      const isAcceptable = !isCorrect && (seg.acceptableChords||[]).some(c=>c.chord===chosen);
+      if(chosen && isCorrect){ sel.classList.add('correct'); correct++; }
+      else if(chosen && isAcceptable){ sel.classList.add('acceptable'); correct += 0.5; }
+      else {
+        sel.classList.add('incorrect');
+        const wrongMatch = (seg.wrongChords||[]).find(w=>w.chord===chosen);
+        const explanation = chosen
+          ? (wrongMatch && wrongMatch.explanation ? wrongMatch.explanation : generateAutoExplanation(flat, seg.measure, chosen, true))
+          : 'No chord selected.';
+        const rightList = (seg.correctChords||[]).map(c=>c.chord).join(' or ') || '—';
+        revealHtml += `<div class="chord-reveal">${escapeHtml(explanation)} <b>Correct: ${escapeHtml(rightList)}</b></div>`;
+      }
+    });
+    document.getElementById(`sp4-reveal-${li}`).innerHTML = revealHtml;
+  });
+  const pct = total ? Math.round((correct/total)*100) : 100;
+  const good = pct>=70;
+  document.getElementById('sp4-banner').innerHTML = `<div class="score-banner ${good?'good':'bad'}" style="margin-top:16px;"><div class="big">${pct}%</div>
+    <div class="muted" style="margin-top:6px;font-size:13px;">${Math.round(correct*10)/10} of ${total} chord slots correct</div></div>`;
+  document.getElementById('sp4-check-btn').classList.add('hidden');
+  document.getElementById('sp4-footer').innerHTML = flowFooterHtml();
+}
+</script>
+</body>
+</html>

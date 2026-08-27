@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Application — Andrew's Music Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat, CDN — no build step, fits single-file deployment) -->
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
+
+<style>
+  :root{
+    --bg:#0e0c09;
+    --panel:#17140f;
+    --panel-2:#1f1a13;
+    --panel-3:#211c14;
+    --gold:#c9a227;
+    --gold-bright:#e6c34a;
+    --cream:#f2e8d5;
+    --muted:#9a8f78;
+    --border:#332c1f;
+    --correct:#4f9d69;
+    --correct-bg:#1a2a1f;
+    --incorrect:#c9564a;
+    --incorrect-bg:#2a1a18;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,162,39,0.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(201,162,39,0.05), transparent 55%),
+      var(--bg);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;color:var(--gold-bright);}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  #app{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(155deg,var(--gold-bright),var(--gold) 60%,#8a6f1c);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;color:#0e0c09;font-size:17px;}
+  .brand-text h1{font-size:19px;letter-spacing:.2px;}
+  .brand-text span{font-size:12px;color:var(--muted);}
+  .who{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:12px;}
+  .who button{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .who button:hover{border-color:var(--gold);color:var(--gold-bright);}
+
+  /* ---------- Cards / layout ---------- */
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;}
+  input[type=text],input[type=password],input[type=number],select,textarea{
+    width:100%;background:var(--panel-3);border:1px solid var(--border);color:var(--cream);
+    padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;outline:none;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+  .btn{background:linear-gradient(155deg,var(--gold-bright),var(--gold));color:#181307;border:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secondary{background:none;border:1px solid var(--gold);color:var(--gold-bright);}
+  .btn.ghost{background:none;border:1px solid var(--border);color:var(--muted);}
+  .btn.danger{background:none;border:1px solid var(--incorrect);color:var(--incorrect);}
+  .btn.small{padding:6px 12px;font-size:12px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .spread{display:flex;justify-content:space-between;align-items:center;}
+  .muted{color:var(--muted);}
+  .error-msg{color:var(--incorrect);font-size:13px;margin-top:8px;}
+  .hidden{display:none !important;}
+
+  /* ---------- Login ---------- */
+  #login-view{max-width:420px;margin:60px auto;text-align:center;}
+  .role-choice{display:flex;gap:14px;margin:22px 0;}
+  .role-btn{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px 14px;cursor:pointer;color:var(--cream);}
+  .role-btn:hover{border-color:var(--gold);}
+  .role-btn .icon{font-size:26px;margin-bottom:8px;}
+  .role-btn h3{font-size:16px;color:var(--gold-bright);margin-bottom:4px;}
+  .role-btn p{font-size:12px;color:var(--muted);margin:0;}
+
+  /* ---------- Song list ---------- */
+  .song-item{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
+  .song-item h3{font-size:15px;color:var(--cream);font-family:'Inter',sans-serif;font-weight:600;}
+  .song-item .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  /* ---------- Song builder ---------- */
+  .line-block{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;}
+  .segment-card{background:var(--panel-3);border:1px solid var(--border);border-radius:8px;padding:10px;min-width:150px;position:relative;}
+  .segments-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+  .segment-card label{margin-bottom:3px;font-size:10px;}
+  .segment-card input,.segment-card select{padding:7px 9px;font-size:13px;margin-bottom:7px;}
+  .remove-x{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;}
+  .remove-x:hover{color:var(--incorrect);}
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .chip{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:3px 8px;border-radius:20px;cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+  .chip:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .palette-chip{background:var(--panel-3);cursor:default;}
+  .acceptable-chip{cursor:pointer;}
+  .acceptable-chip.chip-active{background:rgba(230,195,74,0.18);border-color:var(--gold-bright);color:var(--gold-bright);}
+
+  /* ---------- Circle of Fifths ---------- */
+  .cof-wrap{position:relative;width:240px;height:240px;margin:14px auto;}
+  .cof-key{position:absolute;width:46px;height:46px;border-radius:50%;background:var(--panel-3);border:1.5px solid var(--border);color:var(--cream);font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  .cof-key:hover{border-color:var(--gold);}
+  .cof-key.cof-active{background:linear-gradient(155deg,var(--gold-bright),var(--gold));color:#181307;border-color:var(--gold-bright);font-weight:700;}
+  .diff-btn-row .btn{padding:8px 16px;}
+
+  /* ---------- Chord Selector Modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(5,4,2,0.72);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;}
+  .modal-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:560px;width:100%;max-height:92vh;overflow-y:auto;}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;}
+  .modal-close:hover{color:var(--incorrect);}
+  .cs-header{margin-bottom:10px;}
+  .cs-body{display:flex;gap:18px;flex-wrap:wrap;}
+  .cs-wheel-col{flex:0 0 auto;}
+  .cs-panel-col{flex:1 1 220px;min-width:200px;}
+  .cs-wheel{position:relative;width:200px;height:200px;margin:0 auto;}
+  .cs-root-display{font-family:'Fraunces',serif;font-size:34px;color:var(--gold-bright);text-align:center;margin-bottom:6px;}
+  .cs-chip-grid{display:flex;flex-wrap:wrap;gap:6px;}
+  .cs-chip-btn{background:var(--panel-3);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .cs-chip-btn.small{padding:5px 9px;font-size:11px;}
+  .cs-chip-btn:hover:not(.cs-disabled){border-color:var(--gold);}
+  .cs-chip-btn.cs-active{background:linear-gradient(155deg,var(--gold-bright),var(--gold));color:#181307;border-color:var(--gold-bright);font-weight:600;}
+  .cs-chip-btn.cs-disabled{opacity:.3;cursor:not-allowed;}
+  .cs-piano{position:relative;height:90px;margin:16px auto 0;background:#0a0908;border-radius:6px;padding:6px;overflow-x:auto;}
+  .pk{position:absolute;box-sizing:border-box;}
+  .pk.white{top:6px;width:24px;height:78px;background:#f2ece0;border:1px solid #2a241a;border-radius:0 0 4px 4px;}
+  .pk.white.active{background:var(--gold-bright);}
+  .pk.black{top:6px;width:15px;height:48px;background:#141210;border-radius:0 0 3px 3px;z-index:2;}
+  .pk.black.active{background:var(--gold);}
+  .cs-footer{margin-top:14px;flex-wrap:wrap;gap:10px;}
+  .chord-pick-btn{background:var(--panel-3);border:1.5px dashed var(--gold);color:var(--gold-bright);padding:9px 14px;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:14px;cursor:pointer;width:100%;text-align:left;margin-bottom:4px;}
+  .chord-pick-btn:hover{background:rgba(201,162,39,0.1);}
+  .tier-item{background:var(--panel-3);border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:7px;}
+  .tier-explain{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--cream);font-size:11.5px;padding:6px 8px;border-radius:6px;margin-top:6px;font-family:'Inter',sans-serif;resize:vertical;}
+  .tier-explain:focus{border-color:var(--gold);outline:none;}
+  @media (max-width: 500px){
+    .cs-body{flex-direction:column;}
+    .cs-wheel{width:180px;height:180px;}
+  }
+
+  /* ---------- Practice view ---------- */
+  .practice-line{margin-bottom:26px;}
+  .track{display:flex;gap:0;}
+  .cell{flex:0 0 auto;min-width:74px;text-align:center;padding:4px 6px;border-left:1px dashed rgba(201,162,39,0.15);}
+  .cell:first-child{border-left:none;}
+  .cell.bar-start{border-left:2px solid var(--gold);}
+
+  .chord-row .cell{padding-bottom:8px;}
+  .chord-slot{width:100%;background:var(--panel-3);border:1.5px dashed var(--border);color:var(--muted);border-radius:7px;padding:6px 4px;font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;cursor:pointer;}
+  .chord-slot:focus{outline:none;border-color:var(--gold);}
+  .chord-slot.answered{border-style:solid;border-color:var(--gold);color:var(--gold-bright);background:rgba(201,162,39,0.08);}
+  .chord-slot.correct{border-style:solid;border-color:var(--correct);color:var(--correct);background:var(--correct-bg);}
+  .chord-slot.acceptable{border-style:solid;border-color:var(--gold-bright);color:var(--gold-bright);background:rgba(230,195,74,0.12);}
+  .chord-slot.incorrect{border-style:solid;border-color:var(--incorrect);color:var(--incorrect);background:var(--incorrect-bg);}
+  .reveal-tag{font-size:10px;color:var(--correct);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+  .reveal-tag.acceptable-tag{color:var(--gold-bright);}
+
+  .note-row .cell{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold-bright);opacity:.9;}
+  .lyric-row .cell{font-size:14.5px;color:var(--cream);padding-top:2px;padding-bottom:2px;}
+  .translit-row .cell{font-size:13.5px;color:var(--muted);font-style:italic;font-family:'IBM Plex Mono',monospace;}
+
+  .beat-row{margin-top:4px;}
+  .beat-row .cell{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;padding-top:6px;position:relative;}
+  .beat-row .cell.beat-1{color:var(--gold);font-weight:600;}
+  .beat-row .cell.bar-start::before{content:'';position:absolute;left:-1px;top:0;bottom:0;width:2px;background:var(--gold);opacity:.5;}
+
+  .score-banner{text-align:center;padding:26px;border-radius:var(--radius);margin-bottom:22px;}
+  .score-banner.good{background:var(--correct-bg);border:1px solid var(--correct);}
+  .score-banner.bad{background:var(--incorrect-bg);border:1px solid var(--incorrect);}
+  .score-banner .big{font-family:'Fraunces',serif;font-size:38px;color:var(--gold-bright);}
+
+  .tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .tab-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;}
+  .tab-btn.active{border-color:var(--gold);color:var(--gold-bright);background:rgba(201,162,39,0.08);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:500;text-transform:uppercase;font-size:11px;letter-spacing:.3px;}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+  /* ---------- Mobile responsive ---------- */
+  @media (max-width: 640px){
+    #app{padding:16px 12px 60px;}
+    .topbar{flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+    .card{padding:16px;}
+    .grid-2{grid-template-columns:1fr;}
+    #login-view{margin:32px auto;}
+    .role-choice{flex-direction:column;}
+    .cof-wrap{width:210px;height:210px;transform:scale(0.95);transform-origin:top center;}
+    .segment-card{min-width:130px;}
+    .cell{min-width:56px;padding:4px 3px;font-size:12px;}
+    .note-row .cell{font-size:11.5px;}
+    .lyric-row .cell{font-size:13px;}
+    .translit-row .cell{font-size:12px;}
+    .chord-slot{font-size:11.5px;padding:6px 2px;}
+    .beat-row .cell{font-size:10px;}
+    .practice-line{margin-bottom:20px;}
+    .line-scroll{overflow-x:auto;padding-bottom:4px;}
+    .spread{flex-wrap:wrap;gap:8px;}
+    .diff-btn-row{flex-direction:column;align-items:stretch;}
+    .diff-btn-row .btn{width:100%;text-align:center;}
+    .score-banner .big{font-size:30px;}
+  }
+  @media (max-width: 400px){
+    .cell{min-width:48px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= LOGIN ================= -->
+  <div id="login-view">
+    <div class="brand" style="justify-content:center;margin-bottom:6px;">
+      <div class="brand-mark">♪</div>
+    </div>
+    <h1 style="font-size:24px;">Chord Application</h1>
+    <p class="muted" style="font-size:13px;margin-top:6px;">Andrew's Music Academy</p>
+
+    <div id="role-choice" class="role-choice">
+      <div class="role-btn" onclick="showTeacherLogin()">
+        <div class="icon">🎼</div>
+        <h3>Teacher</h3>
+        <p>Build songs &amp; review results</p>
+      </div>
+      <div class="role-btn" onclick="studentLogin()">
+        <div class="icon">🎹</div>
+        <h3>Student</h3>
+        <p>Practice applying chords</p>
+      </div>
+    </div>
+
+    <div id="teacher-login" class="card hidden" style="text-align:left;">
+      <label>Email</label>
+      <input type="email" id="t-email" placeholder="you@yourdomain.com" autocomplete="username">
+      <div style="height:10px;"></div>
+      <label>Password</label>
+      <input type="password" id="t-password" placeholder="••••••" autocomplete="current-password">
+      <div class="error-msg hidden" id="t-error"></div>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn" id="t-login-btn" onclick="teacherLogin()">Log In</button>
+        <button class="btn ghost" onclick="backToRoles()">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TEACHER VIEW ================= -->
+  <div id="teacher-view" class="hidden">
+    <div class="topbar">
+      <div class="brand"><div class="brand-mark">♪</div><div class="brand-text"><h1>Chord Application</h1><span>Teacher dashboard</span></div></div>
+      <div class="who" id="teacher-who">Teacher <button onclick="logout()">Log out</button></div>
+    </div>
+
+    <div id="teacher-songs-panel">
+      <div class="spread" style="margin-bottom:14px;">
+        <h2 style="font-size:18px;">Your Songs</h2>
+        <button class="btn" onclick="newSong()">+ New Song</button>
+      </div>
+      <div id="song-list"></div>
+    </div>
+
+    <!-- Song Builder -->
+    <div id="builder-view" class="hidden">
+      <div class="spread" style="margin-bottom:14px;">
+        <h2 style="font-size:18px;" id="builder-title">New Song</h2>
+        <div class="row">
+          <button class="btn ghost" onclick="closeBuilder()">Cancel</button>
+          <button class="btn" id="save-song-btn" onclick="saveSong()">Save Song</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="grid-2">
+          <div>
+            <label>Song Title</label>
+            <input type="text" id="song-title" placeholder="e.g. Amazing Grace">
+          </div>
+          <div>
+            <label>Selected Key</label>
+            <input type="text" id="song-key" placeholder="Pick a key from the circle below" readonly>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;text-align:center;">
+          <label>Circle of Fifths — click a key</label>
+          <div id="circle-of-fifths" class="cof-wrap"></div>
+        </div>
+
+        <div style="margin-top:6px;">
+          <label>Chord Palette Level</label>
+          <div class="row diff-btn-row">
+            <button type="button" class="btn secondary small" id="diff-beginner-btn" onclick="setDifficulty('beginner')">Beginner (I · IV · V + ii · iii · vi)</button>
+            <button type="button" class="btn secondary small" id="diff-pro-btn" onclick="setDifficulty('pro')">Pro (+ sus, 6th, 7th, 9th)</button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label>Chord Palette for this Song</label>
+          <div id="palette-chips" class="chip-row"></div>
+          <div class="row" style="margin-top:6px;">
+            <input type="text" id="custom-chord-input" placeholder="Add custom chord e.g. Csus2" style="max-width:220px;">
+            <button type="button" class="btn ghost small" onclick="addCustomChord()">+ Add Chord</button>
+            <button type="button" class="btn secondary small" onclick="openPaletteChordSelector()">🎹 Chord Chart</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="lines-container"></div>
+      <button class="btn secondary" onclick="addLine()">+ Add Lyric Line</button>
+    </div>
+  </div>
+
+  <!-- ================= STUDENT VIEW ================= -->
+  <div id="student-view" class="hidden">
+    <div class="topbar">
+      <div class="brand"><div class="brand-mark">♪</div><div class="brand-text"><h1>Chord Application</h1><span>Student practice</span></div></div>
+      <div class="who">Student <button onclick="logout()">Log out</button></div>
+    </div>
+
+    <div id="student-song-select">
+      <h2 style="font-size:18px;margin-bottom:14px;">Choose a Song</h2>
+      <div id="student-song-list"></div>
+    </div>
+
+    <div id="practice-view" class="hidden">
+      <div class="spread" style="margin-bottom:18px;">
+        <h2 style="font-size:20px;" id="practice-title">Song Title</h2>
+        <button class="btn ghost small" onclick="backToSongList()">← Back to songs</button>
+      </div>
+      <p class="muted" style="font-size:13px;margin-bottom:14px;">Tap each chord box above the lead notes and choose the chord you think fits. Check your answers once you've filled the whole song.</p>
+
+      <div class="row" style="margin-bottom:18px;">
+        <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--cream);margin-bottom:0;">
+          <input type="checkbox" id="toggle-tamil" checked style="width:auto;" onchange="toggleLyricDisplay()"> Show Tamil lyrics
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--cream);margin-bottom:0;">
+          <input type="checkbox" id="toggle-translit" style="width:auto;" onchange="toggleLyricDisplay()"> Show transliteration
+        </label>
+      </div>
+
+      <div id="score-banner-holder"></div>
+      <div id="practice-lines"></div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="check-btn" onclick="checkChords()">Check My Chords</button>
+        <button class="btn ghost hidden" id="retry-btn" onclick="retryPractice()">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= CHORD SELECTOR MODAL ================= -->
+<div id="chord-selector-modal" class="modal-overlay hidden">
+  <div class="modal-card chord-selector-card">
+    <div class="spread cs-header">
+      <h3 style="font-size:16px;">Chord Selector</h3>
+      <button class="modal-close" onclick="closeChordSelector()">✕</button>
+    </div>
+    <div class="cs-body">
+      <div class="cs-wheel-col">
+        <div id="cs-wheel" class="cs-wheel"></div>
+      </div>
+      <div class="cs-panel-col">
+        <div class="cs-root-display" id="cs-root-display">C</div>
+        <label style="margin-top:4px;">Quality</label>
+        <div class="cs-chip-grid" id="cs-quality-row"></div>
+        <label style="margin-top:10px;">Extensions <span class="muted" style="text-transform:none;font-size:10px;">(Pro only)</span></label>
+        <div class="cs-chip-grid" id="cs-ext-row"></div>
+        <div style="margin-top:10px;">
+          <label style="display:inline;">Bass (slash chord)</label>
+          <input type="text" id="cs-bass-input" placeholder="e.g. E" style="width:90px;display:inline-block;margin-left:8px;" oninput="updateChordPreview()">
+        </div>
+      </div>
+    </div>
+    <div id="cs-piano" class="cs-piano"></div>
+    <div id="cs-explanation-wrap" class="hidden" style="margin-top:12px;">
+      <div class="spread">
+        <label style="margin-bottom:4px;">Explanation (shown to the student) — auto-written, edit freely</label>
+        <button type="button" class="btn ghost small" onclick="resetCsExplanationToAuto()">🔄 Use Auto Text</button>
+      </div>
+      <textarea id="cs-explanation-input" rows="3" oninput="csState.explanationEdited=true" placeholder="Auto-generated once you pick a chord."></textarea>
+    </div>
+    <div class="cs-footer spread">
+      <div class="mono" id="cs-symbol-preview" style="font-size:20px;color:var(--gold-bright);"></div>
+      <div class="row">
+        <button class="btn ghost small" type="button" onclick="playChordPreview()">🔊 Preview</button>
+        <button class="btn small" type="button" id="cs-confirm-btn" onclick="confirmChordSelection()">Use This Chord</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ======================================================================
+   FIREBASE CONFIG — paste your existing ExamHub Firebase config below.
+   Project ID should be: sample-6eb3e
+====================================================================== */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+/* ======================================================================
+   AUTH — Firebase Authentication (Email/Password). Teacher access is
+   controlled server-side by Firestore rules checking request.auth.token.email,
+   not by anything in this file.
+====================================================================== */
+function showTeacherLogin(){
+  document.getElementById('role-choice').classList.add('hidden');
+  document.getElementById('teacher-login').classList.remove('hidden');
+}
+function backToRoles(){
+  document.getElementById('teacher-login').classList.add('hidden');
+  document.getElementById('role-choice').classList.remove('hidden');
+  document.getElementById('t-error').classList.add('hidden');
+}
+
+async function teacherLogin(){
+  const email = document.getElementById('t-email').value.trim();
+  const password = document.getElementById('t-password').value;
+  const errEl = document.getElementById('t-error');
+  errEl.classList.add('hidden');
+  if(!email || !password){
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  const btn = document.getElementById('t-login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+    document.getElementById('t-password').value = '';
+    // onAuthStateChanged below handles entering the teacher view
+  } catch(e){
+    console.error('Login failed', e);
+    errEl.textContent = 'Login failed — check your email and password.';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Log In';
+  }
+}
+
+function studentLogin(){
+  sessionStorage.setItem('ca-role','student');
+  enterStudentView();
+}
+
+function logout(){
+  sessionStorage.removeItem('ca-role');
+  if(auth.currentUser){
+    auth.signOut().then(()=>location.reload());
+  } else {
+    location.reload();
+  }
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    enterTeacherView(user);
+  } else if(sessionStorage.getItem('ca-role') === 'student'){
+    enterStudentView();
+  }
+});
+
+function enterTeacherView(user){
+  document.getElementById('login-view').classList.add('hidden');
+  document.getElementById('student-view').classList.add('hidden');
+  document.getElementById('teacher-view').classList.remove('hidden');
+  document.getElementById('teacher-who').innerHTML = (user && user.email ? escapeHtml(user.email) : 'Teacher') + ' <button onclick="logout()">Log out</button>';
+  loadSongList();
+}
+function enterStudentView(){
+  document.getElementById('login-view').classList.add('hidden');
+  document.getElementById('teacher-view').classList.add('hidden');
+  document.getElementById('student-view').classList.remove('hidden');
+  loadStudentSongList();
+}
+
+/* ======================================================================
+   CHORD THEORY ENGINE
+====================================================================== */
+const CIRCLE_OF_FIFTHS = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
+
+const MAJOR_KEYS = {
+  'C':  ['C','D','E','F','G','A','B'],
+  'G':  ['G','A','B','C','D','E','F#'],
+  'D':  ['D','E','F#','G','A','B','C#'],
+  'A':  ['A','B','C#','D','E','F#','G#'],
+  'E':  ['E','F#','G#','A','B','C#','D#'],
+  'B':  ['B','C#','D#','E','F#','G#','A#'],
+  'F#': ['F#','G#','A#','B','C#','D#','F'],
+  'Db': ['Db','Eb','F','Gb','Ab','Bb','C'],
+  'Ab': ['Ab','Bb','C','Db','Eb','F','G'],
+  'Eb': ['Eb','F','G','Ab','Bb','C','D'],
+  'Bb': ['Bb','C','D','Eb','F','G','A'],
+  'F':  ['F','G','A','Bb','C','D','E']
+};
+const DIATONIC_QUALITIES = ['maj','min','min','maj','maj','min','dim'];
+
+const NOTE_INDEX = {'C':0,'B#':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'Cb':11};
+const CHORD_INTERVALS = {
+  maj:[0,4,7], min:[0,3,7], dim:[0,3,6], aug:[0,4,8], '5':[0,7],
+  sus2:[0,2,7], sus4:[0,5,7],
+  '6':[0,4,7,9], m6:[0,3,7,9],
+  maj7:[0,4,7,11], '7':[0,4,7,10], m7:[0,3,7,10],
+  '9':[0,4,7,10,2], m9:[0,3,7,10,2], b9:[0,4,7,10,1], '#9':[0,4,7,10,3],
+  '11':[0,4,7,10,5], m11:[0,3,7,10,5], '#11':[0,4,7,10,6],
+  b13:[0,4,7,10,8], 'm(maj7)':[0,3,7,11], 'b5':[0,4,6], '#5':[0,4,8]
+};
+
+/* Chord Selector widget engine — quality + optional extension compose into a symbol */
+const CHROMATIC_WHEEL = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const QUALITIES = [
+  {key:'maj', label:'Maj'}, {key:'min', label:'Min'}, {key:'aug', label:'Aug'}, {key:'dim', label:'Dim'},
+  {key:'sus4', label:'sus4'}, {key:'sus2', label:'sus2'}, {key:'5', label:'5th'}
+];
+const BEGINNER_QUALITIES = ['maj','min'];
+const EXTENSIONS = [
+  {key:'b5',label:'b5'},{key:'#5',label:'#5'},{key:'6',label:'6'},{key:'7',label:'7'},{key:'maj7',label:'maj7'},
+  {key:'b9',label:'b9'},{key:'9',label:'9'},{key:'#9',label:'#9'},{key:'11',label:'11'},{key:'#11',label:'#11'},{key:'b13',label:'b13'}
+];
+const QUALITY_SUFFIX = { maj:'', min:'m', aug:'aug', dim:'dim', sus4:'sus4', sus2:'sus2', '5':'5' };
+const EXTENSION_ADD = {
+  'b5':{replace:7,with:6}, '#5':{replace:7,with:8},
+  '6':{add:9}, '7':{add:10}, 'maj7':{add:11},
+  'b9':{add:1}, '9':{add:2}, '#9':{add:3},
+  '11':{add:5}, '#11':{add:6}, 'b13':{add:8}
+};
+function getChordIntervals(quality, extension){
+  let base = (CHORD_INTERVALS[quality] || CHORD_INTERVALS.maj).slice();
+  if(extension && EXTENSION_ADD[extension]){
+    const rule = EXTENSION_ADD[extension];
+    if(rule.replace!==undefined){
+      base = base.filter(iv=>iv!==rule.replace);
+      base.push(rule.with);
+    } else if(rule.add!==undefined){
+      base.push(rule.add);
+    }
+  }
+  return base;
+}
+function combineQualityExtension(quality, extension){
+  if(!extension) return QUALITY_SUFFIX[quality] !== undefined ? QUALITY_SUFFIX[quality] : '';
+  if(quality==='min'){
+    if(extension==='7') return 'm7';
+    if(extension==='9') return 'm9';
+    if(extension==='6') return 'm6';
+    if(extension==='maj7') return 'm(maj7)';
+    return 'm'+extension;
+  }
+  return extension;
+}
+function composeChordSymbol(root, quality, extension, bass){
+  let sym = root + combineQualityExtension(quality, extension);
+  if(bass && bass.trim()) sym += '/' + bass.trim();
+  return sym;
+}
+
+
+function diatonicChords(keyRoot){
+  const scale = MAJOR_KEYS[keyRoot];
+  if(!scale) return [];
+  return scale.map((note,i)=>({degree:i+1, root:note, quality:DIATONIC_QUALITIES[i]}));
+}
+function chordName(root, quality){
+  if(quality==='maj') return root;
+  if(quality==='min') return root+'m';
+  if(quality==='dim') return root+'dim';
+  return root;
+}
+function generateBeginnerPalette(keyRoot){
+  return diatonicChords(keyRoot).filter(c=>c.degree!==7).map(c=>chordName(c.root,c.quality));
+}
+function generateProPalette(keyRoot){
+  const base = diatonicChords(keyRoot).filter(c=>c.degree!==7);
+  const out = [];
+  base.forEach(c=>{
+    out.push(chordName(c.root,c.quality));
+    out.push(c.root+'sus2');
+    out.push(c.root+'sus4');
+    if(c.quality==='maj'){
+      out.push(c.root+'6');
+      out.push(c.degree===5 ? c.root+'7' : c.root+'maj7');
+      out.push(c.root+'9');
+    } else {
+      out.push(c.root+'m6');
+      out.push(c.root+'m7');
+      out.push(c.root+'m9');
+    }
+  });
+  return out;
+}
+function generatePalette(keyRoot, difficulty){
+  return difficulty === 'pro' ? generateProPalette(keyRoot) : generateBeginnerPalette(keyRoot);
+}
+function parseChordSymbol(sym){
+  const m = String(sym||'').match(/^([A-Ga-g])([#b]?)(.*)$/);
+  if(!m) return null;
+  const root = m[1].toUpperCase()+m[2];
+  const rest = m[3];
+  let quality = 'maj';
+  if(['','maj'].includes(rest)) quality='maj';
+  else if(rest==='m') quality='min';
+  else quality = rest;
+  return {root, quality};
+}
+function noteToPitchClass(noteStr){
+  const m = String(noteStr||'').trim().match(/^([A-Ga-g])([#b]?)/);
+  if(!m) return null;
+  const key = m[1].toUpperCase()+m[2];
+  return NOTE_INDEX.hasOwnProperty(key) ? NOTE_INDEX[key] : null;
+}
+function chordContainsNote(chordSymbol, noteStr){
+  const pc = noteToPitchClass(noteStr);
+  if(pc===null) return false;
+  const parsed = parseChordSymbol(chordSymbol);
+  if(!parsed) return false;
+  const rootPc = NOTE_INDEX[parsed.root];
+  if(rootPc===undefined) return false;
+  const intervals = CHORD_INTERVALS[parsed.quality];
+  if(!intervals) return false;
+  return intervals.some(iv => (rootPc+iv)%12 === pc);
+}
+function chordsContainingNote(palette, noteStr){
+  return palette.filter(c=>chordContainsNote(c, noteStr));
+}
+
+const PC_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function intervalsForSuffix(qualitySuffix){
+  if(CHORD_INTERVALS[qualitySuffix]) return CHORD_INTERVALS[qualitySuffix];
+  if(String(qualitySuffix).startsWith('m')) return CHORD_INTERVALS.min;
+  return CHORD_INTERVALS.maj;
+}
+function noteLetterOnly(note){
+  const m = String(note||'').trim().match(/^([A-Ga-g])([#b]?)/);
+  return m ? (m[1].toUpperCase()+m[2]) : String(note||'').trim();
+}
+function getMeasureNotesRaw(segments, si){
+  if(!segments || !segments[si]) return [];
+  let start = si;
+  while(start>0 && segments[start].beat !== 1) start--;
+  let end = start;
+  while(end < segments.length && !(end>start && segments[end].beat===1)) end++;
+  const notes = [];
+  for(let i=start;i<end;i++){
+    const n = segments[i].note;
+    if(n && n.trim()) notes.push(n.trim());
+  }
+  return notes;
+}
+function analyzeMeasureCoverage(segments, si, chordSymbol){
+  const parsed = parseChordSymbol(chordSymbol);
+  if(!parsed) return null;
+  const rootPc = NOTE_INDEX[parsed.root];
+  if(rootPc===undefined) return null;
+  const intervals = intervalsForSuffix(parsed.quality);
+  const chordPcs = intervals.map(iv=>(rootPc+iv)%12);
+  const chordNoteNames = intervals.map(iv=>PC_NAMES[(rootPc+iv)%12]);
+  const measureNotesRaw = getMeasureNotesRaw(segments, si);
+  const measureLetters = measureNotesRaw.map(noteLetterOnly);
+  const letterCounts = {};
+  measureLetters.forEach(l=>{ letterCounts[l] = (letterCounts[l]||0)+1; });
+  const distinctLetters = Object.keys(letterCounts);
+  const maxCount = distinctLetters.length ? Math.max(...distinctLetters.map(l=>letterCounts[l])) : 0;
+  let dominant = distinctLetters.filter(l=>letterCounts[l]===maxCount && maxCount>1);
+  if(!dominant.length) dominant = distinctLetters.slice();
+  const chordPcSet = new Set(chordPcs);
+  const dominantInChord = dominant.filter(l=>{ const pc=noteToPitchClass(l); return pc!==null && chordPcSet.has(pc); });
+  const dominantMissing = dominant.filter(l=>!dominantInChord.includes(l));
+  const rootInMeasure = distinctLetters.some(l=>noteToPitchClass(l)===rootPc);
+  return {measureLetters, dominant, dominantInChord, dominantMissing, rootInMeasure, chordNoteNames, root:parsed.root};
+}
+function generateAutoExplanation(segments, si, chordSymbol){
+  const a = analyzeMeasureCoverage(segments, si, chordSymbol);
+  if(!a || !a.measureLetters.length) return '';
+  const measureDesc = a.measureLetters.join(', ');
+  const domDesc = a.dominant.join(', ');
+  if(!a.dominantMissing.length && a.dominant.length){
+    if(a.rootInMeasure){
+      return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it covers the repeated note(s) and its root ${a.root} is one of them, so it's a strong fit.`;
+    }
+    return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it covers the repeated note(s), but its root ${a.root} doesn't appear in this measure, so it's acceptable but not the strongest choice.`;
+  }
+  if(a.dominantInChord.length){
+    return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — it only covers ${a.dominantInChord.join(', ')} of the repeated notes, missing ${a.dominantMissing.join(', ')}.`;
+  }
+  return `This measure's notes are ${measureDesc} (${domDesc} repeat). ${chordSymbol} contains ${a.chordNoteNames.join(', ')} — none of the repeated notes appear in this chord, so it's a wrong chord (dischord) here.`;
+}
+function generateDischordExplanation(segments, si, chordSymbol){
+  const parsed = parseChordSymbol(chordSymbol);
+  if(!parsed) return '';
+  const rootPc = NOTE_INDEX[parsed.root];
+  if(rootPc===undefined) return '';
+  const intervals = intervalsForSuffix(parsed.quality);
+  const chordPcs = new Set(intervals.map(iv=>(rootPc+iv)%12));
+  const chordNoteNames = intervals.map(iv=>PC_NAMES[(rootPc+iv)%12]);
+  const measureNotesRaw = getMeasureNotesRaw(segments, si);
+  if(!measureNotesRaw.length) return '';
+  const measureLetters = measureNotesRaw.map(noteLetterOnly);
+  const missing = [];
+  measureNotesRaw.forEach((raw,idx)=>{
+    const pc = noteToPitchClass(raw);
+    if(pc!==null && !chordPcs.has(pc) && !missing.includes(measureLetters[idx])) missing.push(measureLetters[idx]);
+  });
+  if(!missing.length){
+    return `${chordSymbol} actually contains all the notes in this measure (${measureLetters.join(', ')}).`;
+  }
+  return `In this measure the notes are ${measureLetters.join(', ')}. ${chordSymbol} has ${chordNoteNames.join(', ')} — ${missing.join(', ')} ${missing.length>1?'are':'is'} not in ${chordSymbol}, so it's a wrong chord (dischord) here.`;
+}
+
+/* ======================================================================
+   CHORD SELECTOR MODAL
+====================================================================== */
+let csState = {li:null, si:null, mode:'palette', root:'C', quality:'maj', extension:null};
+
+function openChordSelector(li, si, mode){
+  csState = {li, si, mode, root:'C', quality:'maj', extension:null, explanationEdited:false};
+  const wrap = document.getElementById('cs-explanation-wrap');
+  document.getElementById('cs-explanation-input').value = '';
+  document.getElementById('cs-bass-input').value = '';
+  wrap.classList.toggle('hidden', mode==='palette');
+  const labels = {right:'Add Right Chord', acceptable:'Add as Acceptable', wrong:'Add as Wrong Chord', palette:'Add to Palette'};
+  document.getElementById('cs-confirm-btn').textContent = labels[mode] || 'Use This Chord';
+  renderChordWheel();
+  renderQualityRow();
+  renderExtensionRow();
+  updateChordPreview();
+  document.getElementById('chord-selector-modal').classList.remove('hidden');
+}
+function resetCsExplanationToAuto(){
+  csState.explanationEdited = false;
+  updateChordPreview();
+}
+function closeChordSelector(){
+  document.getElementById('chord-selector-modal').classList.add('hidden');
+}
+function renderChordWheel(){
+  const wrap = document.getElementById('cs-wheel');
+  const radius = 78, center = 100;
+  let html = '';
+  CHROMATIC_WHEEL.forEach((n,i)=>{
+    const angle = (i*30-90)*Math.PI/180;
+    const x = center + radius*Math.cos(angle) - 23;
+    const y = center + radius*Math.sin(angle) - 23;
+    const active = n===csState.root ? 'cof-active' : '';
+    html += `<button type="button" class="cof-key ${active}" style="left:${x}px;top:${y}px;" onclick="selectCsRoot('${n}')">${n}</button>`;
+  });
+  wrap.innerHTML = html;
+}
+function selectCsRoot(n){
+  csState.root = n;
+  renderChordWheel();
+  updateChordPreview();
+}
+function renderQualityRow(){
+  const el = document.getElementById('cs-quality-row');
+  const beginnerMode = currentDifficulty === 'beginner';
+  el.innerHTML = QUALITIES.map(q=>{
+    const disabled = beginnerMode && !BEGINNER_QUALITIES.includes(q.key);
+    const active = csState.quality===q.key ? 'cs-active' : '';
+    return `<button type="button" class="cs-chip-btn ${active} ${disabled?'cs-disabled':''}" ${disabled?'disabled':''} onclick="selectCsQuality('${q.key}')">${q.label}</button>`;
+  }).join('');
+}
+function selectCsQuality(q){
+  if(currentDifficulty==='beginner' && !BEGINNER_QUALITIES.includes(q)) return;
+  csState.quality = q;
+  renderQualityRow();
+  updateChordPreview();
+}
+function renderExtensionRow(){
+  const el = document.getElementById('cs-ext-row');
+  const beginnerMode = currentDifficulty === 'beginner';
+  el.innerHTML = EXTENSIONS.map(x=>{
+    const active = csState.extension===x.key ? 'cs-active' : '';
+    return `<button type="button" class="cs-chip-btn small ${active} ${beginnerMode?'cs-disabled':''}" ${beginnerMode?'disabled':''} onclick="selectCsExtension('${x.key}')">${x.label}</button>`;
+  }).join('');
+}
+function selectCsExtension(x){
+  if(currentDifficulty==='beginner') return;
+  csState.extension = (csState.extension===x) ? null : x;
+  renderExtensionRow();
+  updateChordPreview();
+}
+function updateChordPreview(){
+  document.getElementById('cs-root-display').textContent = csState.root;
+  const bass = document.getElementById('cs-bass-input').value.trim();
+  const symbol = composeChordSymbol(csState.root, csState.quality, csState.extension, bass);
+  document.getElementById('cs-symbol-preview').textContent = symbol;
+  const intervals = getChordIntervals(csState.quality, csState.extension);
+  renderCsPiano(intervals, NOTE_INDEX[csState.root]);
+  if(csState.mode !== 'palette' && !csState.explanationEdited && csState.li!==null){
+    const segments = currentLines[csState.li].segments;
+    document.getElementById('cs-explanation-input').value = generateAutoExplanation(segments, csState.si, symbol);
+  }
+}
+function renderCsPiano(intervals, rootPc){
+  const highlighted = new Set(intervals.map(iv=>(rootPc+iv)%12));
+  const whiteKeyWidth = 25;
+  const octaves = 2;
+  const WHITE_PC = [0,2,4,5,7,9,11];
+  const BLACK_PC = {1:0.7, 3:1.7, 6:3.7, 8:4.7, 10:5.7};
+  let whiteHtml = '', blackHtml = '', wi = 0;
+  for(let oct=0; oct<octaves; oct++){
+    WHITE_PC.forEach(pc=>{
+      const active = highlighted.has(pc) ? 'active' : '';
+      whiteHtml += `<div class="pk white ${active}" style="left:${wi*whiteKeyWidth}px;"></div>`;
+      wi++;
+    });
+  }
+  for(let oct=0; oct<octaves; oct++){
+    Object.keys(BLACK_PC).forEach(pcStr=>{
+      const pc = parseInt(pcStr,10);
+      const active = highlighted.has(pc) ? 'active' : '';
+      const pos = (oct*7 + BLACK_PC[pc]) * whiteKeyWidth - 7;
+      blackHtml += `<div class="pk black ${active}" style="left:${pos}px;"></div>`;
+    });
+  }
+  const piano = document.getElementById('cs-piano');
+  piano.style.minWidth = (7*octaves*whiteKeyWidth + 12)+'px';
+  piano.innerHTML = whiteHtml + blackHtml;
+}
+function playChordPreview(){
+  try{
+    const intervals = getChordIntervals(csState.quality, csState.extension);
+    const rootPc = NOTE_INDEX[csState.root];
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    intervals.forEach(iv=>{
+      const pc = (rootPc+iv)%12;
+      const freq = 261.63 * Math.pow(2, pc/12);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now+1.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now+1.3);
+    });
+  }catch(e){ console.error('Audio preview failed', e); }
+}
+function confirmChordSelection(){
+  const bass = document.getElementById('cs-bass-input').value.trim();
+  const symbol = composeChordSymbol(csState.root, csState.quality, csState.extension, bass);
+  const seg = (csState.li!==null) ? currentLines[csState.li].segments[csState.si] : null;
+  const explanation = (csState.mode!=='palette') ? document.getElementById('cs-explanation-input').value.trim() : '';
+  if(csState.mode === 'right'){
+    if(!seg.correctChords) seg.correctChords = [];
+    if(!seg.correctChords.some(c=>c.chord===symbol)) seg.correctChords.push({chord:symbol, explanation});
+  } else if(csState.mode === 'acceptable'){
+    if(!seg.acceptableChords) seg.acceptableChords = [];
+    if(!seg.acceptableChords.some(c=>c.chord===symbol)) seg.acceptableChords.push({chord:symbol, explanation});
+  } else if(csState.mode === 'wrong'){
+    if(!seg.wrongChords) seg.wrongChords = [];
+    if(!seg.wrongChords.some(c=>c.chord===symbol)) seg.wrongChords.push({chord:symbol, explanation});
+  }
+  if(!currentPalette.includes(symbol)) currentPalette.push(symbol);
+  closeChordSelector();
+  renderPaletteChips();
+  renderLines();
+}
+
+/* ======================================================================
+   TEACHER: SONG LIST + CRUD
+====================================================================== */
+let currentSongId = null;
+let currentLines = [];
+let currentSongKeyRoot = null;
+let currentDifficulty = 'beginner';
+let currentPalette = [];
+
+async function loadSongList(){
+  const listEl = document.getElementById('song-list');
+  listEl.innerHTML = '<p class="muted">Loading…</p>';
+  const snap = await db.collection('chordSongs').orderBy('createdAt','desc').get();
+  if(snap.empty){ listEl.innerHTML = '<p class="muted">No songs yet. Create your first one.</p>'; return; }
+  listEl.innerHTML = '';
+  snap.forEach(doc=>{
+    const s = doc.data();
+    const div = document.createElement('div');
+    div.className = 'song-item';
+    const slotCount = (s.lines||[]).reduce((a,l)=>a + l.segments.filter(seg=>seg.isChordSlot).length,0);
+    div.innerHTML = `
+      <div>
+        <h3>${escapeHtml(s.title)}</h3>
+        <div class="meta">${s.key? escapeHtml(s.key)+' • ':''}${s.difficulty? (s.difficulty==='pro'?'Pro':'Beginner')+' • ':''}${(s.lines||[]).length} lines • ${slotCount} chord slots</div>
+      </div>
+      <div class="row">
+        <button class="btn secondary small" onclick="editSong('${doc.id}')">Edit</button>
+        <button class="btn danger small" onclick="deleteSong('${doc.id}','${escapeHtml(s.title)}')">Delete</button>
+      </div>`;
+    listEl.appendChild(div);
+  });
+}
+
+async function deleteSong(id, title){
+  if(!confirm('Delete "'+title+'"? This cannot be undone.')) return;
+  await db.collection('chordSongs').doc(id).delete();
+  loadSongList();
+}
+
+function newSong(){
+  currentSongId = null;
+  currentLines = [];
+  currentSongKeyRoot = null;
+  currentDifficulty = 'beginner';
+  currentPalette = [];
+  document.getElementById('builder-title').textContent = 'New Song';
+  document.getElementById('song-title').value = '';
+  document.getElementById('song-key').value = '';
+  renderCircleOfFifths();
+  updateDifficultyButtons();
+  renderPaletteChips();
+  renderLines();
+  document.getElementById('teacher-songs-panel').classList.add('hidden');
+  document.getElementById('builder-view').classList.remove('hidden');
+}
+
+function normalizeLines(lines){
+  (lines||[]).forEach(line=>{
+    (line.segments||[]).forEach(seg=>{
+      if(!seg.correctChords){
+        seg.correctChords = seg.correctChord ? [{chord:seg.correctChord, explanation:''}] : [];
+      } else {
+        seg.correctChords = seg.correctChords.map(c=> typeof c === 'string' ? {chord:c, explanation:''} : c);
+      }
+      if(seg.acceptableChords){
+        seg.acceptableChords = seg.acceptableChords.map(a=> typeof a === 'string' ? {chord:a, explanation:''} : a);
+      } else {
+        seg.acceptableChords = [];
+      }
+      if(seg.wrongChords){
+        seg.wrongChords = seg.wrongChords.map(w=> typeof w === 'string' ? {chord:w, explanation:''} : w);
+      } else {
+        seg.wrongChords = [];
+      }
+    });
+  });
+  return lines;
+}
+
+async function editSong(id){
+  const doc = await db.collection('chordSongs').doc(id).get();
+  const s = doc.data();
+  currentSongId = id;
+  currentLines = normalizeLines(JSON.parse(JSON.stringify(s.lines||[])));
+  currentSongKeyRoot = s.keyRoot || null;
+  currentDifficulty = s.difficulty || 'beginner';
+  currentPalette = s.chordPalette ? s.chordPalette.slice() : [];
+  document.getElementById('builder-title').textContent = 'Edit Song';
+  document.getElementById('song-title').value = s.title || '';
+  document.getElementById('song-key').value = s.key || '';
+  renderCircleOfFifths();
+  updateDifficultyButtons();
+  renderPaletteChips();
+  renderLines();
+  document.getElementById('teacher-songs-panel').classList.add('hidden');
+  document.getElementById('builder-view').classList.remove('hidden');
+}
+
+function closeBuilder(){
+  document.getElementById('builder-view').classList.add('hidden');
+  document.getElementById('teacher-songs-panel').classList.remove('hidden');
+  loadSongList();
+}
+
+async function saveSong(){
+  const title = document.getElementById('song-title').value.trim();
+  if(!title){ alert('Please enter a song title.'); return; }
+  syncAllSegmentsFromDOM();
+  const data = {
+    title,
+    key: document.getElementById('song-key').value.trim(),
+    keyRoot: currentSongKeyRoot,
+    difficulty: currentDifficulty,
+    chordPalette: currentPalette,
+    lines: currentLines,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const saveBtn = document.getElementById('save-song-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  try{
+    if(currentSongId){
+      await db.collection('chordSongs').doc(currentSongId).update({title:data.title,key:data.key,keyRoot:data.keyRoot,difficulty:data.difficulty,chordPalette:data.chordPalette,lines:data.lines});
+    } else {
+      await db.collection('chordSongs').add(data);
+    }
+    alert('Song saved successfully.');
+    closeBuilder();
+  } catch(e){
+    console.error('Save failed', e);
+    alert('Could not save the song. ' + (e.message || 'Check your Firebase config and Firestore rules, then try again.'));
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Song';
+  }
+}
+
+/* ======================================================================
+   TEACHER: LINE / SEGMENT BUILDER UI
+====================================================================== */
+function addLine(){
+  currentLines.push({segments:[]});
+  renderLines();
+}
+function removeLine(li){
+  currentLines.splice(li,1);
+  renderLines();
+}
+function addSegment(li){
+  syncAllSegmentsFromDOM();
+  const lastBeat = currentLines[li].segments.length ? currentLines[li].segments[currentLines[li].segments.length-1].beat : 0;
+  const nextBeat = (lastBeat % 4) + 1;
+  currentLines[li].segments.push({tamilLyric:'',transliteration:'',note:'',beat:nextBeat,isChordSlot:false,correctChords:[],acceptableChords:[],wrongChords:[]});
+  renderLines();
+}
+function removeSegment(li, si){
+  syncAllSegmentsFromDOM();
+  currentLines[li].segments.splice(si,1);
+  renderLines();
+}
+
+function syncAllSegmentsFromDOM(){
+  currentLines.forEach((line, li)=>{
+    line.segments.forEach((seg, si)=>{
+      const prefix = `l${li}s${si}`;
+      const tamilEl = document.getElementById(prefix+'-tamil');
+      if(!tamilEl) return;
+      seg.tamilLyric = tamilEl.value;
+      seg.transliteration = document.getElementById(prefix+'-translit').value;
+      seg.note = document.getElementById(prefix+'-note').value;
+      seg.beat = parseInt(document.getElementById(prefix+'-beat').value,10);
+      seg.isChordSlot = document.getElementById(prefix+'-slot').checked;
+    });
+  });
+}
+
+function renderLines(){
+  const container = document.getElementById('lines-container');
+  container.innerHTML = '';
+  currentLines.forEach((line, li)=>{
+    const block = document.createElement('div');
+    block.className = 'line-block';
+    let segHtml = '';
+    line.segments.forEach((seg, si)=>{
+      const prefix = `l${li}s${si}`;
+      segHtml += `
+        <div class="segment-card">
+          <button class="remove-x" onclick="removeSegment(${li},${si})">✕</button>
+          <label>Tamil Lyric</label>
+          <input type="text" id="${prefix}-tamil" value="${escapeAttr(seg.tamilLyric)}" placeholder="தமிழ் வரி">
+          <label>Transliteration</label>
+          <input type="text" id="${prefix}-translit" value="${escapeAttr(seg.transliteration)}" placeholder="e.g. va-ru-va-ay">
+          <label>Lead Note</label>
+          <input type="text" id="${prefix}-note" value="${escapeAttr(seg.note)}" placeholder="e.g. G4">
+          <label>Beat</label>
+          <select id="${prefix}-beat">
+            ${[1,2,3,4].map(b=>`<option value="${b}" ${seg.beat==b?'selected':''}>${b}</option>`).join('')}
+          </select>
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:11px;">
+            <input type="checkbox" id="${prefix}-slot" style="width:auto;" ${seg.isChordSlot?'checked':''} onchange="toggleSlotFields('${prefix}')"> Chord slot here
+          </label>
+          <div id="${prefix}-chordfields" class="${seg.isChordSlot?'':'hidden'}" style="margin-top:6px;">
+            <label style="color:var(--correct);">1. Right Chords (all correct answers — pick as many as apply)</label>
+            <div style="margin-bottom:6px;">${tierChipsHTML(li,si,'correctChords', seg.correctChords||[], 'var(--correct)')}</div>
+            <button type="button" class="btn ghost small" onclick="openChordSelector(${li},${si},'right')">+ Add Right Chord</button>
+            ${seg.note ? `<p class="muted" style="font-size:10px;margin:4px 0 0;">Palette chords containing ${escapeHtml(seg.note)}: ${chordsContainingNote(currentPalette, seg.note).map(escapeHtml).join(', ') || 'none yet'}</p>` : ''}
+
+            <label style="margin-top:12px;">2. Acceptable Chords (right, but not the best fit here)</label>
+            <div style="margin-bottom:6px;">${tierChipsHTML(li,si,'acceptableChords', seg.acceptableChords||[], 'var(--gold-bright)')}</div>
+            <button type="button" class="btn ghost small" onclick="openChordSelector(${li},${si},'acceptable')">+ Add Acceptable Chord</button>
+
+            <label style="margin-top:12px;color:var(--incorrect);">3. Wrong Chords (dischords)</label>
+            <div style="margin-bottom:6px;">${tierChipsHTML(li,si,'wrongChords', seg.wrongChords||[], 'var(--incorrect)')}</div>
+            <button type="button" class="btn ghost small" onclick="openChordSelector(${li},${si},'wrong')">+ Add Wrong Chord</button>
+
+            <p class="muted" style="font-size:10px;margin:8px 0 0;">Every explanation is auto-written from this measure's notes by default — edit any of the text boxes above to override it for that specific chord. Any chord not marked Right or Acceptable is treated as wrong when a student picks it.</p>
+          </div>
+        </div>`;
+    });
+    block.innerHTML = `
+      <div class="spread" style="margin-bottom:10px;">
+        <strong style="color:var(--gold-bright);font-size:13px;">Line ${li+1}</strong>
+        <button class="btn danger small" onclick="removeLine(${li})">Remove Line</button>
+      </div>
+      <div class="segments-scroll">${segHtml}</div>
+      <button class="btn ghost small" style="margin-top:10px;" onclick="addSegment(${li})">+ Add Word/Segment</button>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function toggleSlotFields(prefix){
+  document.getElementById(prefix+'-chordfields').classList.toggle('hidden');
+}
+
+function tierChipsHTML(li, si, tierKey, items, accentColorVar){
+  if(!items.length) return '<span class="muted" style="font-size:11px;">None added</span>';
+  return items.map((item, idx)=>`
+    <div class="tier-item" style="border-left:3px solid ${accentColorVar};">
+      <div class="spread">
+        <span class="mono" style="color:${accentColorVar};font-size:13px;">${escapeHtml(item.chord)}</span>
+        <span onclick="removeTierChord(${li},${si},'${tierKey}',${idx})" style="cursor:pointer;color:var(--incorrect);font-size:12px;">✕</span>
+      </div>
+      <textarea class="tier-explain" data-li="${li}" data-si="${si}" data-tier="${tierKey}" data-idx="${idx}" oninput="updateTierExplanation(this)" rows="2" placeholder="Explanation shown to the student">${escapeHtml(item.explanation||'')}</textarea>
+    </div>`).join('');
+}
+function removeTierChord(li, si, tierKey, idx){
+  currentLines[li].segments[si][tierKey].splice(idx,1);
+  renderLines();
+}
+function updateTierExplanation(el){
+  const li = parseInt(el.dataset.li,10);
+  const si = parseInt(el.dataset.si,10);
+  const tier = el.dataset.tier;
+  const idx = parseInt(el.dataset.idx,10);
+  currentLines[li].segments[si][tier][idx].explanation = el.value;
+}
+
+function renderCircleOfFifths(){
+  const wrap = document.getElementById('circle-of-fifths');
+  const radius = 96, center = 120;
+  let html = '';
+  CIRCLE_OF_FIFTHS.forEach((k,i)=>{
+    const angle = (i * 30 - 90) * Math.PI/180;
+    const x = center + radius*Math.cos(angle) - 23;
+    const y = center + radius*Math.sin(angle) - 23;
+    const active = (k === currentSongKeyRoot) ? 'cof-active' : '';
+    html += `<button type="button" class="cof-key ${active}" style="left:${x}px;top:${y}px;" onclick="selectKey('${k}')">${k}</button>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function selectKey(keyRoot){
+  syncAllSegmentsFromDOM();
+  currentSongKeyRoot = keyRoot;
+  document.getElementById('song-key').value = keyRoot + ' Major';
+  currentPalette = generatePalette(keyRoot, currentDifficulty);
+  renderCircleOfFifths();
+  renderPaletteChips();
+  renderLines();
+}
+
+function setDifficulty(level){
+  syncAllSegmentsFromDOM();
+  currentDifficulty = level;
+  if(currentSongKeyRoot){
+    currentPalette = generatePalette(currentSongKeyRoot, level);
+  }
+  updateDifficultyButtons();
+  renderPaletteChips();
+  renderLines();
+}
+
+function updateDifficultyButtons(){
+  document.getElementById('diff-beginner-btn').classList.toggle('secondary', currentDifficulty!=='beginner');
+  document.getElementById('diff-pro-btn').classList.toggle('secondary', currentDifficulty!=='pro');
+}
+
+function renderPaletteChips(){
+  const el = document.getElementById('palette-chips');
+  if(!currentPalette.length){ el.innerHTML = '<span class="muted" style="font-size:12px;">Pick a key above to generate a chord palette, or add chords manually.</span>'; return; }
+  el.innerHTML = currentPalette.map(c=>`<span class="chip palette-chip">${escapeHtml(c)} <span onclick="removeFromPalette('${escapeAttr(c)}')" style="cursor:pointer;color:var(--incorrect);margin-left:4px;">✕</span></span>`).join('');
+}
+
+function addCustomChord(){
+  const input = document.getElementById('custom-chord-input');
+  const val = input.value.trim();
+  if(!val) return;
+  syncAllSegmentsFromDOM();
+  if(!currentPalette.includes(val)) currentPalette.push(val);
+  input.value = '';
+  renderPaletteChips();
+  renderLines();
+}
+
+function removeFromPalette(chord){
+  syncAllSegmentsFromDOM();
+  currentPalette = currentPalette.filter(c=>c!==chord);
+  renderPaletteChips();
+  renderLines();
+}
+
+function openPaletteChordSelector(){
+  syncAllSegmentsFromDOM();
+  openChordSelector(null, null, 'palette');
+}
+
+/* ======================================================================
+   STUDENT: SONG LIST
+====================================================================== */
+async function loadStudentSongList(){
+  const listEl = document.getElementById('student-song-list');
+  listEl.innerHTML = '<p class="muted">Loading…</p>';
+  const snap = await db.collection('chordSongs').orderBy('createdAt','desc').get();
+  if(snap.empty){ listEl.innerHTML = '<p class="muted">No songs available yet — check back soon.</p>'; return; }
+  listEl.innerHTML = '';
+  snap.forEach(doc=>{
+    const s = doc.data();
+    const div = document.createElement('div');
+    div.className = 'song-item';
+    div.innerHTML = `
+      <div>
+        <h3>${escapeHtml(s.title)}</h3>
+        <div class="meta">${s.key? escapeHtml(s.key):'Practice song'}</div>
+      </div>
+      <button class="btn small" onclick="startPractice('${doc.id}')">Practice</button>`;
+    listEl.appendChild(div);
+  });
+}
+
+function backToSongList(){
+  document.getElementById('practice-view').classList.add('hidden');
+  document.getElementById('student-song-select').classList.remove('hidden');
+  loadStudentSongList();
+}
+
+/* ======================================================================
+   STUDENT: PRACTICE ENGINE
+====================================================================== */
+let activeSong = null;
+let activeSongId = null;
+
+async function startPractice(id){
+  const doc = await db.collection('chordSongs').doc(id).get();
+  activeSong = doc.data();
+  activeSong.lines = normalizeLines(activeSong.lines);
+  activeSongId = id;
+  document.getElementById('practice-title').textContent = activeSong.title;
+  document.getElementById('student-song-select').classList.add('hidden');
+  document.getElementById('practice-view').classList.remove('hidden');
+  document.getElementById('score-banner-holder').innerHTML = '';
+  document.getElementById('check-btn').classList.remove('hidden');
+  document.getElementById('check-btn').disabled = false;
+  document.getElementById('retry-btn').classList.add('hidden');
+  renderPractice();
+  toggleLyricDisplay();
+}
+
+function retryPractice(){ startPractice(activeSongId); }
+
+function renderPractice(){
+  const container = document.getElementById('practice-lines');
+  container.innerHTML = '';
+  activeSong.lines.forEach((line, li)=>{
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'practice-line';
+
+    let chordCells = '', noteCells = '', tamilCells = '', translitCells = '', beatCells = '';
+    line.segments.forEach((seg, si)=>{
+      const isBarStart = seg.beat === 1;
+      const barClass = isBarStart ? 'bar-start' : '';
+
+      if(seg.isChordSlot){
+        const basePool = (activeSong.chordPalette && activeSong.chordPalette.length) ? activeSong.chordPalette.slice() : [];
+        const mustInclude = [...(seg.correctChords||[]).map(c=>c.chord), ...(seg.acceptableChords||[]).map(a=>a.chord), ...(seg.wrongChords||[]).map(w=>w.chord)].filter(Boolean);
+        mustInclude.forEach(c=>{ if(!basePool.includes(c)) basePool.push(c); });
+        const pool = basePool.length ? basePool : mustInclude;
+        const options = shuffle(pool);
+        chordCells += `<div class="cell ${barClass}">
+            <select class="chord-slot" id="slot-${li}-${si}" onchange="markAnswered('slot-${li}-${si}')">
+              <option value="">— choose —</option>
+              ${options.map(o=>`<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('')}
+            </select>
+            <div class="reveal-tag hidden" id="reveal-${li}-${si}"></div>
+          </div>`;
+      } else {
+        chordCells += `<div class="cell ${barClass}"></div>`;
+      }
+      noteCells += `<div class="cell ${barClass}">${escapeHtml(seg.note||'')}</div>`;
+      tamilCells += `<div class="cell ${barClass}">${escapeHtml(seg.tamilLyric||'')}</div>`;
+      translitCells += `<div class="cell ${barClass}">${escapeHtml(seg.transliteration||'')}</div>`;
+      beatCells += `<div class="cell ${barClass} ${seg.beat===1?'beat-1':''}">${seg.beat}</div>`;
+    });
+
+    lineDiv.innerHTML = `
+      <div class="line-scroll">
+        <div class="track chord-row">${chordCells}</div>
+        <div class="track note-row">${noteCells}</div>
+        <div class="track lyric-row tamil-row">${tamilCells}</div>
+        <div class="track lyric-row translit-row">${translitCells}</div>
+        <div class="track beat-row">${beatCells}</div>
+      </div>
+    `;
+    container.appendChild(lineDiv);
+  });
+}
+
+function toggleLyricDisplay(){
+  const showTamil = document.getElementById('toggle-tamil').checked;
+  const showTranslit = document.getElementById('toggle-translit').checked;
+  document.querySelectorAll('.tamil-row').forEach(el=> el.classList.toggle('hidden', !showTamil));
+  document.querySelectorAll('.translit-row').forEach(el=> el.classList.toggle('hidden', !showTranslit));
+}
+
+function markAnswered(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('answered', !!el.value);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+async function checkChords(){
+  let total = 0, right = 0, acceptable = 0, wrong = 0;
+  activeSong.lines.forEach((line, li)=>{
+    line.segments.forEach((seg, si)=>{
+      if(!seg.isChordSlot) return;
+      total++;
+      const el = document.getElementById(`slot-${li}-${si}`);
+      const reveal = document.getElementById(`reveal-${li}-${si}`);
+      const chosen = el.value;
+      el.classList.remove('answered');
+      if((seg.correctChords||[]).some(c=>c.chord===chosen)){
+        right++;
+        el.classList.add('correct');
+      } else if((seg.acceptableChords||[]).some(a=>a.chord===chosen)){
+        acceptable++;
+        el.classList.add('acceptable');
+        const match = seg.acceptableChords.find(a=>a.chord===chosen);
+        const rightNames = (seg.correctChords||[]).map(c=>c.chord).join(' or ');
+        reveal.textContent = (match && match.explanation) ? match.explanation : ('Good, but best fit here: ' + rightNames);
+        reveal.classList.add('acceptable-tag');
+        reveal.classList.remove('hidden');
+      } else {
+        wrong++;
+        el.classList.add('incorrect');
+        const wrongMatch = (seg.wrongChords||[]).find(w=>w.chord===chosen);
+        const dischordMsg = wrongMatch && wrongMatch.explanation ? wrongMatch.explanation : (chosen ? generateAutoExplanation(line.segments, si, chosen) : '');
+        const rightList = (seg.correctChords||[]).map(c=>c.chord).join(' or ') || '—';
+        reveal.textContent = (dischordMsg ? dischordMsg + ' ' : '') + 'Correct: ' + rightList;
+        reveal.classList.remove('hidden');
+      }
+      el.disabled = true;
+    });
+  });
+
+  const percent = total ? Math.round((right/total)*100) : 0;
+  const banner = document.getElementById('score-banner-holder');
+  const extra = [];
+  if(acceptable) extra.push(acceptable + ' acceptable (but not the best fit in context)');
+  if(wrong) extra.push(wrong + ' wrong');
+  banner.innerHTML = `
+    <div class="score-banner ${percent>=70?'good':'bad'}">
+      <div class="big">${right} / ${total}</div>
+      <div class="muted" style="margin-top:6px;">you are exactly right${extra.length? ' • '+extra.join(' • '):''} (${percent}%)</div>
+    </div>`;
+  document.getElementById('check-btn').classList.add('hidden');
+  document.getElementById('retry-btn').classList.remove('hidden');
+}
+
+/* ======================================================================
+   UTIL
+====================================================================== */
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+</script>
+</body>
+</html>

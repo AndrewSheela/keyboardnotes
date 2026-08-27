@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minor Chord Mastery Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .white-key { transition: background-color 0.1s, transform 0.1s; }
+        .white-key:active { transform: translateY(2px); }
+        .black-key { transition: background-color 0.1s, transform 0.1s; z-index: 20; }
+        .black-key:active { transform: translateY(2px); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-950 overflow-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        const PIANO_KEYS = [
+            { note: 'C', type: 'white' }, { note: 'C#', type: 'black' },
+            { note: 'D', type: 'white' }, { note: 'D#', type: 'black' },
+            { note: 'E', type: 'white' },
+            { note: 'F', type: 'white' }, { note: 'F#', type: 'black' },
+            { note: 'G', type: 'white' }, { note: 'G#', type: 'black' },
+            { note: 'A', type: 'white' }, { note: 'A#', type: 'black' },
+            { note: 'B', type: 'white' }
+        ];
+
+        const getMinorScale = (root) => {
+            const intervals = [0, 2, 3, 5, 7, 8, 10];
+            const rootIndex = ALL_NOTES.indexOf(root);
+            return intervals.map(i => ALL_NOTES[(rootIndex + i) % 12]);
+        };
+
+        const generateKeyData = (root) => {
+            const scale = getMinorScale(root);
+            
+            const i = `${scale[0]} Minor`;
+            const III = `${scale[2]} Major`;
+            const iv = `${scale[3]} Minor`;
+            const v = `${scale[4]} Minor`;
+            const VI = `${scale[5]} Major`;
+            const VII = `${scale[6]} Major`;
+
+            const family = [i, iv, v];
+            const relative = [III, VI, VII];
+            
+            const advancedTypes = [
+                { suffix: 'm7', name: ' Minor 7' },
+                { suffix: 'maj7', name: ' Major 7' },
+                { suffix: '7', name: ' Dominant 7' },
+                { suffix: 'm6', name: ' Minor 6' },
+                { suffix: 'dim', name: ' Diminished' },
+                { suffix: 'aug', name: ' Augmented' },
+                { suffix: 'sus4', name: ' Sus 4' },
+                { suffix: 'sus2', name: ' Sus 2' }
+            ];
+
+            const marathonPool = [];
+            scale.forEach(rootNote => {
+                advancedTypes.forEach(type => {
+                    marathonPool.push(`${rootNote}${type.name}`);
+                });
+            });
+
+            const fullSequence = [...marathonPool]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 35);
+
+            return { family, relative, fullSequence, scale };
+        };
+
+        const getChordFormula = (name) => {
+            const rootMatch = name.match(/^([A-G]#?)/);
+            if (!rootMatch) return [];
+            const root = rootMatch[1];
+            const rootIdx = ALL_NOTES.indexOf(root);
+            const getNote = (semi) => ALL_NOTES[(rootIdx + semi) % 12];
+            
+            if (name.includes(' Minor') && !name.includes('7') && !name.includes('6')) return [getNote(0), getNote(3), getNote(7)];
+            if (name.includes(' Major') && !name.includes('7')) return [getNote(0), getNote(4), getNote(7)];
+            
+            if (name.includes(' Minor 7')) return [getNote(0), getNote(3), getNote(7), getNote(10)];
+            if (name.includes(' Major 7')) return [getNote(0), getNote(4), getNote(7), getNote(11)];
+            if (name.includes(' Dominant 7')) return [getNote(0), getNote(4), getNote(7), getNote(10)];
+            if (name.includes(' Minor 6')) return [getNote(0), getNote(3), getNote(7), getNote(9)];
+            if (name.includes(' Diminished')) return [getNote(0), getNote(3), getNote(6)];
+            if (name.includes(' Augmented')) return [getNote(0), getNote(4), getNote(8)];
+            if (name.includes(' Sus 4')) return [getNote(0), getNote(5), getNote(7)];
+            if (name.includes(' Sus 2')) return [getNote(0), getNote(2), getNote(7)];
+
+            return [getNote(0), getNote(3), getNote(7)];
+        };
+
+        const App = () => {
+            const [currentKey, setCurrentKey] = useState('C');
+            const [level, setLevel] = useState(1);
+            const [gameState, setGameState] = useState('start');
+            const [selectedChords, setSelectedChords] = useState([]);
+            const [selectedKeys, setSelectedKeys] = useState([]);
+            const [score, setScore] = useState(0);
+            const [feedback, setFeedback] = useState(null);
+            const [pianoStepIndex, setPianoStepIndex] = useState(0);
+            const [showHint, setShowHint] = useState(false);
+
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            }, [gameState, level, showHint, currentKey, feedback]);
+
+            const keyData = useMemo(() => generateKeyData(currentKey), [currentKey]);
+            
+            const currentChordsToPlay = useMemo(() => {
+                if (level === 1) return keyData.family;
+                if (level === 2) return keyData.relative;
+                return keyData.fullSequence;
+            }, [level, keyData]);
+
+            const currentRequiredNotes = useMemo(() => {
+                const name = currentChordsToPlay[pianoStepIndex];
+                return name ? getChordFormula(name) : [];
+            }, [currentChordsToPlay, pianoStepIndex]);
+
+            const selectLevel = (newLevel) => {
+                setLevel(newLevel);
+                setGameState('start');
+                setFeedback(null);
+                setPianoStepIndex(0);
+                setSelectedKeys([]);
+                setSelectedChords([]);
+            };
+
+            const startQuiz = () => {
+                setPianoStepIndex(0);
+                setSelectedChords([]);
+                setSelectedKeys([]);
+                setFeedback(null);
+                
+                if (level === 3) {
+                    setGameState('playing_piano');
+                } else {
+                    setGameState('playing_chords');
+                }
+            };
+
+            const toggleChordSelection = (chord) => {
+                if (feedback) setFeedback(null);
+                setSelectedChords(prev => 
+                    prev.includes(chord) ? prev.filter(c => c !== chord) : [...prev, chord]
+                );
+            };
+
+            const togglePianoKey = (note) => {
+                if (feedback) setFeedback(null);
+                setSelectedKeys(prev => 
+                    prev.includes(note) ? prev.filter(n => n !== note) : [...prev, note]
+                );
+            };
+
+            const checkChordTheory = () => {
+                const targetSet = level === 1 ? keyData.family : keyData.relative;
+                const isCorrect = selectedChords.length === targetSet.length && selectedChords.every(val => targetSet.includes(val));
+                
+                if (isCorrect) {
+                    setPianoStepIndex(0);
+                    setSelectedKeys([]);
+                    setGameState('playing_piano');
+                    setFeedback(null);
+                } else {
+                    setFeedback({ type: 'error', message: `Incorrect selection for ${currentKey}m.` });
+                }
+            };
+
+            const checkPianoChord = () => {
+                const currentChordName = currentChordsToPlay[pianoStepIndex];
+                const requiredNotes = getChordFormula(currentChordName);
+                const isCorrect = selectedKeys.length === requiredNotes.length && 
+                                  requiredNotes.every(note => selectedKeys.includes(note));
+                
+                if (isCorrect) {
+                    if (pianoStepIndex < currentChordsToPlay.length - 1) {
+                        setPianoStepIndex(prev => prev + 1);
+                        setSelectedKeys([]);
+                        setShowHint(false);
+                        setFeedback(null);
+                        setScore(s => s + 10);
+                    } else {
+                        setScore(s => s + (level * 100));
+                        setFeedback({ type: 'success', message: level === 3 ? "ULTIMATE ARCHITECT MASTERED!" : `Level ${level} Mastered!` });
+                        setGameState('result');
+                    }
+                } else {
+                    setFeedback({ type: 'error', message: `Required: ${requiredNotes.join(', ')}` });
+                }
+            };
+
+            return (
+                <div className="min-h-screen text-slate-100 flex flex-col items-center justify-center p-4">
+                    <div className="w-full max-w-4xl bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col relative min-h-[680px]">
+                        
+                        {/* Persistent Header */}
+                        <div className="p-4 bg-slate-900/80 flex flex-col md:flex-row justify-between items-center border-b border-slate-800 gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-purple-600 rounded-lg shadow-lg">
+                                    <i data-lucide="music" className="text-white w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h1 className="text-sm font-black tracking-tight leading-tight uppercase">Minor Chord Master</h1>
+                                    <select 
+                                        value={currentKey} 
+                                        onChange={(e) => { setCurrentKey(e.target.value); selectLevel(1); }}
+                                        className="bg-transparent text-purple-400 font-bold text-xs outline-none cursor-pointer hover:text-purple-300"
+                                    >
+                                        {ALL_NOTES.map(n => <option key={n} value={n} className="bg-slate-900">{n}m Key</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Persistent Level Buttons */}
+                            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                {[1, 2, 3].map((l) => (
+                                    <button
+                                        key={l}
+                                        onClick={() => selectLevel(l)}
+                                        className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all ${level === l ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                    >
+                                        LEVEL {l}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div className="flex gap-4">
+                                <div className="text-right">
+                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Score</p>
+                                    <p className="text-sm font-black text-emerald-400">{score}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
+                            
+                            {gameState === 'start' && (
+                                <div className="text-center animate-in">
+                                    <p className="text-purple-500 font-black uppercase tracking-[0.2em] text-xs mb-1">Level {level}</p>
+                                    <h2 className="text-7xl font-black mb-2 tracking-tighter uppercase leading-none italic">
+                                        {currentKey}<span className="text-slate-700">m</span>
+                                    </h2>
+                                    <p className="text-slate-500 font-bold mb-8 uppercase tracking-widest text-xs max-w-xs mx-auto">
+                                        {level === 1 ? 'Identify & Play Primary Chords' : level === 2 ? 'Identify & Play Relative Major Chords' : 'The 35-Chord Advanced Architect Marathon'}
+                                    </p>
+                                    <button 
+                                        onClick={startQuiz} 
+                                        className="group px-10 py-4 bg-purple-600 hover:bg-purple-500 rounded-xl font-black text-lg flex items-center gap-3 mx-auto transition-all hover:scale-105 active:scale-95 shadow-xl shadow-purple-600/20"
+                                    >
+                                        <i data-lucide="play" className="w-5 h-5 fill-current"></i> {level === 3 ? 'START MARATHON' : 'START'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {gameState === 'playing_chords' && (
+                                <div className="w-full max-w-2xl flex flex-col animate-in">
+                                    <div className="text-center mb-4">
+                                        <h3 className="text-2xl font-black uppercase tracking-tight">Select Chords</h3>
+                                        <p className="text-slate-400 text-sm">Select 3 for <strong>{currentKey}m</strong> ({level === 1 ? 'Primary' : 'Secondary'})</p>
+                                    </div>
+
+                                    {feedback && feedback.type === 'error' && (
+                                        <div className="mb-4 p-2 bg-rose-500/10 border border-rose-500/50 text-rose-400 rounded-lg text-center text-xs font-bold animate-in">
+                                            {feedback.message}
+                                        </div>
+                                    )}
+                                    
+                                    <div className="grid grid-cols-4 gap-2 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {ALL_NOTES.flatMap(n => [`${n} Minor`, `${n} Major`]).map((chordName, idx) => {
+                                            const isActive = selectedChords.includes(chordName);
+                                            return (
+                                                <button 
+                                                    key={idx} 
+                                                    onClick={() => toggleChordSelection(chordName)}
+                                                    className={`py-2 px-1 rounded-lg border-2 font-bold text-sm transition-all ${isActive ? 'bg-purple-600 border-purple-400 shadow-lg text-white' : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:border-slate-500'}`}
+                                                >
+                                                    {chordName.replace(' Minor', 'm').replace(' Major', 'M')}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <button 
+                                        onClick={checkChordTheory} 
+                                        disabled={selectedChords.length === 0}
+                                        className="mt-6 px-12 py-4 bg-emerald-600 rounded-xl font-black text-lg self-center hover:bg-emerald-500 disabled:opacity-50 transition-all"
+                                    >
+                                        CONFIRM
+                                    </button>
+                                </div>
+                            )}
+
+                            {gameState === 'playing_piano' && (
+                                <div className="w-full flex flex-col items-center justify-center animate-in">
+                                    <div className="text-center mb-6">
+                                        <div className="flex items-center justify-center gap-1 mb-3">
+                                            <div className="px-3 py-1 bg-slate-800 rounded-full border border-slate-700 flex items-center gap-2">
+                                                <span className="text-xs font-black text-purple-400">{level === 3 ? 'ARCHITECT' : 'PROGRESS'}</span>
+                                                <span className="text-lg font-black">{pianoStepIndex + 1}</span>
+                                                <span className="text-slate-600 font-bold">/</span>
+                                                <span className="text-sm font-black text-slate-500">{currentChordsToPlay.length}</span>
+                                            </div>
+                                        </div>
+                                        <h2 className="text-5xl md:text-6xl font-black tracking-tighter">
+                                            <span className="text-purple-500">{currentChordsToPlay[pianoStepIndex]}</span>
+                                        </h2>
+                                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                                            Key: {currentKey} Minor
+                                        </p>
+                                    </div>
+
+                                    {feedback && feedback.type === 'error' && (
+                                        <div className="mb-4 p-2 bg-rose-500/10 border border-rose-500/50 text-rose-400 rounded-lg text-center text-xs font-bold animate-in">
+                                            {feedback.message}
+                                        </div>
+                                    )}
+
+                                    <div className="relative flex mb-8 p-4 bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl scale-100 overflow-x-auto max-w-full">
+                                        <div className="flex min-w-max">
+                                            {PIANO_KEYS.map((key, i) => {
+                                                const isSelected = selectedKeys.includes(key.note);
+                                                const isHinted = showHint && currentRequiredNotes.includes(key.note);
+                                                
+                                                if (key.type === 'white') {
+                                                    return (
+                                                        <button 
+                                                            key={i}
+                                                            onClick={() => togglePianoKey(key.note)}
+                                                            className={`white-key w-12 h-44 bg-slate-50 border-r border-slate-300 first:rounded-l-lg last:rounded-r-lg last:border-r-0 flex items-end justify-center pb-4 transition-colors ${isSelected ? '!bg-purple-500 !border-purple-400' : ''} ${isHinted && !isSelected ? 'bg-amber-200' : ''}`}
+                                                        >
+                                                            <span className={`text-[10px] font-black pointer-events-none ${isSelected ? 'text-white' : 'text-slate-400'}`}>{key.note}</span>
+                                                        </button>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <div key={i} className="relative w-0">
+                                                            <button 
+                                                                onClick={() => togglePianoKey(key.note)}
+                                                                className={`black-key absolute w-8 h-28 bg-slate-900 rounded-b-md -left-4 flex items-end justify-center pb-3 transition-colors ${isSelected ? '!bg-purple-400' : ''} ${isHinted && !isSelected ? 'bg-amber-600' : ''}`}
+                                                            >
+                                                                <span className={`text-[8px] font-black pointer-events-none ${isSelected ? 'text-white' : 'text-slate-500'}`}>{key.note}</span>
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                        <button 
+                                            onClick={() => setShowHint(!showHint)} 
+                                            className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${showHint ? 'bg-amber-500/20 text-amber-500 border border-amber-500/50' : 'bg-slate-800 text-slate-300'}`}
+                                        >
+                                            <i data-lucide="lightbulb" className={`w-4 h-4 ${showHint ? 'fill-current' : ''}`}></i> Hint
+                                        </button>
+                                        <button 
+                                            onClick={checkPianoChord} 
+                                            className="px-12 py-3 bg-purple-600 rounded-xl font-black text-lg hover:bg-purple-500 shadow-xl shadow-purple-600/20 transition-all active:scale-95"
+                                        >
+                                            SUBMIT
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {gameState === 'result' && (
+                                <div className="text-center animate-in max-w-sm">
+                                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center border-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                                        <i data-lucide="award" className="w-8 h-8"></i>
+                                    </div>
+                                    <h2 className="text-3xl font-black mb-2 tracking-tight uppercase">
+                                        Excellent!
+                                    </h2>
+                                    <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                                        {level === 3 ? `Masterful! You built 35 complex chords in ${currentKey}m.` : `Level ${level} completed for the key of ${currentKey}m.`}
+                                    </p>
+                                    
+                                    <button onClick={() => {
+                                        if (level < 3) { selectLevel(level + 1); }
+                                        else { selectLevel(1); }
+                                    }} className="w-full py-4 bg-white text-slate-900 rounded-xl font-black text-lg hover:bg-purple-50 transition-colors shadow-lg">
+                                        {level === 3 ? 'RESTART' : 'NEXT LEVEL'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="p-3 bg-slate-950/50 text-center border-t border-slate-800/50">
+                            <p className="text-[10px] font-medium text-slate-600 uppercase tracking-widest italic">Free Mode: Switch levels and keys anytime</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

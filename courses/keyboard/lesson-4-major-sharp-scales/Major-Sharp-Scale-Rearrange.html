@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Major Scale Builder</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the draggable notes */
+        .note-tile {
+            cursor: grab;
+            /* Enhanced transition for a snappier, more "enthusiastic" feel */
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-in-out; 
+            user-select: none;
+            flex-shrink: 0; 
+            width: 80px; /* FIXED WIDTH FOR DESKTOP */
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 3px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Baseline subtle shadow */
+        }
+
+        .note-tile:hover {
+            /* Stronger hover effect for enthusiasm: stronger shadow and slight lift */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
+            transform: translateY(-2px); /* Slight lift */
+        }
+
+        .note-tile.dragging {
+            opacity: 0.7;
+            /* Pronounced lift and scale change when actively dragging */
+            transform: scale(1.08) translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Very strong shadow */
+            z-index: 10;
+        }
+
+        .note-container {
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap; /* Allows wrapping on smaller screens */
+            gap: 8px; /* Default desktop gap */
+            padding: 1rem;
+            background-color: #f3f4f6;
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        /* Color definitions for notes to make them visually distinct */
+        .note-C { background-color: #fecaca; color: #dc2626; }
+        .note-Db { background-color: #fed7aa; color: #ea580c; }
+        .note-D { background-color: #fde68a; color: #ca8a04; }
+        .note-Eb { background-color: #d9f99d; color: #65a30d; }
+        .note-E { background-color: #a7f3d0; color: #059669; }
+        .note-F { background-color: #bfdbfe; color: #2563eb; }
+        .note-Gb { background-color: #e0f2f1; color: #0d9488; }
+        .note-G { background-color: #f0e6ff; color: #7c3aed; }
+        .note-Ab { background-color: #fbcfe8; color: #db2777; }
+        .note-A { background-color: #fce7f3; color: #be185d; }
+        .note-Bb { background-color: #dbeafe; color: #1d4ed8; }
+        .note-B { background-color: #fee2e2; color: #ef4444; }
+
+        /* Style for the button */
+        #check-button {
+            transition: background-color 0.15s ease-in-out, transform 0.1s;
+        }
+        #check-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Responsive adjustments for 4 notes per row on mobile (<= 640px) */
+        @media (max-width: 640px) {
+            .note-container {
+                gap: 4px; /* Smaller gap on mobile */
+                padding: 0.5rem;
+                justify-content: center; /* Center the rows of notes */
+            }
+            .note-tile {
+                /* Calculate width to fit 4 tiles per row: (25% container width) - space deducted for gaps */
+                width: calc(25% - 3px); 
+                height: 55px; /* Increase height for better touch target */
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-3xl font-extrabold text-indigo-700 mb-2 border-b-2 pb-2">
+            The Major Scale Builder Challenge
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Drag the notes below and rearrange them in the correct ascending order for the scale shown.
+        </p>
+
+        <!-- Exercise Info: Now using a 3-column grid to center the scale name -->
+        <div class="grid grid-cols-3 items-center mb-6 p-4 bg-indigo-50 rounded-lg shadow-inner">
+            <div class="text-xl font-semibold text-left">
+                Exercise: <span id="exercise-counter" class="text-indigo-800">1 / 17</span>
+            </div>
+            <div class="text-xl font-semibold text-center">
+                Scale: <span id="current-scale" class="text-indigo-800 font-extrabold">C Major</span>
+            </div>
+            <!-- Empty column for horizontal balance -->
+            <div></div>
+        </div>
+
+        <!-- Draggable Note Container -->
+        <div id="note-container" class="note-container mb-6">
+            <!-- Note tiles will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Controls and Feedback -->
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+            <button id="check-button"
+                class="w-full md:w-auto px-8 py-3 bg-indigo-600 text-white text-lg font-bold rounded-xl hover:bg-indigo-700 shadow-lg transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Check Answer
+            </button>
+            <div id="feedback" class="text-xl font-semibold h-8 flex items-center">
+                <!-- Feedback messages appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Firebase/Canvas-Specific Setup (Required for all apps) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const apiKey = ""; // API key is handled by the canvas environment
+        // --- End Firebase Setup ---
+
+        // The 12 Major Scales and their notes (Root, 2, 3, 4, 5, 6, 7)
+        const ALL_MAJOR_SCALES = [
+            { root: 'C Major', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'] },
+            { root: 'G Major', notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'] },
+            { root: 'D Major', notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'] },
+            { root: 'A Major', notes: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'] },
+            { root: 'E Major', notes: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'] },
+            { root: 'B Major', notes: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'] },
+            { root: 'F# Major', notes: ['F#', 'G#', 'A#', 'B', 'C#', 'D#', 'E#'] }, // 6#
+            
+            { root: 'F Major', notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'] }, // 1b
+            { root: 'Bb Major', notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'] }, // 2b
+            { root: 'Eb Major', notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'] }, // 3b
+            { root: 'Ab Major', notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'] }, // 4b
+            { root: 'Db Major', notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'] }, // 5b
+        ];
+
+        // The exercise count is now fixed at 17, based on user request.
+        const EXERCISE_COUNT = 17;
+        let exercises = [];
+        let currentExerciseIndex = 0;
+        let isDragging = false;
+        let draggedElement = null;
+
+        const noteContainer = document.getElementById('note-container');
+        const checkButton = document.getElementById('check-button');
+        const feedbackElement = document.getElementById('feedback');
+        const exerciseCounterElement = document.getElementById('exercise-counter');
+        const currentScaleElement = document.getElementById('current-scale');
+
+        // Utility to shuffle an array (Fisher-Yates)
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        const createNoteElement = (note) => {
+            const tile = document.createElement('div');
+            
+            // Define a comprehensive map for consistent coloring using CSS classes
+            // The key is the note name, the value is the CSS class name (based on the flat/sharp spelling for consistency)
+            const colorMap = {
+                'C': 'note-C', 'C#': 'note-Db', 'Db': 'note-Db',
+                'D': 'note-D', 'D#': 'note-Eb', 'Eb': 'note-Eb',
+                'E': 'note-E', 'E#': 'note-F', 'F': 'note-F',
+                'F#': 'note-Gb', 'Gb': 'note-Gb', 'G': 'note-G',
+                'G#': 'note-Ab', 'Ab': 'note-Ab', 'A': 'note-A',
+                'A#': 'note-Bb', 'Bb': 'note-Bb', 'B': 'note-B',
+            };
+            
+            const noteClass = colorMap[note] || 'note-C'; // Default to 'note-C' if not found
+            
+            tile.className = `note-tile rounded-lg shadow-md ${noteClass}`;
+            tile.textContent = note;
+            tile.setAttribute('draggable', true);
+            tile.dataset.note = note;
+            return tile;
+        };
+
+        const initExercises = () => {
+            // Mapping the list of all scales for easy lookup
+            const rootToScaleMap = ALL_MAJOR_SCALES.reduce((map, scale) => {
+                map[scale.root] = scale;
+                return map;
+            }, {});
+
+            // 1. C to B Major (Sharp Keys): C, G, D, A, E, B, F# (7 unique exercises)
+            const sharpKeyRoots = ['C Major', 'G Major', 'D Major', 'A Major', 'E Major', 'B Major', 'F# Major'];
+            
+            // 2. Db to F Major (Flat Keys): Db, Ab, Eb, Bb, F (5 unique exercises)
+            const flatKeyRoots = ['Db Major', 'Ab Major', 'Eb Major', 'Bb Major', 'F Major'];
+
+            // 3. Additional 5 repeats (to reach 17 total exercises)
+            // Choosing popular, common keys for repetition: C, G, F, Bb, Eb
+            const repeatRoots = ['C Major', 'G Major', 'F Major', 'Bb Major', 'Eb Major'];
+
+            // Combine all roots
+            const targetRoots = [...sharpKeyRoots, ...flatKeyRoots, ...repeatRoots];
+
+            // Create the full list of 17 exercises objects
+            exercises = targetRoots.map(root => rootToScaleMap[root]);
+
+            // Ensure the list is shuffled before starting
+            shuffleArray(exercises);
+        };
+
+        const loadExercise = (index) => {
+            if (index >= EXERCISE_COUNT) {
+                showFinalScore();
+                return;
+            }
+
+            const currentExercise = exercises[index];
+            const correctNotes = [...currentExercise.notes];
+            const jumbledNotes = shuffleArray([...correctNotes]); // Shuffle a copy
+
+            // Update UI text
+            exerciseCounterElement.textContent = `${index + 1} / ${EXERCISE_COUNT}`;
+            currentScaleElement.textContent = currentExercise.root;
+            feedbackElement.textContent = '';
+            checkButton.disabled = false;
+            checkButton.classList.remove('bg-green-600', 'bg-red-600');
+            checkButton.classList.add('bg-indigo-600');
+
+            // Clear container
+            noteContainer.innerHTML = '';
+
+            // Create and append note elements
+            jumbledNotes.forEach(note => {
+                const tile = createNoteElement(note);
+                noteContainer.appendChild(tile);
+            });
+        };
+
+        const checkSolution = () => {
+            const currentExercise = exercises[currentExerciseIndex];
+            const currentOrder = Array.from(noteContainer.children).map(tile => tile.dataset.note);
+            const correctOrder = currentExercise.notes;
+
+            const isCorrect = currentOrder.every((note, i) => note === correctOrder[i]);
+
+            checkButton.disabled = true;
+
+            if (isCorrect) {
+                feedbackElement.className = 'text-xl font-semibold text-green-600';
+                feedbackElement.textContent = '✅ Correct! Well done.';
+                checkButton.classList.remove('bg-indigo-600', 'bg-red-600');
+                checkButton.classList.add('bg-green-600');
+
+                // Wait a moment then load next
+                setTimeout(nextExercise, 1500);
+            } else {
+                feedbackElement.className = 'text-xl font-semibold text-red-600';
+                feedbackElement.textContent = '❌ Incorrect. Try again!';
+                checkButton.classList.remove('bg-indigo-600');
+                checkButton.classList.add('bg-red-600');
+                checkButton.disabled = false; // Allow re-attempt
+            }
+        };
+
+        const nextExercise = () => {
+            currentExerciseIndex++;
+            loadExercise(currentExerciseIndex);
+        };
+
+        const showFinalScore = () => {
+            feedbackElement.className = 'text-2xl font-bold text-indigo-700';
+            feedbackElement.textContent = `Challenge Complete! You finished all ${EXERCISE_COUNT} exercises.`;
+            currentScaleElement.textContent = '---';
+            noteContainer.innerHTML = '<p class="text-gray-500 p-4">Refresh the page to start a new challenge!</p>';
+            checkButton.textContent = 'Finished';
+            checkButton.disabled = true;
+        };
+
+        // --- Drag and Drop Handlers ---
+
+        const dragStart = (e) => {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedElement.dataset.note);
+            setTimeout(() => {
+                draggedElement.classList.add('dragging');
+            }, 0);
+            isDragging = true;
+        };
+
+        const dragOver = (e) => {
+            e.preventDefault();
+            
+            // Check if the drop target is a note tile and not the element being dragged
+            if (!e.target.classList.contains('note-tile') || e.target === draggedElement) {
+                // If dragging over the container background, the element will be inserted at the end of the container
+                if (e.target === noteContainer && draggedElement) {
+                    noteContainer.appendChild(draggedElement);
+                }
+                return;
+            }
+
+            const container = noteContainer;
+            const targetElement = e.target;
+            
+            // Determine the insertion point
+            const targetRect = targetElement.getBoundingClientRect();
+            const midpoint = targetRect.left + (targetRect.width / 2);
+            
+            if (e.clientX < midpoint) {
+                // Dragging to the left of the target element
+                container.insertBefore(draggedElement, targetElement);
+            } else {
+                // Dragging to the right of the target element
+                container.insertBefore(draggedElement, targetElement.nextSibling);
+            }
+        };
+
+        const dragEnd = () => {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+            isDragging = false;
+        };
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initExercises();
+            loadExercise(currentExerciseIndex);
+
+            checkButton.addEventListener('click', checkSolution);
+
+            // Add drag listeners to the container (delegation)
+            noteContainer.addEventListener('dragstart', dragStart);
+            // dragover handles the visual rearranging
+            noteContainer.addEventListener('dragover', dragOver);
+            // dragend cleans up the styling
+            noteContainer.addEventListener('dragend', dragEnd);
+            // These prevent default browser behavior for drag/drop outside the note tiles
+            noteContainer.addEventListener('dragleave', (e) => e.preventDefault());
+            noteContainer.addEventListener('drop', (e) => e.preventDefault());
+        });
+    </script>
+</body>
+</html>

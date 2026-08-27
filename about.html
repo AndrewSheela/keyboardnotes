@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About Us - Christian Songs Keyboard Notes | JGeneration Ministry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn about JGeneration Ministry, providing free Christian keyboard notes, chords, and lyrics to empower worship leaders and musicians worldwide.">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #dd2476;
+            --accent: #ffb703;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* AdSense Placeholder Styling */
+        .ad-slot {
+            margin: 20px auto;
+            text-align: center;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            padding: 10px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-radius: 8px;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(90deg, #1e3a8a, #dd2476);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .content-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 0;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .feature-list li {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .feature-list li i {
+            color: var(--secondary);
+        }
+
+        .verse-section {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .verse-text {
+            font-size: 1.4rem;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .contact-link:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .contact-link i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .back-home:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-card {
+                position: static;
+            }
+        }
+
+        #backToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--secondary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="globalHeader"></div>
+
+    <div class="container">
+        <!-- Top Ad Placement -->
+        <div class="ad-slot">
+            <span>ADVERTISEMENT - TOP RESPONSIVE</span>
+        </div>
+
+        <header>
+            <h1>About JGeneration</h1>
+            <p class="tagline">Empowering worship through music. Providing free keyboard notes, lyrics, and chords for the global Christian community.</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="main-content">
+                <section class="content-card">
+                    <h2><i class="fa-solid fa-bullseye"></i> Our Mission</h2>
+                    <p>At <strong>JGeneration Ministry</strong>, we believe that music is a powerful tool for worship and spiritual growth. Our mission is to bridge the gap for aspiring musicians and worship leaders by providing high-quality, easy-to-read keyboard notes and accurate lyrics for both contemporary and traditional Christian songs.</p>
+                    <p>We aim to remove technical barriers so that your focus remains entirely on glorifying God through your talents.</p>
+                </section>
+
+                <div class="ad-slot">
+                    <span>ADVERTISEMENT - MID CONTENT</span>
+                </div>
+
+                <section class="content-card">
+                    <h2><i class="fa-solid fa-star"></i> What We Offer</h2>
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check"></i> Precise Keyboard Notes</li>
+                        <li><i class="fa-solid fa-check"></i> Guitar & Piano Chords</li>
+                        <li><i class="fa-solid fa-check"></i> Transpose Tools</li>
+                        <li><i class="fa-solid fa-check"></i> Verified Lyrics</li>
+                        <li><i class="fa-solid fa-check"></i> Mobile Accessibility</li>
+                        <li><i class="fa-solid fa-check"></i> PDF Song Sheets</li>
+                    </ul>
+                </section>
+
+                <section class="verse-section">
+                    <div class="verse-text">"Sing to the LORD a new song; sing to the LORD, all the earth."</div>
+                    <strong>— Psalm 96:1</strong>
+                </section>
+
+                <section class="content-card" style="margin-bottom: 0;">
+                    <h2><i class="fa-solid fa-users"></i> Our Vision</h2>
+                    <p>Our vision is to become the world's most accessible digital library for Christian music resources. We are constantly updating our database with regional and international songs to serve the diverse body of Christ globally.</p>
+                </section>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <h2>Connect With Us</h2>
+                    <p>Have a song request or need help with notes? Reach out to us directly.</p>
+                    
+                    <a href="mailto:josepath.andrew@gmail.com" class="contact-link">
+                        <i class="fa-solid fa-envelope"></i>
+                        <div>
+                            <strong>Email Us</strong><br>
+                            <small>josepath.andrew@gmail.com</small>
+                        </div>
+                    </a>
+
+                    <a href="https://wa.me/919790183938" target="_blank" class="contact-link">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <div>
+                            <strong>WhatsApp Support</strong><br>
+                            <small>+91 9790183938</small>
+                        </div>
+                    </a>
+
+                    <div class="ad-slot" style="min-height: 250px;">
+                        <span>SIDEBAR AD<br>(300x250)</span>
+                    </div>
+
+                    <a href="/index.html" class="back-home">
+                        <i class="fa-solid fa-house"></i> Back to Home
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- The global footer will be loaded here externally -->
+    <div id="globalFooter"></div>
+
+    <div id="backToTop"><i class="fa-solid fa-arrow-up"></i></div>
+
+  <script>
+    // Global Header Loader
+    fetch("/header.html")
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("globalHeader").innerHTML = data;
+
+            // ✅ Highlight active nav
+            var el = document.querySelector('.btn-about');
+            if (el) el.classList.add('active');
+
+            // ✅ Fix invisible text: re-assert this page's own body styles
+            // (header.html injects CSS vars that override this page)
+            document.body.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
+            document.body.style.color = '#1f2937';
+        }).catch(err => console.log("Header error:", err));
+
+    // Global Footer Loader
+    fetch("/footer.html")
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("globalFooter").innerHTML = data;
+        }).catch(err => console.log("Footer error:", err));
+
+    // Back to Top Logic
+    const btt = document.getElementById("backToTop");
+    window.addEventListener("scroll", () => {
+        btt.style.display = window.scrollY > 400 ? "flex" : "none";
+    });
+    btt.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+</script>
+</body>
+</html>

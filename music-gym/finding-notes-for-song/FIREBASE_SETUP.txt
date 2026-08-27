@@ -1,0 +1,88 @@
+WHY STUDENTS SEE "NO SONGS ADDED" ON THEIR PHONES
+===================================================
+Songs you add in the Teacher panel were being saved in your browser's local
+storage — which only exists on that one device/browser. A student opening
+the app on their own phone has a completely separate local storage, so it
+looked empty even though you'd added songs on your computer.
+
+THE FIX: Firebase Firestore (shared cloud database)
+=====================================================
+The app now saves songs to your existing Firebase project (sample-6eb3e) —
+the same one your Chord App and Syllable App already use. Once this is set
+up, any song you add from any device instantly appears for every student,
+on any device.
+
+I've already added the Firebase code to index.html. You just need to do
+two things:
+
+
+STEP 1 — Paste your Firebase config into index.html
+-----------------------------------------------------
+1. Go to https://console.firebase.google.com and open your "sample-6eb3e" project.
+2. Click the ⚙️ gear icon (top left) → "Project settings".
+3. Scroll to "Your apps". If you already have a Web app listed (used by your
+   Chord App / Syllable App), click it and find "SDK setup and configuration"
+   → select "Config". If there's no Web app yet, click "Add app" → the </> (Web)
+   icon → give it any nickname → register it, then you'll see the same config.
+4. Copy the object that looks like this:
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaU6XwxlXk-NvTxkOoG0Fg-9Ugwxb9ZcM",
+  authDomain: "sample-6eb3e.firebaseapp.com",
+  projectId: "sample-6eb3e",
+  storageBucket: "sample-6eb3e.firebasestorage.app",
+  messagingSenderId: "829997302552",
+  appId: "1:829997302552:web:25508fd4e11a236ec7946d",
+  measurementId: "G-6XPPZ9N78G"
+};
+
+5. Open index.html, search for "PASTE_YOUR_API_KEY_HERE" (near the top of the
+   <script> section), and replace the whole firebaseConfig object with the
+   one you copied.
+
+
+STEP 2 — Add a Firestore security rule for this app's songs
+---------------------------------------------------------------
+Your Firestore rules currently protect ExamHub's data. You need to add one
+more rule specifically for this app's song list, ABOVE your existing rules,
+so it doesn't touch or weaken anything else.
+
+1. In the Firebase Console, go to "Firestore Database" → "Rules" tab.
+2. Add this block near the top of the rules, inside the existing
+   `match /databases/{database}/documents { ... }` section:
+
+     match /rootScaleSongs/{songId} {
+       allow read, write: if true;
+     }
+
+   So it ends up looking something like:
+
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+
+         match /rootScaleSongs/{songId} {
+           allow read, write: if true;
+         }
+
+         // ... your existing rules for chordSongs, syllableSongs, ExamHub, etc. stay below, unchanged ...
+       }
+     }
+
+3. Click "Publish".
+
+This rule is permissive (anyone can read/write song entries) — the same
+approach used for your other apps' collections, since there's no server-side
+login system here. The teacher password on the Manage Songs page is what
+stops casual browsing users from finding that screen, not the database rule
+itself. If you want it locked down further later (e.g. Firebase
+Authentication for the teacher account), let me know and we can add that.
+
+
+AFTER THAT
+----------
+- Reopen index.html (or refresh), log in as teacher, and add or re-add your
+  songs. They'll now save to Firestore.
+- Any student on any device will see them immediately in their song list.
+- If Firestore is ever unreachable (no internet), the app quietly falls back
+  to the last copy it cached on that device, so it won't just go blank.

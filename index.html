@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JGeneration | Equipping Christian Musicians</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Christian Tamil Keyboard Notes, Chords, Lyrics & PPT for Worship">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --navy: #0b1120;
+      --navy-light: #162032;
+      --navy-card: rgba(22, 32, 50, 0.7);
+      --gold: #c9a84c;
+      --gold-light: #e8c97e;
+      --text-main: #f0ede4;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--navy);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    .bg-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.1) 0%, rgba(11, 17, 32, 0) 70%);
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ✅ HERO SECTION */
+    .hero {
+      padding: 100px 20px 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 24px;
+      text-shadow: 0 0 40px rgba(201, 168, 76, 0.2);
+    }
+
+    .hero-title span {
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+    }
+
+    /* ✅ SCRIPTURE BLOCK */
+    .scripture-card {
+      background: rgba(201, 168, 76, 0.05);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto 80px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scripture-card::before {
+      content: '"';
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      font-family: 'Cinzel', serif;
+      font-size: 120px;
+      color: rgba(201, 168, 76, 0.1);
+      line-height: 1;
+    }
+
+    .scripture-card blockquote {
+      font-size: 24px;
+      font-style: italic;
+      color: var(--gold-light);
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .scripture-card cite {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ✅ SECTION TITLES */
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 50px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .section-title::before, .section-title::after {
+      content: "";
+      height: 1px;
+      width: 60px;
+      background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .section-title::after {
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+
+    /* ✅ YOUTUBE CHANNELS */
+    .youtube-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .yt-card {
+      background: var(--navy-card);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .yt-card:hover {
+      transform: translateY(-10px);
+      border-color: rgba(201, 168, 76, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(201, 168, 76, 0.1);
+    }
+
+    .yt-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .yt-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s;
+    }
+
+    .yt-card:hover .yt-thumb img {
+      transform: scale(1.08);
+    }
+
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      width: 50px;
+      height: 50px;
+      background: rgba(201, 168, 76, 0.9);
+      color: var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .yt-card:hover .play-btn {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .yt-info {
+      padding: 20px;
+    }
+
+    .yt-title {
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .yt-link {
+      color: var(--gold);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* ✅ CTA SECTION */
+    .cta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+      margin-bottom: 100px;
+    }
+
+    .cta-card {
+      background: linear-gradient(145deg, var(--navy-light), var(--navy));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 40px;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 4px;
+    }
+
+    .cta-card.music::before { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+    .cta-card.notes::before { background: linear-gradient(90deg, var(--gold), #f59e0b); }
+
+    .cta-icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    
+    .cta-card.music .cta-icon { color: #8b5cf6; }
+    .cta-card.notes .cta-icon { color: var(--gold); }
+
+    .cta-title {
+      font-size: 22px;
+      color: white;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .cta-desc {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--navy);
+      box-shadow: 0 4px 15px rgba(201, 168, 76, 0.2);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(201, 168, 76, 0.4);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-purple:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 60px 15px 40px; }
+      .scripture-card { padding: 30px 20px; }
+      .scripture-card blockquote { font-size: 20px; }
+    }
+  </style>
+</head>
+
+<body>
+  
+  <div class="bg-glow"></div>
+
+  <!-- ✅ GLOBAL HEADER -->
+  <div id="globalHeader"></div>
+
+  <main class="wrapper">
+    
+    <!-- ✅ HERO SECTION -->
+    <section class="hero">
+      <h1 class="hero-title">Equipping Christian Musicians <br><span>For His Glory</span></h1>
+      <p class="hero-desc">
+        Music is a divine instrument given to exalt the Creator. JGeneration exists to empower worshippers, keyboardists, and vocalists with the resources, notes, and training needed to serve in ministry with excellence. Give glory to God with every note you play.
+      </p>
+      
+      <div class="scripture-card">
+        <blockquote>"Let the word of Christ dwell in you richly, teaching and admonishing one another in all wisdom, singing psalms and hymns and spiritual songs, with thankfulness in your hearts to God."</blockquote>
+        <cite>Colossians 3:16</cite>
+      </div>
+    </section>
+
+    <!-- ✅ YOUTUBE CHANNELS -->
+    <h2 class="section-title">Explore Our Channels</h2>
+    <div class="youtube-grid">
+      
+      <a href="https://youtu.be/pz8nC2OsIwo" target="_blank" class="yt-card">
+        <div class="yt-thumb">
+          <img src="https://img.youtube.com/vi/pz8nC2OsIwo/mqdefault.jpg" alt="Keyboard Notes">
+          <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <div class="yt-info">
+          <div class="yt-title">Keyboard Notes & Chords</div>
+          <div class="yt-link">Watch Now <i class="fa-solid fa-arrow-right ml-1"></i></div>
+        </div>
+      </a>
+
+      <a href="https://youtu.be/RIpvfFbH4Ck" target="_blank" class="yt-card">
+        <div class="yt-thumb">
+          <img src="https://img.youtube.com/vi/RIpvfFbH4Ck/mqdefault.jpg" alt="Piano Tutorials">
+          <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <div class="yt-info">
+          <div class="yt-title">Piano Tutorials</div>
+          <div class="yt-link">Watch Now <i class="fa-solid fa-arrow-right ml-1"></i></div>
+        </div>
+      </a>
+
+      <a href="https://youtube.com/shorts/xHmJdQ--hPE" target="_blank" class="yt-card">
+        <div class="yt-thumb">
+          <img src="https://img.youtube.com/vi/xHmJdQ--hPE/mqdefault.jpg" alt="Bible Study">
+          <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <div class="yt-info">
+          <div class="yt-title">Bible Study Shorts</div>
+          <div class="yt-link">Watch Now <i class="fa-solid fa-arrow-right ml-1"></i></div>
+        </div>
+      </a>
+
+      <a href="https://youtu.be/gNg3YI40s3w" target="_blank" class="yt-card">
+        <div class="yt-thumb">
+          <img src="https://img.youtube.com/vi/gNg3YI40s3w/mqdefault.jpg" alt="Music Lessons">
+          <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+        </div>
+        <div class="yt-info">
+          <div class="yt-title">Music Lessons</div>
+          <div class="yt-link">Watch Now <i class="fa-solid fa-arrow-right ml-1"></i></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- ✅ CTA CARDS -->
+    <div class="cta-grid">
+      
+      <div class="cta-card notes">
+        <div>
+          <i class="fa-solid fa-music cta-icon"></i>
+          <h3 class="cta-title">Song & Karaoke Requests</h3>
+          <p class="cta-desc">Missing your favorite worship song? Request custom keyboard notes or high-quality karaoke tracks for your next worship session. We try our best to fulfill every request!</p>
+        </div>
+        <a href="/keyboard-notes/song-request-page.html" class="btn btn-gold">Request a Song</a>
+      </div>
+
+      <div class="cta-card music">
+        <div>
+          <i class="fa-solid fa-graduation-cap cta-icon"></i>
+          <h3 class="cta-title">Music Course Application</h3>
+          <p class="cta-desc">Ready to level up your keyboard skills? Apply for our structured music courses designed for ministry. Learn chords, scales, and professional worship techniques.</p>
+        </div>
+        <a href="/courses/index.html" class="btn btn-purple">Apply for Course</a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ✅ GLOBAL FOOTER -->
+  <div id="globalFooter"></div>
+
+  <!-- ✅ LOAD HEADER & FOOTER -->
+  <script>
+    fetch("/header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalHeader").innerHTML = data;
+        
+        // Load Global Search (if still used)
+        const script = document.createElement("script");
+        script.src = "/js/global-search.js?v=" + Date.now();
+        document.body.appendChild(script);
+      })
+      .catch(err => console.log("Header load ignored for preview purposes."));
+
+    fetch("/footer.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("globalFooter").innerHTML = data;
+      })
+      .catch(err => console.log("Footer load ignored for preview purposes."));
+  </script>
+
+</body>
+</html>

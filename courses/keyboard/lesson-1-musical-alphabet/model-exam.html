@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musical Alphabet Quiz</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the 16:9 container effect, font, and animations */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #8e44ad, #3498db); /* Purple to Blue Gradient */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem; /* Add some padding for small screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* Enforce a 16:9 aspect ratio container for the "video" feel on desktop */
+        .video-container {
+            width: 100%;
+            max-width: 1280px; /* 720p width basis */
+            aspect-ratio: 16 / 9;
+            min-height: 400px; /* Ensure visibility on smaller screens before the aspect-ratio takes over */
+            background-color: #ffffff; /* White background for the quiz content */
+            background-image: linear-gradient(to top left, #fbfbfb, #ffffff); /* Subtle gradient for content */
+            border: 2px solid #a78bfa; /* Light purple border */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+        }
+
+        /* Style the note blanks */
+        .note-blank {
+            display: inline-block;
+            min-width: 3rem; /* Ensure consistent width */
+            text-align: center;
+            border-bottom: 3px solid transparent; /* Make border thicker and color it dynamically */
+            margin: 0 0.4rem;
+            padding-bottom: 0.2rem; /* Give some space for the thicker border */
+            transition: all 0.3s ease-in-out;
+            color: #1f2937;
+            font-weight: 800;
+            line-height: 1.2; /* Adjust line height for better vertical alignment */
+        }
+
+        /* Filled blank styles */
+        .note-blank.filled {
+            background-color: #e0f2fe; /* Light blue background */
+            color: #0c4a6e; /* Darker blue text */
+            border-color: #38b2ac; /* Teal border */
+            border-radius: 4px;
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+        }
+
+        /* Active blank for user input */
+        .note-blank.active {
+            background-color: #fff9c4; /* Light yellow background */
+            border-color: #fbbf24; /* Amber border */
+            animation: pulse-blank 1.5s infinite ease-in-out;
+        }
+
+        /* Keyframe animation for active blank */
+        @keyframes pulse-blank {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Option button styling */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+            border: 2px solid #a78bfa; /* Initial purple border */
+            background-color: #f3e8ff; /* Light purple background */
+            color: #6d28d9; /* Darker purple text */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .option-button:hover {
+            background-color: #8b5cf6; /* Stronger purple on hover */
+            color: white;
+            transform: scale(1.02);
+            border-color: #6d28d9;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        .option-button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .option-button.correct-choice {
+            background-color: #6ee7b7; /* Green for correct */
+            border-color: #10b981;
+            color: white;
+            animation: bounce-in 0.3s forwards;
+        }
+        .option-button.incorrect-choice {
+            background-color: #fda4af; /* Red for incorrect */
+            border-color: #ef4444;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        /* Animations for option buttons */
+        @keyframes bounce-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Feedback box styling */
+        .feedback-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8); /* Start smaller */
+            padding: 1rem 2.5rem;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 1.8rem; /* Larger font */
+            font-weight: 900; /* Extra bold */
+            opacity: 0;
+            transition: all 0.4s ease-out; /* Smoother transition */
+            pointer-events: none;
+            z-index: 20;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2); /* Text shadow for pop */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); /* Stronger shadow */
+        }
+        .feedback-visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #correct-feedback {
+            background-color: #10b981; /* Tailwind green-600 */
+            color: white;
+        }
+        #incorrect-feedback {
+            background-color: #ef4444; /* Tailwind red-600 */
+            color: white;
+        }
+
+        /* Completion Screen */
+        #completion-screen {
+            background: linear-gradient(to top right, rgba(236, 254, 255, 0.95), rgba(255, 255, 255, 0.95)); /* Light blue/white gradient */
+            border: 3px solid #6366f1; /* Indigo border */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); /* Very strong shadow */
+        }
+        #completion-screen h2 {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        #completion-screen button {
+            background-color: #4f46e5; /* Deeper indigo */
+            font-size: 1.25rem;
+            padding: 0.75rem 2.5rem;
+        }
+        #completion-screen button:hover {
+            background-color: #4338ca; /* Even deeper indigo */
+            transform: translateY(-2px);
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 640px) {
+            .video-container {
+                padding: 1rem;
+                min-height: unset; /* Allow height to adjust naturally */
+                aspect-ratio: auto; /* Let content define height */
+            }
+            .feedback-box {
+                font-size: 1.2rem;
+                padding: 0.75rem 1.5rem;
+            }
+            .note-blank {
+                min-width: 2rem;
+                margin: 0 0.2rem;
+            }
+            .text-3xl { font-size: 2rem; } /* Adjust question pattern size */
+            .text-xl { font-size: 1rem; } /* Adjust question text size */
+            .text-2xl { font-size: 1.5rem; } /* Adjust option button text size */
+            .text-lg { font-size: 1rem; } /* Adjust score text size */
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container" class="video-container bg-white shadow-2xl rounded-xl p-4 sm:p-8 flex flex-col transition-all duration-500 relative">
+
+    <!-- Header / Score --><div class="flex justify-between items-center mb-6">
+        <h1 class="text-xl sm:text-3xl font-extrabold text-indigo-700">Lesson 1 Musical Aplhabet Quiz</h1>
+        <div class="text-lg sm:text-2xl font-bold text-pink-600">
+            Q: <span id="current-q">1</span> / 20
+            <span class="mx-2 text-gray-400">|</span>
+            Score: <span id="score">0</span> / 40
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <!-- Changed justify-between to justify-center to minimize vertical stretching/gap -->
+    <div id="quiz-content" class="flex-grow flex flex-col justify-center">
+
+        <!-- Question Area -->
+        <!-- Reduced mb-8 to mb-4 to decrease space below the pattern -->
+        <div class="text-center mb-4">
+            <p id="question-text" class="text-sm sm:text-xl text-gray-600 font-medium mb-4">
+                What note comes in the blanks?
+            </p>
+            <div id="pattern-display" class="text-3xl sm:text-6xl font-black text-gray-900 tracking-wider">
+                <!-- Question pattern will be injected here --></div>
+            <div id="blank-status" class="mt-2 text-green-700 font-semibold text-xs sm:text-sm h-6">
+                <!-- Status message like "Select the first note..." --></div>
+        </div>
+
+        <!-- Options Grid --><div id="options-grid" class="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-2xl mx-auto">
+            <!-- Options will be injected here --></div>
+
+    </div>
+
+    <!-- Feedback Popups -->
+    <div id="correct-feedback" class="feedback-box">✅ Correct!</div>
+    <!-- Updated incorrect feedback to just show the indicator -->
+    <div id="incorrect-feedback" class="feedback-box">❌</div>
+    <div id="completion-screen" class="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col justify-center items-center rounded-xl p-8 hidden z-30">
+        <h2 class="4xl sm:text-6xl font-extrabold text-indigo-700 mb-4">Quiz Complete! 🎉</h2>
+        <p class="text-xl sm:text-3xl text-gray-800 mb-8">Your Final Score: <span id="final-score" class="text-pink-600 font-black"></span> / 40</p>
+        <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-full hover:bg-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+            Play Again
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // --- Utility Function: Fisher-Yates Shuffle Algorithm ---
+    function shuffleArray(array) {
+        // Create a copy to avoid modifying the original quizQuestions array
+        const newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    // --- Quiz Data Structure (20 Questions Total) ---
+    const quizQuestions = [
+        {
+            id: 1,
+            pattern: "A B C __ E __ G", 
+            correctSequence: ["D", "F"],
+            options: ["D", "F", "A", "B"]
+        },
+        {
+            id: 2,
+            pattern: "G A __ C D __ F",
+            correctSequence: ["B", "E"],
+            options: ["B", "E", "G", "C"]
+        },
+        {
+            id: 3,
+            pattern: "D E F __ A __ C",
+            correctSequence: ["G", "B"],
+            options: ["G", "B", "D", "F"]
+        },
+        {
+            id: 4,
+            pattern: "F __ A B __ D E",
+            correctSequence: ["G", "C"],
+            options: ["G", "C", "F", "D"]
+        },
+        {
+            id: 5,
+            pattern: "C D __ F G A __",
+            correctSequence: ["E", "B"],
+            options: ["E", "B", "D", "G"]
+        },
+        {
+            id: 6,
+            pattern: "E F __ A B __ D",
+            correctSequence: ["G", "C"],
+            options: ["G", "C", "E", "A"]
+        },
+        {
+            id: 7,
+            pattern: "B C __ E F __ A",
+            correctSequence: ["D", "G"],
+            options: ["D", "G", "B", "F"]
+        },
+        {
+            id: 8,
+            pattern: "G __ B C __ E F",
+            correctSequence: ["A", "D"],
+            options: ["A", "D", "G", "C"]
+        },
+        {
+            id: 9,
+            pattern: "C __ E F __ A B",
+            correctSequence: ["D", "G"],
+            options: ["D", "G", "C", "F"]
+        },
+        {
+            id: 10,
+            pattern: "D __ F G __ B C",
+            correctSequence: ["E", "A"],
+            options: ["E", "A", "D", "G"]
+        },
+        {
+            id: 11,
+            pattern: "A __ C D __ F G",
+            correctSequence: ["B", "E"],
+            options: ["B", "E", "A", "D"]
+        },
+        {
+            id: 12,
+            pattern: "F G __ B C __ E",
+            correctSequence: ["A", "D"],
+            options: ["A", "D", "F", "C"]
+        },
+        {
+            id: 13,
+            pattern: "C __ E __ G A B",
+            correctSequence: ["D", "F"],
+            options: ["D", "F", "C", "A"]
+        },
+        {
+            id: 14,
+            pattern: "E __ G A __ C D",
+            correctSequence: ["F", "B"],
+            options: ["F", "B", "E", "G"]
+        },
+        {
+            id: 15,
+            pattern: "B __ D E __ G A",
+            correctSequence: ["C", "F"],
+            options: ["C", "F", "B", "E"]
+        },
+        {
+            id: 16,
+            pattern: "D E __ G __ B C",
+            correctSequence: ["F", "A"],
+            options: ["F", "A", "D", "G"]
+        },
+        {
+            id: 17,
+            pattern: "G __ B __ D E F",
+            correctSequence: ["A", "C"],
+            options: ["A", "C", "G", "D"]
+        },
+        {
+            id: 18,
+            pattern: "A B __ D E __ G",
+            correctSequence: ["C", "F"],
+            options: ["C", "F", "A", "D"]
+        },
+        {
+            id: 19,
+            pattern: "F __ A __ C D E",
+            correctSequence: ["G", "B"],
+            options: ["G", "B", "F", "C"]
+        },
+        {
+            id: 20,
+            pattern: "C D E __ G __ B",
+            correctSequence: ["F", "A"],
+            options: ["F", "A", "C", "G"]
+        }
+    ];
+
+    // --- State Variables ---
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let currentBlankIndex = 0; // 0 for the first blank, 1 for the second.
+    let currentPatternArray = []; // Stores the current state of the pattern (with notes filled)
+
+    // --- DOM Elements ---
+    const qIndexEl = document.getElementById('current-q');
+    const scoreEl = document.getElementById('score');
+    const patternDisplayEl = document.getElementById('pattern-display');
+    const optionsGridEl = document.getElementById('options-grid');
+    const blankStatusEl = document.getElementById('blank-status');
+    const correctFeedbackEl = document.getElementById('correct-feedback');
+    const incorrectFeedbackEl = document.getElementById('incorrect-feedback');
+    const completionScreenEl = document.getElementById('completion-screen');
+    const finalScoreEl = document.getElementById('final-score');
+
+    /**
+     * Shows a temporary visual feedback message.
+     * @param {HTMLElement} element - The feedback element (correct or incorrect).
+     */
+    function showFeedback(element) {
+        element.classList.add('feedback-visible');
+        setTimeout(() => {
+            element.classList.remove('feedback-visible');
+        }, 800);
+    }
+
+    /**
+     * Initializes or resets the quiz pattern display.
+     */
+    function initializePatternDisplay() {
+        if (currentQuestionIndex >= quizQuestions.length) {
+            return;
+        }
+        const question = quizQuestions[currentQuestionIndex];
+        // Split by space, but replace double underscores with a blank object
+        currentPatternArray = question.pattern.split(' ').map(item => item === '__' ? { note: '', type: 'blank' } : { note: item, type: 'note' });
+    }
+
+    /**
+     * Renders the current question state to the DOM.
+     */
+    function renderQuestion() {
+        if (currentQuestionIndex >= quizQuestions.length) {
+            showCompletionScreen();
+            return;
+        }
+
+        const question = quizQuestions[currentQuestionIndex];
+        qIndexEl.textContent = currentQuestionIndex + 1;
+        scoreEl.textContent = score; // Score updates here from the global 'score' variable
+
+        // 1. Render Pattern - Only the empty blanks will show the '?'
+        const patternHtml = currentPatternArray.map((item) => {
+            if (item.type === 'note') {
+                // Regular note - no separator needed, just the note text
+                return `<span class="text-indigo-800">${item.note}</span>`;
+            } 
+            
+            // This is a blank (filled or empty)
+            if (item.note) {
+                // Filled blank
+                return `<span class="note-blank filled">${item.note}</span>`;
+            } else {
+                // Empty blank - Now displaying '?' inside the container
+                const isCurrentBlank = item.type === 'blank' && !item.note;
+                // Show '?' inside the blank container
+                return `<span class="note-blank ${isCurrentBlank ? 'active' : ''}">?</span>`; 
+            }
+        }).join(' '); // Join with a simple space, using the natural spacing from the split
+
+        patternDisplayEl.innerHTML = patternHtml;
+
+        // 2. Render Options (SHUFFLED)
+        const shuffledOptions = shuffleArray(question.options);
+        optionsGridEl.innerHTML = shuffledOptions.map(option => `
+            <button
+                class="option-button w-full h-20 sm:h-28 text-2xl sm:text-4xl font-extrabold rounded-lg "
+                data-note="${option}"
+                onclick="handleOptionClick('${option}')"
+            >
+                ${option}
+            </button>
+        `).join('');
+
+        // 3. Render Blank Status
+        const totalBlanks = question.correctSequence.length;
+        if (currentBlankIndex < totalBlanks) {
+            blankStatusEl.textContent = `Select the note for Blank ${currentBlankIndex + 1} of ${totalBlanks}...`;
+            blankStatusEl.classList.remove('text-green-700');
+            blankStatusEl.classList.add('text-yellow-600'); /* More vibrant yellow */
+        } else {
+            blankStatusEl.textContent = "Question Complete! Loading next...";
+            blankStatusEl.classList.remove('text-yellow-600');
+            blankStatusEl.classList.add('text-green-700'); /* More vibrant green */
+        }
+    }
+
+    /**
+     * Handles the user clicking an option button.
+     * @param {string} selectedNote - The musical note selected by the user.
+     */
+    function handleOptionClick(selectedNote) {
+        const question = quizQuestions[currentQuestionIndex];
+        const correctNote = question.correctSequence[currentBlankIndex];
+        const clickedButton = event.currentTarget; // Get the actual button element
+
+        // Disable all buttons immediately to prevent multiple clicks
+        optionsGridEl.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+
+        if (selectedNote === correctNote) {
+            clickedButton.classList.add('correct-choice'); /* Add correct choice class */
+            showFeedback(correctFeedbackEl);
+
+            const nextBlankIndexInArray = currentPatternArray.findIndex(p => p.type === 'blank' && !p.note);
+            if (nextBlankIndexInArray !== -1) {
+                currentPatternArray[nextBlankIndexInArray].note = selectedNote;
+                
+                // --- SCORE UPDATE: Add 1 point for the correct blank immediately ---
+                score++;
+                scoreEl.textContent = score;
+                // ------------------------------------------------------------------
+
+                currentBlankIndex++;
+                
+                if (currentBlankIndex === question.correctSequence.length) {
+                    // Question completed (both blanks filled). Move to the next question.
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        currentBlankIndex = 0;
+                        initializePatternDisplay();
+                        renderQuestion();
+                    }, 1200);
+                } else {
+                    // Move to the next blank and re-enable buttons after feedback
+                    setTimeout(() => {
+                         renderQuestion();
+                         optionsGridEl.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                    }, 800);
+                }
+            }
+
+        } else {
+            // Incorrect answer: no score, show feedback, auto-fill correct answer, and advance.
+            clickedButton.classList.add('incorrect-choice');
+            showFeedback(incorrectFeedbackEl);
+
+            setTimeout(() => {
+                // Clear the incorrect choice highlight
+                clickedButton.classList.remove('incorrect-choice'); 
+
+                // Find the position of the current empty blank in the pattern array
+                const nextBlankIndexInArray = currentPatternArray.findIndex(p => p.type === 'blank' && !p.note);
+                
+                if (nextBlankIndexInArray !== -1) {
+                    const correctNoteToFill = question.correctSequence[currentBlankIndex];
+                    
+                    // Auto-fill the correct note
+                    currentPatternArray[nextBlankIndexInArray].note = correctNoteToFill;
+                    
+                    // Advance the blank index (no score increase)
+                    currentBlankIndex++;
+                    
+                    // Re-render the pattern
+                    renderQuestion();
+                }
+
+                // Check if this action completed the entire question
+                if (currentBlankIndex === question.correctSequence.length) {
+                    // Question completed, move to the next question after a brief moment
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        currentBlankIndex = 0;
+                        initializePatternDisplay();
+                        renderQuestion();
+                    }, 500); 
+                } else {
+                    // Re-enable options for the next blank in the same question
+                    optionsGridEl.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                }
+
+            }, 1200);
+        }
+    }
+
+    /**
+     * Displays the quiz completion screen.
+     */
+    function showCompletionScreen() {
+        // Updated final score display to reflect 40 points total
+        document.querySelector('#completion-screen p').innerHTML = `Your Final Score: <span id="final-score" class="text-pink-600 font-black">${score}</span> / 40`;
+        finalScoreEl.textContent = score;
+        completionScreenEl.classList.remove('hidden');
+    }
+
+    /**
+     * Resets the quiz state to start over.
+     */
+    function resetQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        currentBlankIndex = 0;
+        completionScreenEl.classList.add('hidden');
+        initializePatternDisplay();
+        renderQuestion();
+    }
+
+    // --- Initialization ---
+    window.onload = () => {
+        initializePatternDisplay();
+        renderQuestion();
+    };
+
+</script>
+</body>
+</html>
