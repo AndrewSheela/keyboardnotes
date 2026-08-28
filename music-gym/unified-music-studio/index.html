@@ -2054,6 +2054,12 @@ function sp1Check(){
    STAGE 2 · BEAT & MEASURE — listen & follow, then a placement quiz
 --------------------------------------------------------------------------- */
 let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0;
+/* Loop points are checked once per animation frame (~16ms), and the audio
+   keeps playing between checks — so a plain ">= loopEnd" check always lets
+   a small sliver of the next measure bleed through before the seek lands.
+   Triggering the reset this far *before* the exact boundary absorbs that
+   rAF + seek latency so the loop sounds clean. */
+const LOOP_LOOKAHEAD = 0.05;
 function measureRangeToTime(song, startM, endM){
   const startTime = measureBeatToTime(startM, 1, song);
   const endTime = measureBeatToTime(endM+1, 1, song);
@@ -2182,7 +2188,7 @@ function sp2RenderLyricStage(){
 }
 function sp2Loop(){
   const a = document.getElementById('flowAudio');
-  if(sp2LoopOn && a.currentTime>=sp2LoopEnd){ a.currentTime = sp2LoopStart; }
+  if(sp2LoopOn && a.currentTime>=sp2LoopEnd-LOOP_LOOKAHEAD){ a.currentTime = sp2LoopStart; }
   const t = a.currentTime;
   document.getElementById('sp2-cur').textContent = fmtTime(t);
   const bar = document.getElementById('sp2-seek');
@@ -2344,7 +2350,7 @@ function sp3StartLoop(){
   cancelAnimationFrame(sp3Raf);
   const step=()=>{
     const a = document.getElementById('flowAudio');
-    if(sp3LoopOn && a.currentTime>=sp3LoopEnd){ a.currentTime = sp3LoopStart; }
+    if(sp3LoopOn && a.currentTime>=sp3LoopEnd-LOOP_LOOKAHEAD){ a.currentTime = sp3LoopStart; }
     document.getElementById('sp3-cur').textContent = fmtTime(a.currentTime);
     const bar = document.getElementById('sp3-seek');
     if(!bar.matches(':active')) bar.value = a.currentTime;
