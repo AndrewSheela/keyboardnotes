@@ -380,7 +380,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-family:var(--font-mono);font-size:12px;display:flex;align-items:center;gap:6px;}
 .chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;}
 .chip button:hover{color:var(--incorrect);}
-.palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;}
+.palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;color:#ffffff;}
 .palette-chip:hover{border-color:var(--gold);}
 .palette-chip.sel{border-color:var(--gold);background:var(--gold-dim);color:var(--gold-bright);}
 .cp-section-label{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;}
@@ -495,7 +495,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
   <!-- ================= STUDENT: PRACTICE HUB ================= -->
   <div id="view-hub" class="hidden">
-    <button class="btn ghost small" onclick="backToLibrary()">← All songs</button>
+    <button class="btn ghost small" id="hubBackBtn" onclick="backToLibrary()">← All songs</button>
     <div class="hub-head">
       <div class="translit" id="hubTranslit"></div>
       <div class="native" id="hubNative"></div>
@@ -1269,9 +1269,15 @@ function startPendingSkillForSong(songId){
 }
 function setLibFilter(l){ libraryLangFilter = l; renderLibrary(); }
 function backToLibrary(){
+  if(isTeacher){ backToTeacherSongs(); return; }
   hideAllViews();
   document.getElementById('view-library').classList.remove('hidden');
   renderLibrary();
+}
+function backToTeacherSongs(){
+  hideAllViews();
+  document.getElementById('teacher-view').classList.remove('hidden');
+  renderTeacherSongList();
 }
 
 function openHub(id){
@@ -1280,6 +1286,7 @@ function openHub(id){
   if(!s) return;
   document.getElementById('hubTranslit').textContent = songTitleTranslit(s);
   document.getElementById('hubNative').textContent = songTitleNative(s);
+  document.getElementById('hubBackBtn').textContent = isTeacher ? '← Your Songs' : '← All songs';
   hideAllViews();
   document.getElementById('view-hub').classList.remove('hidden');
 }
@@ -2004,7 +2011,7 @@ function flowFooterHtml(){
       <button class="btn ghost" onclick="renderCurrentStage()">↺ Try Again</button>
       ${continueBtn}
       <button class="btn outline" onclick="exitFlow()">🏠 This Song's Menu</button>
-      <button class="btn outline" onclick="backToLibraryFromFlow()">📚 Choose Another Song</button>
+      <button class="btn outline" onclick="backToLibraryFromFlow()">${isTeacher ? '📚 Back to Your Songs' : '📚 Choose Another Song'}</button>
     </div>
   </div>`;
 }
