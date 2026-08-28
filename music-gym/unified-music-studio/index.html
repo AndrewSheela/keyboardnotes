@@ -299,8 +299,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .mini-piano{display:flex;position:relative;height:150px;margin:14px 0;user-select:none;min-width:480px;}
 .mini-white{flex:1;background:#f3efe3;border:1px solid #2b2d3a;border-radius:0 0 6px 6px;position:relative;color:#0c0d12;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:var(--font-mono);font-size:10px;font-weight:700;min-width:32px;}
 .mini-white:active{background:var(--gold-bright);}
-.mini-black{position:absolute;top:0;width:7%;height:88px;background:#1a1206;border-radius:0 0 4px 4px;z-index:2;}
+.mini-black{position:absolute;top:0;width:7%;height:88px;background:#1a1206;border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-sizing:border-box;}
 .mini-black:active{background:var(--gold);}
+.mini-black-lbl{color:#f3efe3;font-family:var(--font-mono);font-weight:700;line-height:1;pointer-events:none;white-space:nowrap;}
+.mini-black:active .mini-black-lbl{color:#1a1206;}
 
 /* ---------- chord practice grid ---------- */
 .chord-track-line{margin-bottom:22px;overflow-x:auto;padding-bottom:6px;}
@@ -1049,9 +1051,24 @@ function buildMiniPiano(pianoEl, octaves){
       b.className='mini-black';
       b.style.left = ((i+1)*whiteWidthPct - blackWidthPct/2) + '%';
       b.style.width = blackWidthPct + '%';
+      const lbl = document.createElement('span');
+      lbl.className = 'mini-black-lbl';
+      lbl.textContent = blackAfter[wk.note];
+      b.appendChild(lbl);
       wireKeyPress(b, blackAfter[wk.note], wk.octave);
       pianoEl.appendChild(b);
     }
+  });
+  // Size each black key's label as large as will comfortably fit inside
+  // that key's actual rendered width (varies with octave count/container
+  // width), instead of a fixed font-size that under- or over-fills narrow
+  // keys.
+  requestAnimationFrame(()=>{
+    pianoEl.querySelectorAll('.mini-black').forEach(b=>{
+      const w = b.offsetWidth;
+      const fs = Math.max(7, Math.min(12.5, w*0.42));
+      b.querySelector('.mini-black-lbl').style.fontSize = fs.toFixed(1)+'px';
+    });
   });
 }
 
