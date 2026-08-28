@@ -382,6 +382,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .chip button:hover{color:var(--incorrect);}
 .palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;}
 .palette-chip:hover{border-color:var(--gold);}
+.palette-chip.sel{border-color:var(--gold);background:var(--gold-dim);color:var(--gold-bright);}
+.cp-section-label{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;}
+.cp-section-label:first-child{margin-top:0;}
+.cp-preview{font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--gold-bright);text-align:center;margin:8px 0 2px;min-height:20px;}
 
 /* ---------- modal ---------- */
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(8,9,13,.78);z-index:60;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
@@ -555,6 +559,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <button class="btn gold" onclick="newSong()">+ New Song</button>
       </div>
       <div class="lib-filters" id="teacherFilters"></div>
+      <div class="field" style="max-width:340px;margin-bottom:14px;">
+        <input type="text" id="teacherSongSearch" placeholder="&#128269; Search by title, transliteration, or language&hellip;" oninput="setTeacherSearch(this.value)">
+      </div>
       <div id="teacherSongList"></div>
     </div>
 
@@ -705,9 +712,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <!-- ============ CHORD PICKER MODAL — student side, click a chord slot in Apply Chords ============ -->
 <div class="modal-backdrop" id="chord-picker-modal">
-  <div class="modal" style="max-width:420px;">
+  <div class="modal" style="max-width:460px;">
     <h3>Pick a Chord</h3>
-    <p class="hint">Tap a chord from the chart to place it here.</p>
+    <p class="hint" id="cp-hint">Tap a chord from the chart to place it here.</p>
     <div class="chip-row" id="cp-chart-chips"></div>
     <div class="modal-actions">
       <button class="btn danger small" onclick="cpClear()">Clear</button>
@@ -855,6 +862,24 @@ const CHORD_INTERVALS = {
   '9':[0,4,7,10,2], m9:[0,3,7,10,2], '11':[0,4,7,10,5], m11:[0,3,7,10,5]
 };
 const PC_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+// Full chord chart (Pro mode): any of these 12 roots with any of these
+// qualities — maj, min, sus2/4, 6th, maj7/dominant7/m7, dim, aug, 9ths.
+const CHROMATIC_ROOTS = PC_NAMES;
+const PRO_CHORD_QUALITIES = [
+  {suffix:'',     label:'Maj'},
+  {suffix:'m',    label:'Min'},
+  {suffix:'sus2', label:'Sus2'},
+  {suffix:'sus4', label:'Sus4'},
+  {suffix:'6',    label:'6'},
+  {suffix:'m6',   label:'m6'},
+  {suffix:'maj7', label:'Maj7'},
+  {suffix:'7',    label:'7 (Dom)'},
+  {suffix:'m7',   label:'m7'},
+  {suffix:'dim',  label:'dim'},
+  {suffix:'aug',  label:'aug'},
+  {suffix:'9',    label:'9'},
+  {suffix:'m9',   label:'m9'}
+];
 
 function diatonicChords(keyRoot){
   const scale = MAJOR_KEYS[keyRoot];
@@ -1261,12 +1286,29 @@ function openHub(id){
 
 /* ---------- TEACHER SONG LIST ---------- */
 let teacherLangFilter = 'All';
+let teacherSearchQuery = '';
+function setTeacherSearch(v){ teacherSearchQuery = v; renderTeacherSongList(); }
+function songMatchesSearch(s, q){
+  if(!q) return true;
+  const hay = [
+    s.titleNative||'', s.titleTranslit||'', s.title||'', s.language||'',
+    ...(s.lines||[]).map(l=>l.segments||[]).flat().map(sg=>(sg.native||'')+' '+(sg.translit||''))
+  ].join(' ').toLowerCase();
+  return hay.includes(q);
+}
 function renderTeacherSongList(){
   const filterEl = document.getElementById('teacherFilters');
   filterEl.innerHTML = LANGUAGES.map(l=>`<button class="filter-chip ${teacherLangFilter===l?'active':''}" onclick="setTeacherFilter('${l}')">${l}</button>`).join('');
   const listEl = document.getElementById('teacherSongList');
-  const list = teacherLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===teacherLangFilter);
-  if(!list.length){ listEl.innerHTML = `<div class="empty-state">No songs yet. Click "+ New Song" to build your first one.</div>`; return; }
+  let list = teacherLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===teacherLangFilter);
+  const q = teacherSearchQuery.trim().toLowerCase();
+  if(q) list = list.filter(s=>songMatchesSearch(s, q));
+  if(!list.length){
+    listEl.innerHTML = q
+      ? `<div class="empty-state">No songs match "${escapeHtml(teacherSearchQuery.trim())}".</div>`
+      : `<div class="empty-state">No songs yet. Click "+ New Song" to build your first one.</div>`;
+    return;
+  }
   listEl.innerHTML = list.map(s=>{
     const lineCount = (s.lines||[]).length;
     const sylCount = (s.lines||[]).reduce((a,l)=>a+(l.segments||[]).length,0);
@@ -1499,6 +1541,32 @@ function syncAllSegmentsFromDOM(){
     });
   });
 }
+// Copies this line's measure:beat pattern down to the next line, shifting
+// the measure number by +1 and keeping every beat value identical — e.g.
+// 1:1 1:2 1:2.5 1:3 1:4  ->  2:1 2:2 2:2.5 2:3 2:4
+// Matches syllable-by-syllable by position, so it works best when both
+// lines have the same number of syllables (typical for repeated melodic
+// patterns like verse lines).
+function copyBeatPatternToNextLine(li){
+  syncAllSegmentsFromDOM();
+  if(li >= currentLines.length-1){ showToast('This is the last line — add or insert a line below first.'); return; }
+  const src = currentLines[li].segments;
+  const dst = currentLines[li+1].segments;
+  if(!src.length){ showToast('This line has no beat pattern to copy yet.'); return; }
+  const n = Math.min(src.length, dst.length);
+  let copied = 0;
+  for(let i=0;i<n;i++){
+    if(src[i].measure==null || src[i].beat==null) continue;
+    dst[i].measure = src[i].measure + 1;
+    dst[i].beat = src[i].beat;
+    copied++;
+  }
+  if(!copied){ showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
+  if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — it has more syllables, so fill the rest manually.`);
+  else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — this line has more syllables than the next.`);
+  else showToast(`Copied beat pattern to Line ${li+2} (measure +1).`);
+  renderLines();
+}
 
 /* ---------------------------------------------------------------------------
    TAB 2 · SYLLABLE SPLIT builder (lines / segments / quick-add)
@@ -1672,6 +1740,7 @@ function renderLines(){
       <div class="row" style="margin-top:10px;">
         <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
         <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
+        <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, +1 measure" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
         <button class="btn outline small" type="button" onclick="toggleQuickAdd(${li})">&#9889; ${st.open?'Hide Quick Add':'Quick Add from Pasted Line'}</button>
       </div>`;
     container.appendChild(block);
@@ -2545,25 +2614,31 @@ function sp3CheckNotes(){
 /* ---------------------------------------------------------------------------
    STAGE 4 · CHORD APPLICATION
 --------------------------------------------------------------------------- */
-let sp4Song=null, sp4Checked=false, sp4ShowTranslit=false, sp4Answers={};
+let sp4Song=null, sp4Checked=false, sp4ShowTranslit=false, sp4Answers={}, sp4Difficulty='beginner';
 function sp4ChordOptionsFor(seg){
-  // Always show a full chord chart to pick from — fall back to a
-  // key/difficulty-generated palette when the song has no explicit
-  // chordPalette saved, so students aren't just shown the one chord
-  // the teacher happened to type as the answer for this slot.
-  const base = (sp4Song.chordPalette && sp4Song.chordPalette.length)
-    ? sp4Song.chordPalette
-    : generatePalette(sp4Song.chordKeyRoot || 'C', sp4Song.chordDifficulty || 'beginner');
+  // Beginner: only the 3 major chords + their 3 relative minors in this
+  // song's key (I, IV, V and their relative minors ii, iii, vi — the vii°
+  // is left out on purpose since it's not one of the 6 requested).
+  // Pro: the full root+quality chord chart is offered via the picker's
+  // grid instead of a fixed list — but we still fold in anything the
+  // teacher explicitly marked correct/acceptable/wrong for this slot as
+  // quick-pick chips, so grading never references an unreachable chord.
+  const base = sp4Difficulty==='pro' ? [] : generateBeginnerPalette(sp4Song.chordKeyRoot || 'C');
   const set = new Set(base);
   (seg.correctChords||[]).forEach(c=>set.add(c.chord));
   (seg.acceptableChords||[]).forEach(c=>set.add(c.chord));
   (seg.wrongChords||[]).forEach(c=>set.add(c.chord));
   return Array.from(set);
 }
+function sp4SetDifficulty(d){
+  if(sp4Difficulty===d) return;
+  sp4Difficulty = d;
+  stageRenderChord(document.getElementById('stagePanel'), sp4Song);
+}
 function stageRenderChord(panel, song){
   const isNewSong = !sp4Song || sp4Song.id!==song.id;
   sp4Song = song; sp4Checked=false;
-  if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; }
+  if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; sp4Difficulty='beginner'; }
   const flat = flattenSegments(song);
   const hasSlots = flat.some(f=>f.seg.isChordSlot);
   if(!hasSlots){
@@ -2574,6 +2649,12 @@ function stageRenderChord(panel, song){
     <div class="row" style="margin-bottom:14px;">
       <button class="btn outline small" id="sp4-toggle-lyric" onclick="sp4ToggleLyric()">${sp4ShowTranslit?'Show native script':'Show transliteration'}</button>
     </div>
+    <div class="row" style="margin-bottom:10px;">
+      <span class="muted" style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;align-self:center;">Chords:</span>
+      <button class="btn ${sp4Difficulty==='beginner'?'gold':'outline'} small" onclick="sp4SetDifficulty('beginner')">Beginner</button>
+      <button class="btn ${sp4Difficulty==='pro'?'gold':'outline'} small" onclick="sp4SetDifficulty('pro')">Pro</button>
+    </div>
+    <p class="muted" style="font-size:11.5px;margin-bottom:14px;">${sp4Difficulty==='pro' ? 'Pro: pick any root and any chord quality — maj, min, sus, 6th, 7th, dim, aug and more.' : 'Beginner: the 3 major chords and their 3 relative minors in the current key.'}</p>
     <p class="muted" style="font-size:12.5px;margin-bottom:14px;">The lead note for each syllable is shown above it — pick the chord that fits.</p>`;
   (song.lines||[]).forEach((line, li)=>{
     let chordCells='', noteCells='', lyricCells='', beatCells='';
@@ -2614,17 +2695,42 @@ function stageRenderChord(panel, song){
 function sp4ToggleLyric(){ sp4ShowTranslit=!sp4ShowTranslit; stageRenderChord(document.getElementById('stagePanel'), sp4Song); }
 
 /* ---- chord palette picker: click a chord-slot button to choose freely from the chart ---- */
-let cpState = {li:null, si:null};
+let cpState = {li:null, si:null, proRoot:null};
 function sp4OpenPicker(li, si){
   if(sp4Checked) return;
-  cpState = {li, si};
-  const seg = sp4Song.lines[li].segments[si];
-  const opts = sp4ChordOptionsFor(seg);
-  const chartEl = document.getElementById('cp-chart-chips');
-  chartEl.innerHTML = opts.length
-    ? opts.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')
-    : '<span class="muted" style="font-size:12.5px;">No chords available for this song yet — ask your teacher.</span>';
+  cpState = {li, si, proRoot:null};
+  renderChordPickerModal();
   document.getElementById('chord-picker-modal').classList.add('show');
+}
+function renderChordPickerModal(){
+  const seg = sp4Song.lines[cpState.li].segments[cpState.si];
+  const chartEl = document.getElementById('cp-chart-chips');
+  const hintEl = document.getElementById('cp-hint');
+  const extras = sp4ChordOptionsFor(seg);
+  if(sp4Difficulty==='pro'){
+    hintEl.textContent = 'Pick a root, then a quality — or use a quick pick below.';
+    const rootRow = CHROMATIC_ROOTS.map(r=>`<button type="button" class="palette-chip ${cpState.proRoot===r?'sel':''}" onclick="cpPickProRoot('${r}')">${r}</button>`).join('');
+    const qualRow = PRO_CHORD_QUALITIES.map(q=>`<button type="button" class="palette-chip" ${cpState.proRoot?'':'disabled'} onclick="cpPickProQuality('${q.suffix}')">${q.label}</button>`).join('');
+    const extrasHtml = extras.length
+      ? `<div class="cp-section-label">Quick pick</div><div class="chip-row">${extras.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')}</div>`
+      : '';
+    chartEl.innerHTML = `
+      <div class="cp-section-label">1. Root</div>
+      <div class="chip-row">${rootRow}</div>
+      <div class="cp-section-label">2. Quality</div>
+      <div class="chip-row">${qualRow}</div>
+      ${extrasHtml}`;
+  } else {
+    hintEl.textContent = 'Tap a chord from the chart to place it here.';
+    chartEl.innerHTML = extras.length
+      ? extras.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')
+      : '<span class="muted" style="font-size:12.5px;">No chords available for this song yet — ask your teacher.</span>';
+  }
+}
+function cpPickProRoot(r){ cpState.proRoot = r; renderChordPickerModal(); }
+function cpPickProQuality(suffix){
+  if(!cpState.proRoot) return;
+  cpChoose(cpState.proRoot + suffix);
 }
 function closeChordPicker(){ document.getElementById('chord-picker-modal').classList.remove('show'); }
 function cpChoose(chord){
