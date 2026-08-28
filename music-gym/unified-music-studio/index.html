@@ -2388,14 +2388,43 @@ function sp3RenderRootStep(el){
 function sp3PickRoot(v){ sp3Root=v; document.querySelectorAll('#sp3-notewheel .note-btn').forEach(b=>b.classList.toggle('sel', b.dataset.v===v)); }
 function sp3CheckRoot(){
   const ok = sp3Root===sp3Song.rootNote;
+  const banner = document.getElementById('sp3-root-banner');
+  if(ok){
+    const rootLabel = (ROOT_NOTES.find(r=>r.value===sp3Song.rootNote)||{}).label || sp3Song.rootNote;
+    banner.innerHTML = `
+      <div class="score-banner good" style="margin-top:16px;">
+        <div class="big">✓ Correct</div>
+        <div class="muted" style="margin-top:6px;font-size:13px;">Root note: ${escapeHtml(rootLabel)}</div>
+      </div>
+      <div class="row"><button class="btn gold" onclick="sp3GoStep('majorminor')">Next: Major or Minor →</button></div>`;
+    document.getElementById('sp3-root-check-btn').classList.add('hidden');
+  } else {
+    banner.innerHTML = `
+      <div class="score-banner bad" style="margin-top:16px;">
+        <div class="big">✗ Wrong note</div>
+        <div class="muted" style="margin-top:6px;font-size:13px;">Listen again and try once more, or reveal the answer.</div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn outline" onclick="sp3RetryRoot()">Try Again</button>
+        <button class="btn ghost" onclick="sp3RevealRoot()">Show Answer</button>
+      </div>`;
+    document.getElementById('sp3-root-check-btn').classList.add('hidden');
+  }
+}
+function sp3RetryRoot(){
+  sp3Root = null;
+  document.querySelectorAll('#sp3-notewheel .note-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('sp3-root-banner').innerHTML = '';
+  document.getElementById('sp3-root-check-btn').classList.remove('hidden');
+}
+function sp3RevealRoot(){
   const rootLabel = (ROOT_NOTES.find(r=>r.value===sp3Song.rootNote)||{}).label || sp3Song.rootNote;
   document.getElementById('sp3-root-banner').innerHTML = `
-    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
-      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
+    <div class="score-banner bad" style="margin-top:16px;">
+      <div class="big">✗ Wrong note</div>
       <div class="muted" style="margin-top:6px;font-size:13px;">Root note: ${escapeHtml(rootLabel)}</div>
     </div>
     <div class="row"><button class="btn gold" onclick="sp3GoStep('majorminor')">Next: Major or Minor →</button></div>`;
-  document.getElementById('sp3-root-check-btn').classList.add('hidden');
 }
 function sp3RenderMajorMinorStep(el){
   el.innerHTML = `
@@ -2413,13 +2442,42 @@ function sp3PickMajorMinor(v){ sp3MajorMinor=v; document.querySelectorAll('#sp3-
 function sp3CheckMajorMinor(){
   const answer = majorMinorAnswer(sp3Song.scaleType);
   const ok = sp3MajorMinor===answer;
+  const banner = document.getElementById('sp3-mm-banner');
+  if(ok){
+    banner.innerHTML = `
+      <div class="score-banner good" style="margin-top:16px;">
+        <div class="big">✓ Correct</div>
+        <div class="muted" style="margin-top:6px;font-size:13px;">${answer} &middot; exact scale: ${escapeHtml(sp3Song.scaleType)}${sp3Song.keySig?' &middot; '+escapeHtml(sp3Song.keySig):''}</div>
+      </div>
+      <div class="row"><button class="btn gold" onclick="sp3GoStep('notes')">Next: Apply Notes to Every Syllable →</button></div>`;
+    document.getElementById('sp3-mm-check-btn').classList.add('hidden');
+  } else {
+    banner.innerHTML = `
+      <div class="score-banner bad" style="margin-top:16px;">
+        <div class="big">✗ Wrong note</div>
+        <div class="muted" style="margin-top:6px;font-size:13px;">Listen again and try once more, or reveal the answer.</div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn outline" onclick="sp3RetryMajorMinor()">Try Again</button>
+        <button class="btn ghost" onclick="sp3RevealMajorMinor()">Show Answer</button>
+      </div>`;
+    document.getElementById('sp3-mm-check-btn').classList.add('hidden');
+  }
+}
+function sp3RetryMajorMinor(){
+  sp3MajorMinor = null;
+  document.querySelectorAll('#sp3-mmlist .scale-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('sp3-mm-banner').innerHTML = '';
+  document.getElementById('sp3-mm-check-btn').classList.remove('hidden');
+}
+function sp3RevealMajorMinor(){
+  const answer = majorMinorAnswer(sp3Song.scaleType);
   document.getElementById('sp3-mm-banner').innerHTML = `
-    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
-      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
+    <div class="score-banner bad" style="margin-top:16px;">
+      <div class="big">✗ Wrong note</div>
       <div class="muted" style="margin-top:6px;font-size:13px;">${answer} &middot; exact scale: ${escapeHtml(sp3Song.scaleType)}${sp3Song.keySig?' &middot; '+escapeHtml(sp3Song.keySig):''}</div>
     </div>
     <div class="row"><button class="btn gold" onclick="sp3GoStep('notes')">Next: Apply Notes to Every Syllable →</button></div>`;
-  document.getElementById('sp3-mm-check-btn').classList.add('hidden');
 }
 function sp3GoStep(step){ sp3Step = step; sp3RenderStepArea(); window.scrollTo({top:document.getElementById('sp3-stepArea').offsetTop-20, behavior:'smooth'}); }
 function sp3RenderNotesStep(el){
