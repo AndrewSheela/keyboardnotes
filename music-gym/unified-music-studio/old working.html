@@ -839,38 +839,6 @@ function flattenSegments(song){
   return out;
 }
 
-// Groups the flattened segments into DISPLAY lines for the student-facing
-// stages: a new display line starts whenever the editor line changes OR
-// the measure number changes among consecutive syllables — so a teacher
-// can pack multiple measures into one editor row while students still see
-// a clean one-measure-per-line layout. Segments with no measure set yet
-// are left grouped with whatever they're next to (nothing to split on),
-// so an incomplete song doesn't fragment into lots of 1-syllable lines.
-// Each returned group: {li, measure, paragraphBreak, items:[{seg,li,si}]}
-function explodeToMeasureLines(song){
-  const flat = flattenSegments(song);
-  const groups = [];
-  let cur = null;
-  flat.forEach(f=>{
-    const m = f.seg.measure;
-    const isNewEditorLine = !cur || f.li !== cur.li;
-    const isNewMeasure = !isNewEditorLine && cur.measure!=null && m!=null && m!==cur.measure;
-    if(isNewEditorLine || isNewMeasure){
-      cur = {
-        li: f.li,
-        measure: m,
-        paragraphBreak: isNewEditorLine ? !!((song.lines[f.li]||{}).paragraphBreak) : false,
-        items: []
-      };
-      groups.push(cur);
-    } else if(cur.measure==null && m!=null){
-      cur.measure = m;
-    }
-    cur.items.push(f);
-  });
-  return groups;
-}
-
 /* ============================================================================
    BEAT / MEASURE MATH
    Continuous beat is 1-indexed across the whole song (measure 2 beat 1 in
@@ -2243,7 +2211,7 @@ function sp1Check(){
 /* ---------------------------------------------------------------------------
    STAGE 2 · BEAT & MEASURE — listen & follow, then a placement quiz
 --------------------------------------------------------------------------- */
-let sp2Song=null, sp2Flat=[], sp2Groups=[], sp2FlatGroupIndex=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0, sp2LastActiveLine=-1;
+let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0, sp2LastActiveLine=-1;
 /* Loop points are checked once per animation frame (~16ms), and the audio
    keeps playing between checks — so a plain ">= loopEnd" check always lets
    a small sliver of the next measure bleed through before the seek lands.
@@ -2258,7 +2226,6 @@ function measureRangeToTime(song, startM, endM){
 function stageRenderBeat(panel, song){
   sp2Song = song;
   sp2Flat = flattenSegments(song);
-  sp2Groups = explodeToMeasureLines(song);
   const a = document.getElementById('flowAudio');
   const hasAudio = !!(song.audioUrl && song.audioUrl.trim());
   let html = '';
@@ -2309,16 +2276,16 @@ function stageRenderBeat(panel, song){
 
   // quiz grid
   const quizEl = document.getElementById('sp2-quiz');
-  quizEl.innerHTML = sp2Groups.map(g=>{
-    const items = g.items.map(f=>{
-      const label = f.seg.native || f.seg.translit || '—';
-      return `<div class="beatquiz-item" id="sp2-item-${f.li}-${f.si}">
+  quizEl.innerHTML = (song.lines||[]).map((line,li)=>{
+    const items = (line.segments||[]).map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      return `<div class="beatquiz-item" id="sp2-item-${li}-${si}">
         <div class="txt">${escapeHtml(label)}</div>
         <div class="mb-row">
-          <input type="number" min="1" id="sp2-m-${f.li}-${f.si}" placeholder="m">
-          <input type="number" step="0.5" min="1" id="sp2-b-${f.li}-${f.si}" placeholder="beat">
+          <input type="number" min="1" id="sp2-m-${li}-${si}" placeholder="m">
+          <input type="number" step="0.5" min="1" id="sp2-b-${li}-${si}" placeholder="beat">
         </div>
-        <div class="answer-lbl" id="sp2-a-${f.li}-${f.si}"></div>
+        <div class="answer-lbl" id="sp2-a-${li}-${si}"></div>
       </div>`;
     }).join('');
     return `<div class="beatquiz-line">${items}</div>`;
@@ -2368,18 +2335,13 @@ function sp2RenderLyricStage(){
   const stage = document.getElementById('sp2-stage');
   if(!sp2Flat.length){ stage.innerHTML = '<div class="lyric-line">No lyrics yet.</div>'; return; }
   let html = '';
-  sp2FlatGroupIndex = new Array(sp2Flat.length);
-  let flatI = 0;
-  sp2Groups.forEach((g,gi)=>{
-    html += `<div class="lyric-line" data-gi="${gi}">`;
-    g.items.forEach(f=>{
-      const label = f.seg.native || f.seg.translit || '·';
-      html += ` <span class="syll upcoming" data-i="${flatI}">${escapeHtml(label)}</span>`;
-      sp2FlatGroupIndex[flatI] = gi;
-      flatI++;
-    });
-    html += '</div>';
+  let lastLi = -1;
+  sp2Flat.forEach((f,i)=>{
+    if(f.li !== lastLi){ html += (lastLi===-1?'':'</div>') + `<div class="lyric-line" data-li="${f.li}">`; lastLi = f.li; }
+    const label = f.seg.native || f.seg.translit || '·';
+    html += ` <span class="syll upcoming" data-i="${i}">${escapeHtml(label)}</span>`;
   });
+  html += '</div>';
   stage.innerHTML = html;
   stage.scrollTop = 0;
   sp2LastActiveLine = -1;
@@ -2413,10 +2375,10 @@ function sp2Loop(){
     if(i<activeIdx) el.classList.add('sung'); else if(i===activeIdx) el.classList.add('active'); else el.classList.add('upcoming');
   });
   if(activeIdx>=0){
-    const activeGi = sp2FlatGroupIndex[activeIdx];
-    if(activeGi !== sp2LastActiveLine){
-      sp2LastActiveLine = activeGi;
-      const lineEl = document.querySelector(`#sp2-stage .lyric-line[data-gi="${activeGi}"]`);
+    const activeLi = sp2Flat[activeIdx].li;
+    if(activeLi !== sp2LastActiveLine){
+      sp2LastActiveLine = activeLi;
+      const lineEl = document.querySelector(`#sp2-stage .lyric-line[data-li="${activeLi}"]`);
       if(lineEl) lineEl.scrollIntoView({behavior:'smooth', block:'center'});
     }
   }
@@ -2699,16 +2661,16 @@ function sp3RenderNotesStep(el){
       <div class="empty-state">No lead notes set for this song's syllables yet — ask your teacher.</div>${flowFooterHtml()}`;
     return;
   }
-  const sp3Groups = explodeToMeasureLines(sp3Song);
-  const gridHtml = sp3Groups.map(g=>{
-    const items = g.items.map((f,idx)=>{
-      const label = f.seg.native || f.seg.translit || '—';
-      const isLastInGroup = idx===g.items.length-1;
-      const displayLabel = escapeHtml(label) + (isLastInGroup ? '' : '-');
-      return `<div class="beatquiz-item syl-note-item" id="sp3n-item-${f.li}-${f.si}">
-        <input type="text" id="sp3n-note-${f.li}-${f.si}" placeholder="·" class="mono syl-note-input">
+  const gridHtml = (sp3Song.lines||[]).map((line,li)=>{
+    const segs = line.segments||[];
+    const items = segs.map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      const isLast = si===segs.length-1;
+      const displayLabel = escapeHtml(label) + (isLast ? '' : '-');
+      return `<div class="beatquiz-item syl-note-item" id="sp3n-item-${li}-${si}">
+        <input type="text" id="sp3n-note-${li}-${si}" placeholder="·" class="mono syl-note-input">
         <div class="txt syl-note-txt">${displayLabel}</div>
-        <div class="answer-lbl" id="sp3n-a-${f.li}-${f.si}"></div>
+        <div class="answer-lbl" id="sp3n-a-${li}-${si}"></div>
       </div>`;
     }).join('');
     return `<div class="beatquiz-line syl-notes-line">${items}</div>`;
@@ -2751,7 +2713,7 @@ function sp3CheckNotes(){
 /* ---------------------------------------------------------------------------
    STAGE 4 · CHORD APPLICATION
 --------------------------------------------------------------------------- */
-let sp4Song=null, sp4Groups=[], sp4Checked=false, sp4ShowTranslit=false, sp4Answers={}, sp4Difficulty='beginner';
+let sp4Song=null, sp4Checked=false, sp4ShowTranslit=false, sp4Answers={}, sp4Difficulty='beginner';
 function sp4ChordOptionsFor(seg){
   // Beginner: only the 3 major chords + their 3 relative minors in this
   // song's key (I, IV, V and their relative minors ii, iii, vi — the vii°
@@ -2777,7 +2739,6 @@ function stageRenderChord(panel, song){
   sp4Song = song; sp4Checked=false;
   if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; sp4Difficulty='beginner'; }
   const flat = flattenSegments(song);
-  sp4Groups = explodeToMeasureLines(song);
   const hasSlots = flat.some(f=>f.seg.isChordSlot);
   if(!hasSlots){
     panel.innerHTML = `<div class="empty-state">No chord slots set for this song yet — ask your teacher to mark chord points in Step 5.</div><div id="sp4-footer">${flowFooterHtml()}</div>`;
@@ -2794,10 +2755,9 @@ function stageRenderChord(panel, song){
     </div>
     <p class="muted" style="font-size:11.5px;margin-bottom:14px;">${sp4Difficulty==='pro' ? 'Pro: pick any root and any chord quality — maj, min, sus, 6th, 7th, dim, aug and more.' : 'Beginner: the 3 major chords and their 3 relative minors in the current key.'}</p>
     <p class="muted" style="font-size:12.5px;margin-bottom:14px;">The lead note for each syllable is shown above it — pick the chord that fits.</p>`;
-  sp4Groups.forEach((g, gi)=>{
+  (song.lines||[]).forEach((line, li)=>{
     let chordCells='', noteCells='', lyricCells='', beatCells='';
-    g.items.forEach(f=>{
-      const seg = f.seg, li = f.li, si = f.si;
+    (line.segments||[]).forEach((seg,si)=>{
       const label = sp4ShowTranslit ? (seg.translit||seg.native||'·') : (seg.native||seg.translit||'·');
       const mLabel = (seg.measure!=null) ? seg.measure : '';
       noteCells += `<div class="cell">${seg.note?escapeHtml(seg.note):''}</div>`;
@@ -2817,7 +2777,7 @@ function stageRenderChord(panel, song){
       <div class="note-row">${noteCells}</div>
       <div class="lyric-row">${lyricCells}</div>
       <div class="beatlbl-row">${beatCells}</div>
-      <div id="sp4-reveal-${gi}"></div>
+      <div id="sp4-reveal-${li}"></div>
     </div>`;
   });
   html += `
@@ -2892,10 +2852,9 @@ function sp4Check(){
   sp4Checked = true;
   const flat = flattenSegments(sp4Song);
   let correct=0, total=0;
-  sp4Groups.forEach((g, gi)=>{
+  (sp4Song.lines||[]).forEach((line, li)=>{
     let revealHtml = '';
-    g.items.forEach(f=>{
-      const seg = f.seg, li = f.li, si = f.si;
+    (line.segments||[]).forEach((seg,si)=>{
       if(!seg.isChordSlot) return;
       total++;
       const key = li+'-'+si;
@@ -2916,7 +2875,7 @@ function sp4Check(){
         revealHtml += `<div class="chord-reveal">${escapeHtml(explanation)} <b>Correct: ${escapeHtml(rightList)}</b></div>`;
       }
     });
-    document.getElementById(`sp4-reveal-${gi}`).innerHTML = revealHtml;
+    document.getElementById(`sp4-reveal-${li}`).innerHTML = revealHtml;
   });
   const pct = total ? Math.round((correct/total)*100) : 100;
   const good = pct>=70;
