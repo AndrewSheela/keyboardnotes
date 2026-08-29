@@ -1671,6 +1671,69 @@ function pasteLineAtTop(){
   renderLines();
   showToast(`Pasted ${copiedLineLabel} at the top.`);
 }
+// Combines this line with the next one — all syllables from both end up
+// in a single editor row (e.g. two 1-measure lines become one 2-measure
+// line). The practice stages will still show them as separate measure
+// lines to students as long as the beat numbers are filled in.
+function mergeLineWithNext(li){
+  syncAllSegmentsFromDOM();
+  if(li >= currentLines.length-1) return;
+  const a = currentLines[li], b = currentLines[li+1];
+  a.segments = [...a.segments, ...b.segments];
+  currentLines.splice(li+1, 1);
+  quickAddState = {};
+  renderLines();
+  showToast(`Merged Line ${li+2} into Line ${li+1}.`);
+}
+// Splits this line back into one line per measure, using each syllable's
+// measure number — the reverse of merging. Requires measure:beat to
+// already be filled in on this line's syllables.
+function splitLineByMeasure(li){
+  syncAllSegmentsFromDOM();
+  const line = currentLines[li];
+  const segs = line.segments||[];
+  if(!segs.length) return;
+  const groups = [];
+  let cur = null;
+  segs.forEach(seg=>{
+    const m = seg.measure;
+    const startNew = !cur || (cur.measure!=null && m!=null && m!==cur.measure);
+    if(startNew){ cur = {measure:m, segs:[]}; groups.push(cur); }
+    else if(cur.measure==null && m!=null){ cur.measure = m; }
+    cur.segs.push(seg);
+  });
+  if(groups.length<2){
+    showToast('This line only spans one measure (or measure numbers are not filled in yet) — nothing to split.');
+    return;
+  }
+  const newLines = groups.map((g,gi)=>({segments:g.segs, paragraphBreak: gi===0 ? !!line.paragraphBreak : false}));
+  currentLines.splice(li, 1, ...newLines);
+  quickAddState = {};
+  renderLines();
+  showToast(`Split Line ${li+1} into ${newLines.length} lines by measure.`);
+}
+// Manual split at any syllable position, regardless of measure numbers —
+// useful before beats are filled in, or to split somewhere other than a
+// measure boundary.
+function splitLineAtSyllable(li){
+  syncAllSegmentsFromDOM();
+  const input = document.getElementById(`split-at-${li}`);
+  const n = parseInt(input.value, 10);
+  const line = currentLines[li];
+  const segs = line.segments||[];
+  if(!n || n<1 || n>=segs.length){
+    showToast(`Enter a syllable number between 1 and ${segs.length-1} to split after.`);
+    return;
+  }
+  const newLines = [
+    {segments:segs.slice(0,n), paragraphBreak: !!line.paragraphBreak},
+    {segments:segs.slice(n), paragraphBreak:false}
+  ];
+  currentLines.splice(li, 1, ...newLines);
+  quickAddState = {};
+  renderLines();
+  showToast(`Split Line ${li+1} after syllable ${n}.`);
+}
 function toggleParagraphBreak(li){ currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
 function addSegment(li){ syncAllSegmentsFromDOM(); currentLines[li].segments.push(blankSegment()); renderLines(); }
 function removeSegment(li,si){ syncAllSegmentsFromDOM(); currentLines[li].segments.splice(si,1); renderLines(); }
@@ -1824,6 +1887,7 @@ function renderLines(){
           <button class="btn ghost small" type="button" title="Move up" ${isFirst?'disabled':''} onclick="moveLineUp(${li})">&uarr;</button>
           <button class="btn ghost small" type="button" title="Move down" ${isLast?'disabled':''} onclick="moveLineDown(${li})">&darr;</button>
           <button class="btn ghost small" type="button" title="Copy this whole line — chords, lyrics, lead notes, and beats" onclick="copyLine(${li})">&#128203; Copy Line</button>
+          <button class="btn outline small" type="button" title="${isLast ? 'No line below to merge with' : 'Combine this line with the next one into a single row'}" ${isLast?'disabled':''} onclick="mergeLineWithNext(${li})">&#8595; Merge with Next Line</button>
         </div>
         <div class="row" style="gap:14px;">${paraLabel}<button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button></div>
       </div>
@@ -1843,6 +1907,11 @@ function renderLines(){
         <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
         <button class="btn outline small" type="button" title="${copiedLine ? 'Insert a duplicate of '+copiedLineLabel+' right after this line' : 'Copy a line first, then paste it here'}" ${copiedLine?'':'disabled'} onclick="pasteLineAfter(${li})">&#128203; Paste ${copiedLine ? copiedLineLabel : 'Line'} Below</button>
         <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, +1 measure" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
+        <button class="btn outline small" type="button" title="Split this line into one line per measure, using each syllable's measure number" onclick="splitLineByMeasure(${li})">&#9986; Split into Measures</button>
+        <span class="row" style="gap:4px;">
+          <input type="number" min="1" id="split-at-${li}" placeholder="#" style="width:52px;padding:6px 8px;font-size:12px;" title="Syllable number to split after">
+          <button class="btn outline small" type="button" title="Split this line right after that syllable number" onclick="splitLineAtSyllable(${li})">&#9986; Split Here</button>
+        </span>
         <button class="btn outline small" type="button" onclick="toggleQuickAdd(${li})">&#9889; ${st.open?'Hide Quick Add':'Quick Add from Pasted Line'}</button>
       </div>`;
     container.appendChild(block);
