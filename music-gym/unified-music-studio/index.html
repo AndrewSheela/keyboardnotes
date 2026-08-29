@@ -661,6 +661,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       </div>
       <p class="muted" style="font-size:13px;margin-bottom:6px;">Written like a lead sheet — one column per syllable, stacked top to bottom: <b>Chord</b> · <b>Note</b> · <b>Native</b> · <b>Translit</b> · <b>Beat</b>. Use Quick Add to split a pasted line into syllable columns, then fill straight down each column. Beat format is <code>measure:beat</code> — e.g. <code>1:1</code>, <code>2:3.5</code> for a half-beat. Leave the Chord cell blank if there's no chord change there; type one to mark it as a chord slot (open "Chord grading details" below the line to add acceptable/wrong alternatives).</p>
       <div class="field" style="max-width:420px;margin-bottom:16px;"><label>YouTube Link — Lyrics &amp; Syllable Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-syllable" placeholder="https://youtube.com/watch?v=..."></div>
+      <div id="paste-top-bar" class="row" style="margin-bottom:10px;"></div>
       <div id="lines-container"></div>
       <button class="btn outline" onclick="addLine()">+ Add Lyric Line</button>
     </div>
@@ -1584,11 +1585,39 @@ function copyBeatPatternToNextLine(li){
 /* ---------------------------------------------------------------------------
    TAB 2 · SYLLABLE SPLIT builder (lines / segments / quick-add)
 --------------------------------------------------------------------------- */
+let copiedLine = null;           // deep-cloned {segments, paragraphBreak} — chords, lyrics, lead notes, beats, all of it
+let copiedLineLabel = '';
 function addLine(){ syncAllSegmentsFromDOM(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
 function insertLineAfter(li){ syncAllSegmentsFromDOM(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
 function removeLine(li){ syncAllSegmentsFromDOM(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
 function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
 function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
+// Copies the WHOLE line — every syllable's chord, native/translit lyric,
+// lead note, and measure:beat — so it can be pasted as an exact duplicate
+// anywhere: right below any other line, or at the very top.
+function copyLine(li){
+  syncAllSegmentsFromDOM();
+  copiedLine = JSON.parse(JSON.stringify(currentLines[li]));
+  copiedLineLabel = `Line ${li+1}`;
+  showToast(`Copied ${copiedLineLabel} — click "Paste" on any line (or "Paste at Top") to insert the duplicate there.`);
+  renderLines();
+}
+function pasteLineAfter(li){
+  if(!copiedLine) return;
+  syncAllSegmentsFromDOM();
+  currentLines.splice(li+1, 0, JSON.parse(JSON.stringify(copiedLine)));
+  quickAddState={};
+  renderLines();
+  showToast(`Pasted ${copiedLineLabel} below Line ${li+1}.`);
+}
+function pasteLineAtTop(){
+  if(!copiedLine) return;
+  syncAllSegmentsFromDOM();
+  currentLines.splice(0, 0, JSON.parse(JSON.stringify(copiedLine)));
+  quickAddState={};
+  renderLines();
+  showToast(`Pasted ${copiedLineLabel} at the top.`);
+}
 function toggleParagraphBreak(li){ currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
 function addSegment(li){ syncAllSegmentsFromDOM(); currentLines[li].segments.push(blankSegment()); renderLines(); }
 function removeSegment(li,si){ syncAllSegmentsFromDOM(); currentLines[li].segments.splice(si,1); renderLines(); }
@@ -1684,6 +1713,10 @@ function qaTapRowsHtml(li, st){
 function renderLines(){
   syncAllSegmentsFromDOM();
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
+  const pasteTopBar = document.getElementById('paste-top-bar');
+  pasteTopBar.innerHTML = copiedLine
+    ? `<button class="btn outline small" type="button" onclick="pasteLineAtTop()">&#128203; Paste ${copiedLineLabel} at Top</button><span class="muted" style="font-size:12px;align-self:center;">Copied ${copiedLineLabel} &mdash; use "Paste Below" on any line to insert it there too.</span>`
+    : '';
   const container = document.getElementById('lines-container');
   container.innerHTML = '';
   currentLines.forEach((line, li)=>{
@@ -1736,6 +1769,7 @@ function renderLines(){
         <div class="row" style="gap:8px;"><strong style="font-size:13px;color:var(--gold-bright);">Line ${li+1}</strong>
           <button class="btn ghost small" type="button" title="Move up" ${isFirst?'disabled':''} onclick="moveLineUp(${li})">&uarr;</button>
           <button class="btn ghost small" type="button" title="Move down" ${isLast?'disabled':''} onclick="moveLineDown(${li})">&darr;</button>
+          <button class="btn ghost small" type="button" title="Copy this whole line — chords, lyrics, lead notes, and beats" onclick="copyLine(${li})">&#128203; Copy Line</button>
         </div>
         <div class="row" style="gap:14px;">${paraLabel}<button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button></div>
       </div>
@@ -1753,6 +1787,7 @@ function renderLines(){
       <div class="row" style="margin-top:10px;">
         <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
         <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
+        <button class="btn outline small" type="button" title="${copiedLine ? 'Insert a duplicate of '+copiedLineLabel+' right after this line' : 'Copy a line first, then paste it here'}" ${copiedLine?'':'disabled'} onclick="pasteLineAfter(${li})">&#128203; Paste ${copiedLine ? copiedLineLabel : 'Line'} Below</button>
         <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, +1 measure" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
         <button class="btn outline small" type="button" onclick="toggleQuickAdd(${li})">&#9889; ${st.open?'Hide Quick Add':'Quick Add from Pasted Line'}</button>
       </div>`;
