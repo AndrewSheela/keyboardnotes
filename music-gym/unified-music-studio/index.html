@@ -238,6 +238,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);}
   justify-content:center;gap:12px;font-family:var(--font-display);text-align:center;
   overflow-y:auto;max-height:280px;margin-bottom:18px;
 }
+/* When lyrics overflow the box, plain "center" clips the first line and
+   makes it unreachable by scrolling (a known flexbox overflow quirk) —
+   "safe center" falls back to top alignment in that case so line 1 stays
+   inside the scrollable window instead of floating above it. Declared as
+   a second rule so unsupported browsers simply keep the line above. */
+.lyric-stage{justify-content:safe center;}
 .lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;}
 .syll{display:inline-block;padding:1px 2px;border-radius:5px;transition:all .12s ease;}
 .syll.sung{color:var(--gold);}
@@ -2129,7 +2135,7 @@ function sp1Check(){
 /* ---------------------------------------------------------------------------
    STAGE 2 · BEAT & MEASURE — listen & follow, then a placement quiz
 --------------------------------------------------------------------------- */
-let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0;
+let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0, sp2LastActiveLine=-1;
 /* Loop points are checked once per animation frame (~16ms), and the audio
    keeps playing between checks — so a plain ">= loopEnd" check always lets
    a small sliver of the next measure bleed through before the seek lands.
@@ -2252,15 +2258,17 @@ function sp2RenderRail(){
 function sp2RenderLyricStage(){
   const stage = document.getElementById('sp2-stage');
   if(!sp2Flat.length){ stage.innerHTML = '<div class="lyric-line">No lyrics yet.</div>'; return; }
-  let html = '<div class="lyric-line current-line">';
-  let lastLi = 0;
+  let html = '';
+  let lastLi = -1;
   sp2Flat.forEach((f,i)=>{
-    if(f.li !== lastLi && f.si===0){ html += '</div><div class="lyric-line">'; lastLi = f.li; }
+    if(f.li !== lastLi){ html += (lastLi===-1?'':'</div>') + `<div class="lyric-line" data-li="${f.li}">`; lastLi = f.li; }
     const label = f.seg.native || f.seg.translit || '·';
     html += ` <span class="syll upcoming" data-i="${i}">${escapeHtml(label)}</span>`;
   });
   html += '</div>';
   stage.innerHTML = html;
+  stage.scrollTop = 0;
+  sp2LastActiveLine = -1;
 }
 function sp2Loop(){
   const a = document.getElementById('flowAudio');
@@ -2290,6 +2298,14 @@ function sp2Loop(){
     el.classList.remove('sung','active','upcoming');
     if(i<activeIdx) el.classList.add('sung'); else if(i===activeIdx) el.classList.add('active'); else el.classList.add('upcoming');
   });
+  if(activeIdx>=0){
+    const activeLi = sp2Flat[activeIdx].li;
+    if(activeLi !== sp2LastActiveLine){
+      sp2LastActiveLine = activeLi;
+      const lineEl = document.querySelector(`#sp2-stage .lyric-line[data-li="${activeLi}"]`);
+      if(lineEl) lineEl.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  }
   sp2Raf = requestAnimationFrame(sp2Loop);
 }
 function sp2Check(){
