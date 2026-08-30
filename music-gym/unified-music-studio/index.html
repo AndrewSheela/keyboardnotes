@@ -687,8 +687,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div class="field" style="max-width:420px;margin-bottom:16px;"><label>YouTube Link — Lyrics &amp; Syllable Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-syllable" placeholder="https://youtube.com/watch?v=..."></div>
       <div class="row" style="margin-bottom:10px;">
         <button class="btn outline small" type="button" onclick="runDuplicateScan()">&#128269; Find Duplicate Lines</button>
+        <button class="btn outline small" type="button" onclick="showRawSongData()">&#128295; Copy Song Data (debug)</button>
       </div>
       <div id="dup-scan-results"></div>
+      <div id="raw-data-panel"></div>
       <div id="paste-top-bar" class="row" style="margin-bottom:10px;"></div>
       <div id="lines-container"></div>
       <button class="btn outline" onclick="addLine()">+ Add Lyric Line</button>
@@ -1878,6 +1880,8 @@ function renderLines(){
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
   const dupBox = document.getElementById('dup-scan-results');
   if(dupBox) dupBox.innerHTML = '';
+  const rawBox = document.getElementById('raw-data-panel');
+  if(rawBox) rawBox.innerHTML = '';
   const pasteTopBar = document.getElementById('paste-top-bar');
   pasteTopBar.innerHTML = copiedLine
     ? `<button class="btn outline small" type="button" onclick="pasteLineAtTop()">&#128203; Paste ${copiedLineLabel} at Top</button><span class="muted" style="font-size:12px;align-self:center;">Copied ${copiedLineLabel} &mdash; use "Paste Below" on any line to insert it there too.</span>`
@@ -2045,6 +2049,45 @@ function runDuplicateScan(){
       </div>
     </div>`;
   }).join('');
+}
+// Dumps the exact underlying data for every line/syllable/chord/note/beat
+// as plain text — for pasting into a bug report when a screenshot alone
+// is ambiguous (e.g. a row scrolled to different positions across shots).
+function showRawSongData(){
+  syncAllSegmentsFromDOM();
+  const compact = currentLines.map((line,li)=>({
+    line: li+1,
+    paragraphBreak: !!line.paragraphBreak,
+    segments: (line.segments||[]).map(s=>({
+      native:s.native||'', translit:s.translit||'', note:s.note||'',
+      measure:s.measure, beat:s.beat,
+      chord: (s.correctChords&&s.correctChords[0]&&s.correctChords[0].chord) || null
+    }))
+  }));
+  const json = JSON.stringify(compact, null, 2);
+  const panel = document.getElementById('raw-data-panel');
+  panel.innerHTML = `
+    <div class="dup-scan-clean" style="color:var(--text);border-color:var(--line);background:var(--surface-2);">
+      <p class="muted" style="font-size:12px;margin-bottom:8px;">Tap the box to select all, copy it, and paste it in chat — this is the exact line/syllable/chord/beat data for this song, so it can be checked precisely instead of from a screenshot.</p>
+      <textarea readonly id="raw-data-textarea" style="width:100%;min-height:240px;font-family:var(--font-mono);font-size:11px;" onclick="this.select()">${escapeHtml(json)}</textarea>
+      <div class="row" style="margin-top:8px;">
+        <button class="btn outline small" type="button" onclick="copyRawSongData()">Copy to Clipboard</button>
+        <button class="btn ghost small" type="button" onclick="document.getElementById('raw-data-panel').innerHTML=''">Close</button>
+      </div>
+    </div>`;
+  const ta = document.getElementById('raw-data-textarea');
+  ta.focus();
+  ta.select();
+}
+function copyRawSongData(){
+  const ta = document.getElementById('raw-data-textarea');
+  ta.select();
+  const done = ()=>showToast('Copied — paste it in chat.');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ document.execCommand('copy'); done(); });
+  } else {
+    document.execCommand('copy'); done();
+  }
 }
 function onAudioPathChange(){
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
