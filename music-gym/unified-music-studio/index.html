@@ -1614,12 +1614,47 @@ function syncAllSegmentsFromDOM(){
 // Matches syllable-by-syllable by position, so it works best when both
 // lines have the same number of syllables (typical for repeated melodic
 // patterns like verse lines).
+/* ---------------------------------------------------------------------------
+   UNDO — Ctrl+Z (Cmd+Z on Mac) steps back through structural line edits:
+   add/remove/move/merge/split/copy-paste a line, add/remove a syllable,
+   toggle a paragraph break, or copy a beat pattern forward. A snapshot of
+   currentLines is pushed right before each such change (after pulling in
+   any just-typed text, so undo never throws away pending typing along
+   with the structural change). Plain text edits inside a single field use
+   the browser's own native undo, which this does not interfere with.
+--------------------------------------------------------------------------- */
+let undoStack = [];
+const UNDO_LIMIT = 50;
+function pushUndoSnapshot(){
+  undoStack.push(JSON.stringify(currentLines));
+  if(undoStack.length > UNDO_LIMIT) undoStack.shift();
+}
+function undoLastChange(){
+  if(!undoStack.length){ showToast('Nothing to undo.'); return; }
+  currentLines = JSON.parse(undoStack.pop());
+  quickAddState = {};
+  renderLines();
+  showToast('Undid last change.');
+}
+document.addEventListener('keydown', (e)=>{
+  const key = e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey) && key==='z' && !e.shiftKey){
+    const editorVisible = document.getElementById('editor-view') && !document.getElementById('editor-view').classList.contains('hidden');
+    if(!editorVisible) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if(tag==='INPUT' || tag==='TEXTAREA') return; // let the browser's native per-field undo handle it
+    e.preventDefault();
+    undoLastChange();
+  }
+});
+
 function copyBeatPatternToNextLine(li){
   syncAllSegmentsFromDOM();
   if(li >= currentLines.length-1){ showToast('This is the last line — add or insert a line below first.'); return; }
   const src = currentLines[li].segments;
   const dst = currentLines[li+1].segments;
   if(!src.length){ showToast('This line has no beat pattern to copy yet.'); return; }
+  pushUndoSnapshot();
   const n = Math.min(src.length, dst.length);
   let copied = 0;
   for(let i=0;i<n;i++){
@@ -1628,7 +1663,7 @@ function copyBeatPatternToNextLine(li){
     dst[i].beat = src[i].beat;
     copied++;
   }
-  if(!copied){ showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
+  if(!copied){ undoStack.pop(); showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
   if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — it has more syllables, so fill the rest manually.`);
   else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — this line has more syllables than the next.`);
   else showToast(`Copied beat pattern to Line ${li+2} (measure +1).`);
@@ -1640,11 +1675,11 @@ function copyBeatPatternToNextLine(li){
 --------------------------------------------------------------------------- */
 let copiedLine = null;           // deep-cloned {segments, paragraphBreak} — chords, lyrics, lead notes, beats, all of it
 let copiedLineLabel = '';
-function addLine(){ syncAllSegmentsFromDOM(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
-function insertLineAfter(li){ syncAllSegmentsFromDOM(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
-function removeLine(li){ syncAllSegmentsFromDOM(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
-function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
-function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
+function addLine(){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
+function insertLineAfter(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
+function removeLine(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
+function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
+function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
 // Copies the WHOLE line — every syllable's chord, native/translit lyric,
 // lead note, and measure:beat — so it can be pasted as an exact duplicate
 // anywhere: right below any other line, or at the very top.
@@ -1658,6 +1693,7 @@ function copyLine(li){
 function pasteLineAfter(li){
   if(!copiedLine) return;
   syncAllSegmentsFromDOM();
+  pushUndoSnapshot();
   currentLines.splice(li+1, 0, JSON.parse(JSON.stringify(copiedLine)));
   quickAddState={};
   renderLines();
@@ -1666,6 +1702,7 @@ function pasteLineAfter(li){
 function pasteLineAtTop(){
   if(!copiedLine) return;
   syncAllSegmentsFromDOM();
+  pushUndoSnapshot();
   currentLines.splice(0, 0, JSON.parse(JSON.stringify(copiedLine)));
   quickAddState={};
   renderLines();
@@ -1678,6 +1715,7 @@ function pasteLineAtTop(){
 function mergeLineWithNext(li){
   syncAllSegmentsFromDOM();
   if(li >= currentLines.length-1) return;
+  pushUndoSnapshot();
   const a = currentLines[li], b = currentLines[li+1];
   a.segments = [...a.segments, ...b.segments];
   currentLines.splice(li+1, 1);
@@ -1706,6 +1744,7 @@ function splitLineByMeasure(li){
     showToast('This line only spans one measure (or measure numbers are not filled in yet) — nothing to split.');
     return;
   }
+  pushUndoSnapshot();
   const newLines = groups.map((g,gi)=>({segments:g.segs, paragraphBreak: gi===0 ? !!line.paragraphBreak : false}));
   currentLines.splice(li, 1, ...newLines);
   quickAddState = {};
@@ -1725,6 +1764,7 @@ function splitLineAtSyllable(li){
     showToast(`Enter a syllable number between 1 and ${segs.length-1} to split after.`);
     return;
   }
+  pushUndoSnapshot();
   const newLines = [
     {segments:segs.slice(0,n), paragraphBreak: !!line.paragraphBreak},
     {segments:segs.slice(n), paragraphBreak:false}
@@ -1734,9 +1774,9 @@ function splitLineAtSyllable(li){
   renderLines();
   showToast(`Split Line ${li+1} after syllable ${n}.`);
 }
-function toggleParagraphBreak(li){ currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
-function addSegment(li){ syncAllSegmentsFromDOM(); currentLines[li].segments.push(blankSegment()); renderLines(); }
-function removeSegment(li,si){ syncAllSegmentsFromDOM(); currentLines[li].segments.splice(si,1); renderLines(); }
+function toggleParagraphBreak(li){ pushUndoSnapshot(); currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
+function addSegment(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.push(blankSegment()); renderLines(); }
+function removeSegment(li,si){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.splice(si,1); renderLines(); }
 
 function toggleQuickAdd(li){ syncAllSegmentsFromDOM(); const st=qaGet(li); st.open=!st.open; renderLines(); }
 function cancelQuickAdd(li){ delete quickAddState[li]; renderLines(); }
