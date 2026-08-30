@@ -1468,7 +1468,7 @@ function newSong(){
   document.getElementById('chord-keyroot').value = 'C';
   document.getElementById('chord-difficulty').value = 'beginner';
   document.getElementById('beatEditAudio').src = '';
-  renderLines(); renderPaletteChips();
+  rebuildLinesDOM(); renderPaletteChips();
   document.getElementById('teacher-songs-panel').classList.add('hidden');
   document.getElementById('editor-view').classList.remove('hidden');
 }
@@ -1512,7 +1512,7 @@ function editSong(id){
   document.getElementById('chord-keyroot').value = s.chordKeyRoot || 'C';
   document.getElementById('chord-difficulty').value = s.chordDifficulty || 'beginner';
   document.getElementById('beatEditAudio').src = s.audioUrl || '';
-  renderLines(); renderPaletteChips();
+  rebuildLinesDOM(); renderPaletteChips();
   document.getElementById('teacher-songs-panel').classList.add('hidden');
   document.getElementById('editor-view').classList.remove('hidden');
 }
@@ -1642,7 +1642,7 @@ function undoLastChange(){
   if(!undoStack.length){ showToast('Nothing to undo.'); return; }
   currentLines = JSON.parse(undoStack.pop());
   quickAddState = {};
-  renderLines();
+  rebuildLinesDOM();
   showToast('Undid last change.');
 }
 document.addEventListener('keydown', (e)=>{
@@ -1676,7 +1676,7 @@ function copyBeatPatternToNextLine(li){
   if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — it has more syllables, so fill the rest manually.`);
   else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — this line has more syllables than the next.`);
   else showToast(`Copied beat pattern to Line ${li+2} (measure +1).`);
-  renderLines();
+  rebuildLinesDOM();
 }
 
 /* ---------------------------------------------------------------------------
@@ -1684,11 +1684,11 @@ function copyBeatPatternToNextLine(li){
 --------------------------------------------------------------------------- */
 let copiedLine = null;           // deep-cloned {segments, paragraphBreak} — chords, lyrics, lead notes, beats, all of it
 let copiedLineLabel = '';
-function addLine(){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
-function insertLineAfter(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
-function removeLine(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
-function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
-function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
+function addLine(){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.push(blankLine()); quickAddState={}; rebuildLinesDOM(); }
+function insertLineAfter(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; rebuildLinesDOM(); }
+function removeLine(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li,1); quickAddState={}; rebuildLinesDOM(); }
+function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; rebuildLinesDOM(); }
+function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; rebuildLinesDOM(); }
 // Copies the WHOLE line — every syllable's chord, native/translit lyric,
 // lead note, and measure:beat — so it can be pasted as an exact duplicate
 // anywhere: right below any other line, or at the very top.
@@ -1697,7 +1697,7 @@ function copyLine(li){
   copiedLine = JSON.parse(JSON.stringify(currentLines[li]));
   copiedLineLabel = `Line ${li+1}`;
   showToast(`Copied ${copiedLineLabel} — click "Paste" on any line (or "Paste at Top") to insert the duplicate there.`);
-  renderLines();
+  rebuildLinesDOM();
 }
 function pasteLineAfter(li){
   if(!copiedLine) return;
@@ -1705,7 +1705,7 @@ function pasteLineAfter(li){
   pushUndoSnapshot();
   currentLines.splice(li+1, 0, JSON.parse(JSON.stringify(copiedLine)));
   quickAddState={};
-  renderLines();
+  rebuildLinesDOM();
   showToast(`Pasted ${copiedLineLabel} below Line ${li+1}.`);
 }
 function pasteLineAtTop(){
@@ -1714,7 +1714,7 @@ function pasteLineAtTop(){
   pushUndoSnapshot();
   currentLines.splice(0, 0, JSON.parse(JSON.stringify(copiedLine)));
   quickAddState={};
-  renderLines();
+  rebuildLinesDOM();
   showToast(`Pasted ${copiedLineLabel} at the top.`);
 }
 // Combines this line with the next one — all syllables from both end up
@@ -1729,7 +1729,7 @@ function mergeLineWithNext(li){
   a.segments = [...a.segments, ...b.segments];
   currentLines.splice(li+1, 1);
   quickAddState = {};
-  renderLines();
+  rebuildLinesDOM();
   showToast(`Merged Line ${li+2} into Line ${li+1}.`);
 }
 // Splits this line back into one line per measure, using each syllable's
@@ -1757,7 +1757,7 @@ function splitLineByMeasure(li){
   const newLines = groups.map((g,gi)=>({segments:g.segs, paragraphBreak: gi===0 ? !!line.paragraphBreak : false}));
   currentLines.splice(li, 1, ...newLines);
   quickAddState = {};
-  renderLines();
+  rebuildLinesDOM();
   showToast(`Split Line ${li+1} into ${newLines.length} lines by measure.`);
 }
 // Manual split at any syllable position, regardless of measure numbers —
@@ -1780,12 +1780,12 @@ function splitLineAtSyllable(li){
   ];
   currentLines.splice(li, 1, ...newLines);
   quickAddState = {};
-  renderLines();
+  rebuildLinesDOM();
   showToast(`Split Line ${li+1} after syllable ${n}.`);
 }
 function toggleParagraphBreak(li){ pushUndoSnapshot(); currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
-function addSegment(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.push(blankSegment()); renderLines(); }
-function removeSegment(li,si){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.splice(si,1); renderLines(); }
+function addSegment(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.push(blankSegment()); rebuildLinesDOM(); }
+function removeSegment(li,si){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.splice(si,1); rebuildLinesDOM(); }
 
 function toggleQuickAdd(li){ syncAllSegmentsFromDOM(); const st=qaGet(li); st.open=!st.open; renderLines(); }
 function cancelQuickAdd(li){ delete quickAddState[li]; renderLines(); }
@@ -1810,6 +1810,7 @@ function chunksFromGaps(units, gapsSet){
   return chunks;
 }
 function applyQuickSegments(li, nativeChunks, translitChunks){
+  syncAllSegmentsFromDOM();
   const hasNative=!!nativeChunks, hasTranslit=!!translitChunks;
   if(hasNative && hasTranslit && nativeChunks.length!==translitChunks.length){
     alert(`Split counts don't match — native has ${nativeChunks.length} syllables, transliteration has ${translitChunks.length}.`);
@@ -1834,7 +1835,7 @@ function convertQuickAdd(li){
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
   const nativeChunks = hasNative ? chunksFromGaps(graphemes(st.nativeText), st.nativeGaps) : null;
   const translitChunks = hasTranslit ? chunksFromGaps(graphemes(st.translitText), st.translitGaps) : null;
-  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) rebuildLinesDOM();
 }
 function quickDelimiterSplit(li){
   const st = qaGet(li);
@@ -1845,7 +1846,7 @@ function quickDelimiterSplit(li){
   const splitFn = txt => txt.split(/[-\s]+/).map(s=>s.trim()).filter(Boolean);
   const nativeChunks = hasNative ? splitFn(st.nativeText) : null;
   const translitChunks = hasTranslit ? splitFn(st.translitText) : null;
-  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) rebuildLinesDOM();
 }
 function qaTapRowsHtml(li, st){
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
@@ -1875,8 +1876,19 @@ function qaTapRowsHtml(li, st){
   html += '</div>';
   return html;
 }
+// renderLines() = sync current DOM values into currentLines, THEN rebuild.
+// Only safe to call when the DOM still matches currentLines' shape (i.e.
+// no structural change has happened since the last render) — otherwise
+// the sync reads stale DOM left over from the OLD structure into the NEW
+// (just-mutated) currentLines and corrupts it. Any function that already
+// calls syncAllSegmentsFromDOM() itself BEFORE mutating currentLines (or
+// replaces currentLines wholesale, e.g. loading a song or undoing) must
+// call rebuildLinesDOM() directly instead, skipping this redundant sync.
 function renderLines(){
   syncAllSegmentsFromDOM();
+  rebuildLinesDOM();
+}
+function rebuildLinesDOM(){
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
   const dupBox = document.getElementById('dup-scan-results');
   if(dupBox) dupBox.innerHTML = '';
@@ -2236,6 +2248,7 @@ function updateBeatTapPreview(){
   el.textContent = `${prev}  \u25b6 ${cur} \u25c0  ${next}`;
 }
 function doBeatTap(){
+  syncAllSegmentsFromDOM();
   refreshBeatTapFlat();
   if(!beatTapFlat.length || beatTapIndex>=beatTapFlat.length) return;
   const song = {bpm:parseFloat(document.getElementById('song-bpm').value)||100, timeSigTop:parseInt(document.getElementById('song-timesig').value)||4, startOffset:parseFloat(document.getElementById('song-offset').value)||0};
@@ -2245,7 +2258,7 @@ function doBeatTap(){
   f.seg.beat = Math.round(beat*2)/2; // snap to nearest half-beat
   beatTapIndex++;
   updateBeatTapPreview();
-  renderLines();
+  rebuildLinesDOM();
 }
 document.getElementById('beatTapBtn').onclick = doBeatTap;
 document.addEventListener('keydown', (e)=>{
