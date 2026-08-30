@@ -408,6 +408,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .chip button:hover{color:var(--incorrect);}
 .palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;color:#ffffff;}
 .palette-chip:hover{border-color:var(--gold);}
+.dup-scan-item{border:1px solid var(--incorrect);background:rgba(220,90,90,.08);border-radius:9px;padding:10px 14px;margin-bottom:8px;font-size:13px;}
+.dup-scan-item .dup-detail{font-family:var(--font-mono);color:var(--gold-bright);margin:2px 0 6px;}
+.dup-scan-clean{border:1px solid var(--correct);background:rgba(90,180,120,.08);border-radius:9px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:var(--correct);}
 .palette-chip.sel{border-color:var(--gold);background:var(--gold-dim);color:var(--gold-bright);}
 .cp-section-label{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;}
 .cp-section-label:first-child{margin-top:0;}
@@ -682,6 +685,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       </div>
       <p class="muted" style="font-size:13px;margin-bottom:6px;">Written like a lead sheet — one column per syllable, stacked top to bottom: <b>Chord</b> · <b>Note</b> · <b>Native</b> · <b>Translit</b> · <b>Beat</b>. Use Quick Add to split a pasted line into syllable columns, then fill straight down each column. Beat format is <code>measure:beat</code> — e.g. <code>1:1</code>, <code>2:3.5</code> for a half-beat. Leave the Chord cell blank if there's no chord change there; type one to mark it as a chord slot (open "Chord grading details" below the line to add acceptable/wrong alternatives).</p>
       <div class="field" style="max-width:420px;margin-bottom:16px;"><label>YouTube Link — Lyrics &amp; Syllable Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-syllable" placeholder="https://youtube.com/watch?v=..."></div>
+      <div class="row" style="margin-bottom:10px;">
+        <button class="btn outline small" type="button" onclick="runDuplicateScan()">&#128269; Find Duplicate Lines</button>
+      </div>
+      <div id="dup-scan-results"></div>
       <div id="paste-top-bar" class="row" style="margin-bottom:10px;"></div>
       <div id="lines-container"></div>
       <button class="btn outline" onclick="addLine()">+ Add Lyric Line</button>
@@ -1869,6 +1876,8 @@ function qaTapRowsHtml(li, st){
 function renderLines(){
   syncAllSegmentsFromDOM();
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
+  const dupBox = document.getElementById('dup-scan-results');
+  if(dupBox) dupBox.innerHTML = '';
   const pasteTopBar = document.getElementById('paste-top-bar');
   pasteTopBar.innerHTML = copiedLine
     ? `<button class="btn outline small" type="button" onclick="pasteLineAtTop()">&#128203; Paste ${copiedLineLabel} at Top</button><span class="muted" style="font-size:12px;align-self:center;">Copied ${copiedLineLabel} &mdash; use "Paste Below" on any line to insert it there too.</span>`
@@ -1978,6 +1987,64 @@ function jumpToLine(li){
   document.querySelectorAll('.line-jump-dash').forEach(d=>d.classList.remove('active'));
   const dash = document.getElementById(`line-jump-dash-${li}`);
   if(dash) dash.classList.add('active');
+}
+// Scans every pair of lines for (a) two lines that are exact full
+// duplicates of each other, and (b) two lines that merely SHARE a run of
+// 3+ consecutive matching syllables somewhere inside them — the pattern
+// that shows up when a line got copy-pasted and only partly edited
+// afterward (e.g. the chord changed but the lyrics/beats were never
+// updated on one copy). Matching is on native text (falling back to
+// transliteration), trimmed and case-insensitive.
+const DUP_MIN_OVERLAP = 3;
+function findDuplicateLines(){
+  const seqs = currentLines.map(line =>
+    (line.segments||[]).map(s => (s.native||s.translit||'').trim().toLowerCase()).filter(Boolean)
+  );
+  const results = [];
+  for(let i=0;i<seqs.length;i++){
+    for(let j=i+1;j<seqs.length;j++){
+      const A = seqs[i], B = seqs[j];
+      if(!A.length || !B.length) continue;
+      if(A.length===B.length && A.every((v,k)=>v===B[k])){
+        results.push({type:'exact', a:i, b:j, detail:A.join(' ')});
+        continue;
+      }
+      let best=0, bestSeq=[];
+      for(let x=0;x<A.length;x++){
+        for(let y=0;y<B.length;y++){
+          let len=0;
+          while(x+len<A.length && y+len<B.length && A[x+len]===B[y+len]) len++;
+          if(len>best){ best=len; bestSeq=A.slice(x,x+len); }
+        }
+      }
+      if(best>=DUP_MIN_OVERLAP){
+        results.push({type:'overlap', a:i, b:j, detail:bestSeq.join(' '), count:best});
+      }
+    }
+  }
+  return results;
+}
+function runDuplicateScan(){
+  syncAllSegmentsFromDOM();
+  const results = findDuplicateLines();
+  const box = document.getElementById('dup-scan-results');
+  if(!results.length){
+    box.innerHTML = `<div class="dup-scan-clean">&#10003; No duplicate or overlapping lines found.</div>`;
+    return;
+  }
+  box.innerHTML = results.map(r=>{
+    const label = r.type==='exact'
+      ? `Line ${r.a+1} and Line ${r.b+1} are exact duplicates of each other`
+      : `Line ${r.a+1} and Line ${r.b+1} share ${r.count} repeated syllables in a row`;
+    return `<div class="dup-scan-item">
+      <div>${escapeHtml(label)}</div>
+      <div class="dup-detail">"${escapeHtml(r.detail)}"</div>
+      <div class="row">
+        <button class="btn ghost small" type="button" onclick="jumpToLine(${r.a})">Jump to Line ${r.a+1}</button>
+        <button class="btn ghost small" type="button" onclick="jumpToLine(${r.b})">Jump to Line ${r.b+1}</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 function onAudioPathChange(){
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
