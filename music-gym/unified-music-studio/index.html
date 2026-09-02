@@ -264,7 +264,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);}
    inside the scrollable window instead of floating above it. Declared as
    a second rule so unsupported browsers simply keep the line above. */
 .lyric-stage{justify-content:safe center;}
-.lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;}
+.lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
 .syll{display:inline-block;padding:1px 2px;border-radius:5px;transition:all .12s ease;}
 .syll.sung{color:var(--gold);}
 .syll.active{color:#1a1206;background:var(--gold);box-shadow:0 0 0 4px var(--gold-dim);transform:scale(1.08);}
@@ -298,8 +298,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* ---------- beat quiz grid ---------- */
 .beatquiz-grid{display:flex;flex-direction:column;gap:10px;}
-.beatquiz-line{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;}
-.beatquiz-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;}
+.beatquiz-line{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;align-items:flex-end;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch;}
+.beatquiz-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;flex-shrink:0;}
 .beatquiz-item .txt{font-family:var(--font-display);font-size:16px;}
 .beatquiz-item input{width:64px;text-align:center;padding:7px 4px;font-size:12.5px;}
 .beatquiz-item .mb-row{display:flex;gap:3px;}
@@ -332,7 +332,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* ---------- chord practice grid ---------- */
 .chord-track-line{margin-bottom:22px;overflow-x:auto;padding-bottom:6px;}
-.chord-track{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(44px,1fr);gap:1px;}
+.chord-track{display:grid;grid-auto-flow:column;grid-auto-columns:64px;gap:1px;justify-content:start;}
 .chord-cell{padding-bottom:6px;}
 .chord-slot{width:100%;background:var(--surface-2);border:1.5px dashed var(--line);color:var(--muted);border-radius:7px;padding:6px 3px;font-family:var(--font-mono);font-size:12.5px;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .chord-slot:hover{border-color:var(--gold);}
@@ -340,7 +340,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .chord-slot.correct{border-style:solid;border-color:var(--correct);color:var(--correct);background:var(--correct-bg);}
 .chord-slot.acceptable{border-style:solid;border-color:var(--acceptable);color:var(--acceptable);background:var(--acceptable-bg);}
 .chord-slot.incorrect{border-style:solid;border-color:var(--incorrect);color:var(--incorrect);background:var(--incorrect-bg);}
-.lyric-row,.note-row,.beatlbl-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(44px,1fr);gap:1px;}
+.lyric-row,.note-row,.beatlbl-row{display:grid;grid-auto-flow:column;grid-auto-columns:64px;gap:1px;justify-content:start;}
 .lyric-row{font-size:13px;}
 .lyric-row .cell{text-align:center;padding-top:4px;color:var(--text);font-family:var(--font-display);}
 .note-row .cell{text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--purple);padding-top:2px;}
@@ -451,7 +451,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   .score-col input{font-size:11.5px;}
   .btn.big{padding:12px 16px;font-size:13.5px;}
   .lyric-stage{padding:18px 12px;}
-  .lyric-line{font-size:17px;}
+  .lyric-line{font-size:15px;}
   .score-banner .big{font-size:28px;}
   .mini-piano{height:130px;}
   .mini-black{height:74px;}
@@ -459,13 +459,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   .play-btn{width:48px;height:48px;}
   .btn-icon{width:36px;height:36px;font-size:12px;}
   .loop-row input[type=number]{width:48px;}
-  .beatquiz-item{min-width:64px;}
+  .beatquiz-item{min-width:56px;gap:3px;}
+  .beatquiz-item .txt{font-size:14px;}
+  .beatquiz-item input{width:52px;padding:6px 3px;font-size:11.5px;}
+  .beatquiz-line{padding:10px 8px;gap:6px;}
   .score-col,.chord-cell{min-width:56px;}
+  .chord-track,.lyric-row,.note-row,.beatlbl-row{grid-auto-columns:52px;}
 }
 @media(max-width:400px){
   .stage-grid{grid-template-columns:1fr;}
   .song-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}
   .note-wheel{grid-template-columns:repeat(3,1fr);}
+  .beatquiz-item{min-width:48px;}
+  .beatquiz-item .txt{font-size:13px;}
+  .beatquiz-item input{width:44px;padding:5px 2px;font-size:11px;}
+  .lyric-line{font-size:13px;}
 }
 </style>
 </head>
@@ -807,6 +815,18 @@ function graphemes(str){
     }catch(e){ /* fall through */ }
   }
   return Array.from(str);
+}
+// A pasted lyric line that's long enough to visually wrap can carry a real
+// line-break character if the source had one (not just CSS wrapping).
+// graphemes() would then count that line-break as its own invisible
+// "letter" in the tap-to-split grid — and if it lands in only the native
+// or only the transliteration text (not symmetrically in both), the two
+// syllable counts end up off by one for no visible reason. Collapsing any
+// line breaks (and repeated spaces) down to a single space before
+// splitting means a wrapped paste is always treated as one continuous
+// line, matching what the person actually sees.
+function normalizePastedText(str){
+  return (str||'').replace(/\r\n/g,'\n').replace(/[\r\n]+/g,' ').replace(/[ \t]+/g,' ').trim();
 }
 
 let toastTimer = null;
@@ -1657,25 +1677,36 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
+// Copies this line's measure:beat pattern down to the next line, preserving
+// each syllable's relative beat position but shifting every measure number
+// forward by however many measures THIS line actually spans — not a flat
+// +1. A line can now hold multiple measures (e.g. 5:1..5:4, 6:1..6:4), so
+// "next line continues right after" means shifting by that whole span
+// (2 measures here), not by 1, or the copy would land back on top of this
+// line's own later measures instead of continuing past them.
 function copyBeatPatternToNextLine(li){
   syncAllSegmentsFromDOM();
   if(li >= currentLines.length-1){ showToast('This is the last line — add or insert a line below first.'); return; }
   const src = currentLines[li].segments;
   const dst = currentLines[li+1].segments;
   if(!src.length){ showToast('This line has no beat pattern to copy yet.'); return; }
+  const measures = src.map(s=>s.measure).filter(m=>m!=null);
+  if(!measures.length){ showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
+  const span = Math.max(...measures) - Math.min(...measures) + 1; // measures this line spans
   pushUndoSnapshot();
   const n = Math.min(src.length, dst.length);
   let copied = 0;
   for(let i=0;i<n;i++){
     if(src[i].measure==null || src[i].beat==null) continue;
-    dst[i].measure = src[i].measure + 1;
+    dst[i].measure = src[i].measure + span;
     dst[i].beat = src[i].beat;
     copied++;
   }
   if(!copied){ undoStack.pop(); showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
-  if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — it has more syllables, so fill the rest manually.`);
-  else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (measure +1) — this line has more syllables than the next.`);
-  else showToast(`Copied beat pattern to Line ${li+2} (measure +1).`);
+  const shiftLabel = `measure +${span}`;
+  if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (${shiftLabel}) — it has more syllables, so fill the rest manually.`);
+  else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (${shiftLabel}) — this line has more syllables than the next.`);
+  else showToast(`Copied beat pattern to Line ${li+2} (${shiftLabel}).`);
   rebuildLinesDOM();
 }
 
@@ -1791,8 +1822,8 @@ function toggleQuickAdd(li){ syncAllSegmentsFromDOM(); const st=qaGet(li); st.op
 function cancelQuickAdd(li){ delete quickAddState[li]; renderLines(); }
 function startTapSplit(li){
   const st = qaGet(li);
-  st.nativeText = document.getElementById('qa-native-'+li).value;
-  st.translitText = document.getElementById('qa-translit-'+li).value;
+  st.nativeText = normalizePastedText(document.getElementById('qa-native-'+li).value);
+  st.translitText = normalizePastedText(document.getElementById('qa-translit-'+li).value);
   if(!st.nativeText.trim() && !st.translitText.trim()){ alert('Paste at least one line (native script or transliteration) first.'); return; }
   st.started = true; st.nativeGaps = new Set(); st.translitGaps = new Set();
   renderLines();
@@ -1839,8 +1870,8 @@ function convertQuickAdd(li){
 }
 function quickDelimiterSplit(li){
   const st = qaGet(li);
-  st.nativeText = document.getElementById('qa-native-'+li).value;
-  st.translitText = document.getElementById('qa-translit-'+li).value;
+  st.nativeText = normalizePastedText(document.getElementById('qa-native-'+li).value);
+  st.translitText = normalizePastedText(document.getElementById('qa-translit-'+li).value);
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
   if(!hasNative && !hasTranslit){ alert('Paste at least one line first.'); return; }
   const splitFn = txt => txt.split(/[-\s]+/).map(s=>s.trim()).filter(Boolean);
@@ -1971,7 +2002,7 @@ function rebuildLinesDOM(){
         <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
         <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
         <button class="btn outline small" type="button" title="${copiedLine ? 'Insert a duplicate of '+copiedLineLabel+' right after this line' : 'Copy a line first, then paste it here'}" ${copiedLine?'':'disabled'} onclick="pasteLineAfter(${li})">&#128203; Paste ${copiedLine ? copiedLineLabel : 'Line'} Below</button>
-        <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, +1 measure" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
+        <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, shifted forward by however many measures this line spans" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
         <button class="btn outline small" type="button" title="Split this line into one line per measure, using each syllable's measure number" onclick="splitLineByMeasure(${li})">&#9986; Split into Measures</button>
         <span class="row" style="gap:4px;">
           <input type="number" min="1" id="split-at-${li}" placeholder="#" style="width:52px;padding:6px 8px;font-size:12px;" title="Syllable number to split after">
