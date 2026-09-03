@@ -66,26 +66,6 @@ h1,h2,h3{font-family:var(--font-display);font-weight:600;margin:0;color:var(--go
 ::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted-2);}
 
-/* ---------- line-jump rail (editor only) — a vertical strip of clickable
-   dashes on the right edge, one per lyric line, to jump straight to it ---- */
-#line-jump-rail{
-  position:fixed; right:8px; top:50%; transform:translateY(-50%);
-  max-height:72vh; overflow-y:auto; z-index:40;
-  display:flex; flex-direction:column; align-items:flex-end; gap:5px;
-  padding:8px 4px; scrollbar-width:none;
-}
-#line-jump-rail::-webkit-scrollbar{width:0;height:0;}
-.line-jump-dash{
-  width:18px; height:3px; border-radius:2px; background:var(--line);
-  border:none; cursor:pointer; padding:0; flex-shrink:0;
-  transition:background .12s, width .12s;
-}
-.line-jump-dash:hover{background:var(--gold); width:26px;}
-.line-jump-dash.active{background:var(--gold-bright); width:26px;}
-@media (max-width:820px){
-  #line-jump-rail{display:none;} /* not enough side margin on small/mobile screens */
-}
-
 /* ---------- layout shells ---------- */
 #app{max-width:1180px;margin:0 auto;padding:0 20px 90px;}
 .topbar{
@@ -258,13 +238,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);}
   justify-content:center;gap:12px;font-family:var(--font-display);text-align:center;
   overflow-y:auto;max-height:280px;margin-bottom:18px;
 }
-/* When lyrics overflow the box, plain "center" clips the first line and
-   makes it unreachable by scrolling (a known flexbox overflow quirk) —
-   "safe center" falls back to top alignment in that case so line 1 stays
-   inside the scrollable window instead of floating above it. Declared as
-   a second rule so unsupported browsers simply keep the line above. */
-.lyric-stage{justify-content:safe center;}
-.lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+.lyric-line{font-size:22px;line-height:1.6;font-weight:500;color:var(--muted);transition:color .2s;}
 .syll{display:inline-block;padding:1px 2px;border-radius:5px;transition:all .12s ease;}
 .syll.sung{color:var(--gold);}
 .syll.active{color:#1a1206;background:var(--gold);box-shadow:0 0 0 4px var(--gold-dim);transform:scale(1.08);}
@@ -298,8 +272,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* ---------- beat quiz grid ---------- */
 .beatquiz-grid{display:flex;flex-direction:column;gap:10px;}
-.beatquiz-line{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;align-items:flex-end;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch;}
-.beatquiz-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;flex-shrink:0;}
+.beatquiz-line{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;}
+.beatquiz-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:74px;}
 .beatquiz-item .txt{font-family:var(--font-display);font-size:16px;}
 .beatquiz-item input{width:64px;text-align:center;padding:7px 4px;font-size:12.5px;}
 .beatquiz-item .mb-row{display:flex;gap:3px;}
@@ -325,22 +299,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .mini-piano{display:flex;position:relative;height:150px;margin:14px 0;user-select:none;min-width:480px;}
 .mini-white{flex:1;background:#f3efe3;border:1px solid #2b2d3a;border-radius:0 0 6px 6px;position:relative;color:#0c0d12;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:var(--font-mono);font-size:10px;font-weight:700;min-width:32px;}
 .mini-white:active{background:var(--gold-bright);}
-.mini-black{position:absolute;top:0;width:7%;height:88px;background:#1a1206;border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-sizing:border-box;}
+.mini-black{position:absolute;top:0;width:7%;height:88px;background:#1a1206;border-radius:0 0 4px 4px;z-index:2;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;color:#f3efe3;font-family:var(--font-mono);font-weight:700;font-size:10px;text-align:center;overflow:hidden;white-space:nowrap;}
 .mini-black:active{background:var(--gold);}
-.mini-black-lbl{color:#f3efe3;font-family:var(--font-mono);font-weight:700;line-height:1;pointer-events:none;white-space:nowrap;}
-.mini-black:active .mini-black-lbl{color:#1a1206;}
 
 /* ---------- chord practice grid ---------- */
 .chord-track-line{margin-bottom:22px;overflow-x:auto;padding-bottom:6px;}
-.chord-track{display:grid;grid-auto-flow:column;grid-auto-columns:64px;gap:1px;justify-content:start;}
+.chord-track{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(58px,1fr);gap:2px;}
 .chord-cell{padding-bottom:6px;}
 .chord-slot{width:100%;background:var(--surface-2);border:1.5px dashed var(--line);color:var(--muted);border-radius:7px;padding:6px 3px;font-family:var(--font-mono);font-size:12.5px;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .chord-slot:hover{border-color:var(--gold);}
-.chord-slot.answered{border-style:solid;border-color:var(--gold);color:#ffffff;background:var(--gold-dim);}
+.chord-slot.answered{border-style:solid;border-color:var(--gold);color:var(--gold-bright);background:var(--gold-dim);}
 .chord-slot.correct{border-style:solid;border-color:var(--correct);color:var(--correct);background:var(--correct-bg);}
 .chord-slot.acceptable{border-style:solid;border-color:var(--acceptable);color:var(--acceptable);background:var(--acceptable-bg);}
 .chord-slot.incorrect{border-style:solid;border-color:var(--incorrect);color:var(--incorrect);background:var(--incorrect-bg);}
-.lyric-row,.note-row,.beatlbl-row{display:grid;grid-auto-flow:column;grid-auto-columns:64px;gap:1px;justify-content:start;}
+.lyric-row,.note-row,.beatlbl-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(58px,1fr);gap:2px;}
 .lyric-row{font-size:13px;}
 .lyric-row .cell{text-align:center;padding-top:4px;color:var(--text);font-family:var(--font-display);}
 .note-row .cell{text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--purple);padding-top:2px;}
@@ -406,15 +378,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-family:var(--font-mono);font-size:12px;display:flex;align-items:center;gap:6px;}
 .chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;}
 .chip button:hover{color:var(--incorrect);}
-.palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;color:#ffffff;}
+.palette-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:13px;cursor:pointer;}
 .palette-chip:hover{border-color:var(--gold);}
-.dup-scan-item{border:1px solid var(--incorrect);background:rgba(220,90,90,.08);border-radius:9px;padding:10px 14px;margin-bottom:8px;font-size:13px;}
-.dup-scan-item .dup-detail{font-family:var(--font-mono);color:var(--gold-bright);margin:2px 0 6px;}
-.dup-scan-clean{border:1px solid var(--correct);background:rgba(90,180,120,.08);border-radius:9px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:var(--correct);}
-.palette-chip.sel{border-color:var(--gold);background:var(--gold-dim);color:var(--gold-bright);}
-.cp-section-label{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;}
-.cp-section-label:first-child{margin-top:0;}
-.cp-preview{font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--gold-bright);text-align:center;margin:8px 0 2px;min-height:20px;}
 
 /* ---------- modal ---------- */
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(8,9,13,.78);z-index:60;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
@@ -451,7 +416,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   .score-col input{font-size:11.5px;}
   .btn.big{padding:12px 16px;font-size:13.5px;}
   .lyric-stage{padding:18px 12px;}
-  .lyric-line{font-size:15px;}
+  .lyric-line{font-size:17px;}
   .score-banner .big{font-size:28px;}
   .mini-piano{height:130px;}
   .mini-black{height:74px;}
@@ -459,21 +424,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   .play-btn{width:48px;height:48px;}
   .btn-icon{width:36px;height:36px;font-size:12px;}
   .loop-row input[type=number]{width:48px;}
-  .beatquiz-item{min-width:56px;gap:3px;}
-  .beatquiz-item .txt{font-size:14px;}
-  .beatquiz-item input{width:52px;padding:6px 3px;font-size:11.5px;}
-  .beatquiz-line{padding:10px 8px;gap:6px;}
+  .beatquiz-item{min-width:64px;}
   .score-col,.chord-cell{min-width:56px;}
-  .chord-track,.lyric-row,.note-row,.beatlbl-row{grid-auto-columns:52px;}
 }
 @media(max-width:400px){
   .stage-grid{grid-template-columns:1fr;}
   .song-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}
   .note-wheel{grid-template-columns:repeat(3,1fr);}
-  .beatquiz-item{min-width:48px;}
-  .beatquiz-item .txt{font-size:13px;}
-  .beatquiz-item input{width:44px;padding:5px 2px;font-size:11px;}
-  .lyric-line{font-size:13px;}
 }
 </style>
 </head>
@@ -498,7 +455,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <h3>Teacher</h3>
         <p>Build songs — lyrics, syllables, rhythm, scale &amp; chords</p>
       </button>
-      <button type="button" class="role-btn" onclick="studentLogin()">
+      <button type="button" class="role-btn" onclick="showStudentChoice()">
         <div class="icon">🎓</div>
         <h3>Student</h3>
         <p>Practice a song, one skill at a time</p>
@@ -514,6 +471,31 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <button class="btn gold" type="button" id="t-login-btn" onclick="teacherLogin()">Log In</button>
       </div>
     </div>
+
+    <div id="student-choice" class="role-choice hidden">
+      <button type="button" class="role-btn" onclick="guestLogin()">
+        <div class="icon">👤</div>
+        <h3>Guest</h3>
+        <p>Jump straight in — no name or password needed</p>
+      </button>
+      <button type="button" class="role-btn" onclick="showStudentLoginForm()">
+        <div class="icon">🔑</div>
+        <h3>My Account</h3>
+        <p>Log in to track your progress and attempts</p>
+      </button>
+    </div>
+    <div id="student-login" class="card hidden" style="text-align:left;max-width:420px;margin:0 auto;">
+      <h3 style="font-size:16px;margin-bottom:14px;">Student Login</h3>
+      <div class="field"><label>Name</label><input type="text" id="s-name" placeholder="Your name" autocomplete="username"></div>
+      <div class="field" style="margin-bottom:6px;"><label>Password</label><input type="password" id="s-password" placeholder="Enter password" autocomplete="current-password"></div>
+      <div class="error-msg hidden" id="s-error">❌ Wrong name or password.</div>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn ghost" type="button" onclick="backToStudentChoice()">← Back</button>
+        <button class="btn gold" type="button" id="s-login-btn" onclick="studentNamedLogin()">Log In</button>
+      </div>
+      <p class="muted" style="font-size:11px;margin-top:12px;">Ask your teacher for your name and password if you don't have one yet.</p>
+    </div>
+
     <p class="muted" style="max-width:420px;margin:16px auto 0;font-size:11px;text-align:center;">Teacher access uses Firebase Authentication — no password is stored in this page.</p>
   </div>
 
@@ -532,7 +514,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
   <!-- ================= STUDENT: PRACTICE HUB ================= -->
   <div id="view-hub" class="hidden">
-    <button class="btn ghost small" id="hubBackBtn" onclick="backToLibrary()">← All songs</button>
+    <button class="btn ghost small" onclick="backToLibrary()">← All songs</button>
     <div class="hub-head">
       <div class="translit" id="hubTranslit"></div>
       <div class="native" id="hubNative"></div>
@@ -590,20 +572,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
   <!-- ================= TEACHER VIEW ================= -->
   <div id="teacher-view" class="hidden">
+    <div class="tab-row" id="teacherPanelTabs">
+      <button class="tab-btn active" data-panel="songs" onclick="switchTeacherPanel('songs')">🎵 Songs</button>
+      <button class="tab-btn" data-panel="students" onclick="switchTeacherPanel('students')">🎓 Students</button>
+    </div>
+
     <div id="teacher-songs-panel">
       <div class="spread" style="margin-bottom:16px;">
         <h2 style="font-size:19px;">Your Songs</h2>
         <button class="btn gold" onclick="newSong()">+ New Song</button>
       </div>
       <div class="lib-filters" id="teacherFilters"></div>
-      <div class="field" style="max-width:340px;margin-bottom:14px;">
-        <input type="text" id="teacherSongSearch" placeholder="&#128269; Search by title, transliteration, or language&hellip;" oninput="setTeacherSearch(this.value)">
-      </div>
       <div id="teacherSongList"></div>
     </div>
 
+    <div id="teacher-students-panel" class="hidden">
+      <div class="spread" style="margin-bottom:16px;">
+        <h2 style="font-size:19px;">Your Students</h2>
+        <button class="btn gold" onclick="newStudent()">+ Add Student</button>
+      </div>
+      <p class="muted" style="font-size:12.5px;margin-bottom:16px;">Students with an account can log in by name &amp; password to have their practice attempts tracked here. This is a simple classroom list, not a secure account system — don't reuse sensitive passwords.</p>
+      <div id="teacherStudentList"></div>
+    </div>
+
     <div id="editor-view" class="hidden">
-      <div id="line-jump-rail"></div>
       <div class="spread" style="margin-bottom:16px;">
         <h2 style="font-size:19px;" id="editorTitle">New Song</h2>
         <div class="row">
@@ -693,13 +685,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       </div>
       <p class="muted" style="font-size:13px;margin-bottom:6px;">Written like a lead sheet — one column per syllable, stacked top to bottom: <b>Chord</b> · <b>Note</b> · <b>Native</b> · <b>Translit</b> · <b>Beat</b>. Use Quick Add to split a pasted line into syllable columns, then fill straight down each column. Beat format is <code>measure:beat</code> — e.g. <code>1:1</code>, <code>2:3.5</code> for a half-beat. Leave the Chord cell blank if there's no chord change there; type one to mark it as a chord slot (open "Chord grading details" below the line to add acceptable/wrong alternatives).</p>
       <div class="field" style="max-width:420px;margin-bottom:16px;"><label>YouTube Link — Lyrics &amp; Syllable Reference <span class="muted" style="text-transform:none;">(optional)</span></label><input type="text" id="yt-syllable" placeholder="https://youtube.com/watch?v=..."></div>
-      <div class="row" style="margin-bottom:10px;">
-        <button class="btn outline small" type="button" onclick="runDuplicateScan()">&#128269; Find Duplicate Lines</button>
-        <button class="btn outline small" type="button" onclick="showRawSongData()">&#128295; Copy Song Data (debug)</button>
-      </div>
-      <div id="dup-scan-results"></div>
-      <div id="raw-data-panel"></div>
-      <div id="paste-top-bar" class="row" style="margin-bottom:10px;"></div>
       <div id="lines-container"></div>
       <button class="btn outline" onclick="addLine()">+ Add Lyric Line</button>
     </div>
@@ -757,13 +742,53 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <!-- ============ CHORD PICKER MODAL — student side, click a chord slot in Apply Chords ============ -->
 <div class="modal-backdrop" id="chord-picker-modal">
-  <div class="modal" style="max-width:460px;">
+  <div class="modal" style="max-width:420px;">
     <h3>Pick a Chord</h3>
-    <p class="hint" id="cp-hint">Tap a chord from the chart to place it here.</p>
+    <p class="hint">Tap a chord from the chart to place it here.</p>
     <div class="chip-row" id="cp-chart-chips"></div>
     <div class="modal-actions">
       <button class="btn danger small" onclick="cpClear()">Clear</button>
       <button class="btn ghost small" onclick="closeChordPicker()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDENT EDITOR MODAL — teacher add/edit a student record ============ -->
+<div class="modal-backdrop" id="student-editor-modal">
+  <div class="modal" style="max-width:460px;">
+    <h3 id="stEditorTitle">Add Student</h3>
+    <p class="hint">This is a simple classroom record, not a secure account — avoid reusing sensitive passwords.</p>
+    <div class="grid-2">
+      <div class="field"><label>Name</label><input type="text" id="st-name" placeholder="Student's name"></div>
+      <div class="field"><label>Password</label><input type="text" id="st-password" placeholder="Login password"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Batch No</label><input type="text" id="st-batch" placeholder="e.g. Batch 4"></div>
+      <div class="field"><label>Mobile Number</label><input type="text" id="st-mobile" placeholder="Mobile number"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Age</label><input type="number" id="st-age" min="1" placeholder="Age"></div>
+      <div class="field"><label>Gender</label>
+        <select id="st-gender"><option value="">— choose —</option><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Place</label><input type="text" id="st-place" placeholder="City / area"></div>
+    <div class="field"><label>Occupation</label><input type="text" id="st-occupation" placeholder="Student / Working / etc."></div>
+    <div class="modal-actions">
+      <button class="btn ghost small" onclick="closeStudentEditor()">Cancel</button>
+      <button class="btn gold small" id="saveStudentBtn" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDENT RECORDS MODAL — teacher views one student's attempt history ============ -->
+<div class="modal-backdrop" id="student-records-modal">
+  <div class="modal" style="max-width:520px;">
+    <h3 id="srTitle">Records</h3>
+    <p class="hint" id="srSummary"></p>
+    <div id="srList" style="max-height:50vh;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn ghost small" onclick="closeStudentRecords()">Close</button>
     </div>
   </div>
 </div>
@@ -788,7 +813,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const SONGS_COLLECTION = 'swaralayaSongs';
+const STUDENTS_COLLECTION = 'swaralayaStudents';
+const ATTEMPTS_COLLECTION = 'swaralayaAttempts';
 const TEACHER_EMAIL = 'josepath.andrew@gmail.com';
+let currentStudent = null;   // {id, name, batch, mobile, place, occupation, age, gender} when logged in by name
+let allStudents = [];        // teacher's cached student list
 
 /* ============================================================================
    GLOBAL STATE
@@ -815,18 +844,6 @@ function graphemes(str){
     }catch(e){ /* fall through */ }
   }
   return Array.from(str);
-}
-// A pasted lyric line that's long enough to visually wrap can carry a real
-// line-break character if the source had one (not just CSS wrapping).
-// graphemes() would then count that line-break as its own invisible
-// "letter" in the tap-to-split grid — and if it lands in only the native
-// or only the transliteration text (not symmetrically in both), the two
-// syllable counts end up off by one for no visible reason. Collapsing any
-// line breaks (and repeated spaces) down to a single space before
-// splitting means a wrapped paste is always treated as one continuous
-// line, matching what the person actually sees.
-function normalizePastedText(str){
-  return (str||'').replace(/\r\n/g,'\n').replace(/[\r\n]+/g,' ').replace(/[ \t]+/g,' ').trim();
 }
 
 let toastTimer = null;
@@ -866,38 +883,6 @@ function flattenSegments(song){
     });
   });
   return out;
-}
-
-// Groups the flattened segments into DISPLAY lines for the student-facing
-// stages: a new display line starts whenever the editor line changes OR
-// the measure number changes among consecutive syllables — so a teacher
-// can pack multiple measures into one editor row while students still see
-// a clean one-measure-per-line layout. Segments with no measure set yet
-// are left grouped with whatever they're next to (nothing to split on),
-// so an incomplete song doesn't fragment into lots of 1-syllable lines.
-// Each returned group: {li, measure, paragraphBreak, items:[{seg,li,si}]}
-function explodeToMeasureLines(song){
-  const flat = flattenSegments(song);
-  const groups = [];
-  let cur = null;
-  flat.forEach(f=>{
-    const m = f.seg.measure;
-    const isNewEditorLine = !cur || f.li !== cur.li;
-    const isNewMeasure = !isNewEditorLine && cur.measure!=null && m!=null && m!==cur.measure;
-    if(isNewEditorLine || isNewMeasure){
-      cur = {
-        li: f.li,
-        measure: m,
-        paragraphBreak: isNewEditorLine ? !!((song.lines[f.li]||{}).paragraphBreak) : false,
-        items: []
-      };
-      groups.push(cur);
-    } else if(cur.measure==null && m!=null){
-      cur.measure = m;
-    }
-    cur.items.push(f);
-  });
-  return groups;
 }
 
 /* ============================================================================
@@ -951,24 +936,6 @@ const CHORD_INTERVALS = {
   '9':[0,4,7,10,2], m9:[0,3,7,10,2], '11':[0,4,7,10,5], m11:[0,3,7,10,5]
 };
 const PC_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-// Full chord chart (Pro mode): any of these 12 roots with any of these
-// qualities — maj, min, sus2/4, 6th, maj7/dominant7/m7, dim, aug, 9ths.
-const CHROMATIC_ROOTS = PC_NAMES;
-const PRO_CHORD_QUALITIES = [
-  {suffix:'',     label:'Maj'},
-  {suffix:'m',    label:'Min'},
-  {suffix:'sus2', label:'Sus2'},
-  {suffix:'sus4', label:'Sus4'},
-  {suffix:'6',    label:'6'},
-  {suffix:'m6',   label:'m6'},
-  {suffix:'maj7', label:'Maj7'},
-  {suffix:'7',    label:'7 (Dom)'},
-  {suffix:'m7',   label:'m7'},
-  {suffix:'dim',  label:'dim'},
-  {suffix:'aug',  label:'aug'},
-  {suffix:'9',    label:'9'},
-  {suffix:'m9',   label:'m9'}
-];
 
 function diatonicChords(keyRoot){
   const scale = MAJOR_KEYS[keyRoot];
@@ -1165,24 +1132,10 @@ function buildMiniPiano(pianoEl, octaves){
       b.className='mini-black';
       b.style.left = ((i+1)*whiteWidthPct - blackWidthPct/2) + '%';
       b.style.width = blackWidthPct + '%';
-      const lbl = document.createElement('span');
-      lbl.className = 'mini-black-lbl';
-      lbl.textContent = blackAfter[wk.note];
-      b.appendChild(lbl);
+      b.textContent = blackAfter[wk.note].replace('#','♯');
       wireKeyPress(b, blackAfter[wk.note], wk.octave);
       pianoEl.appendChild(b);
     }
-  });
-  // Size each black key's label as large as will comfortably fit inside
-  // that key's actual rendered width (varies with octave count/container
-  // width), instead of a fixed font-size that under- or over-fills narrow
-  // keys.
-  requestAnimationFrame(()=>{
-    pianoEl.querySelectorAll('.mini-black').forEach(b=>{
-      const w = b.offsetWidth;
-      const fs = Math.max(7, Math.min(12.5, w*0.42));
-      b.querySelector('.mini-black-lbl').style.fontSize = fs.toFixed(1)+'px';
-    });
   });
 }
 
@@ -1195,6 +1148,8 @@ function showTeacherLogin(){
 }
 function backToRoles(){
   document.getElementById('teacher-login').classList.add('hidden');
+  document.getElementById('student-choice').classList.add('hidden');
+  document.getElementById('student-login').classList.add('hidden');
   document.getElementById('role-choice').classList.remove('hidden');
 }
 async function teacherLogin(){
@@ -1214,22 +1169,73 @@ async function teacherLogin(){
     btn.disabled = false; btn.textContent = 'Log In';
   }
 }
-function studentLogin(){
+function showStudentChoice(){
+  document.getElementById('role-choice').classList.add('hidden');
+  document.getElementById('student-choice').classList.remove('hidden');
+}
+function showStudentLoginForm(){
+  document.getElementById('student-choice').classList.add('hidden');
+  document.getElementById('student-login').classList.remove('hidden');
+}
+function backToStudentChoice(){
+  document.getElementById('student-login').classList.add('hidden');
+  document.getElementById('student-choice').classList.remove('hidden');
+}
+function guestLogin(){
+  currentStudent = null;
   sessionStorage.setItem('swrl-role','student');
+  sessionStorage.removeItem('swrl-student-id');
   enterStudentView();
+}
+async function studentNamedLogin(){
+  const name = document.getElementById('s-name').value.trim();
+  const pass = document.getElementById('s-password').value;
+  const errEl = document.getElementById('s-error');
+  const btn = document.getElementById('s-login-btn');
+  errEl.classList.add('hidden');
+  if(!name || !pass){ errEl.textContent='❌ Please enter your name and password.'; errEl.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  try{
+    const snap = await db.collection(STUDENTS_COLLECTION).where('name','==',name).where('password','==',pass).limit(1).get();
+    if(snap.empty){
+      errEl.textContent = '❌ Wrong name or password.';
+      errEl.classList.remove('hidden');
+    } else {
+      const d = snap.docs[0];
+      currentStudent = {id:d.id, ...d.data()};
+      sessionStorage.setItem('swrl-role','student');
+      sessionStorage.setItem('swrl-student-id', d.id);
+      enterStudentView();
+    }
+  }catch(e){
+    errEl.textContent = '❌ ' + (e.message||'Login failed.');
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Log In';
+  }
 }
 async function logout(){
   try{ await auth.signOut(); }catch(e){}
   sessionStorage.clear();
+  currentStudent = null;
   location.reload();
 }
 document.getElementById('t-password').addEventListener('keydown', e=>{ if(e.key==='Enter') teacherLogin(); });
+document.getElementById('s-password').addEventListener('keydown', e=>{ if(e.key==='Enter') studentNamedLogin(); });
 
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(async user=>{
   isTeacher = !!(user && user.email === TEACHER_EMAIL);
   if(isTeacher){
     enterTeacherView();
   } else if(sessionStorage.getItem('swrl-role') === 'student'){
+    const sid = sessionStorage.getItem('swrl-student-id');
+    if(sid && !currentStudent){
+      try{
+        const doc = await db.collection(STUDENTS_COLLECTION).doc(sid).get();
+        if(doc.exists) currentStudent = {id:doc.id, ...doc.data()};
+        else sessionStorage.removeItem('swrl-student-id');
+      }catch(e){ /* fall through as guest */ }
+    }
     enterStudentView();
   }
 });
@@ -1243,8 +1249,10 @@ function renderTopActions(){
   const el = document.getElementById('topActions');
   if(isTeacher){
     el.innerHTML = `<span class="pill">Teacher mode</span><button class="btn ghost small" onclick="logout()">Log out</button>`;
+  } else if(currentStudent){
+    el.innerHTML = `<span class="pill teal">👤 ${escapeHtml(currentStudent.name)}</span><button class="btn ghost small" onclick="logout()">Log out</button>`;
   } else {
-    el.innerHTML = `<button class="btn ghost small" onclick="logout()">Exit</button>`;
+    el.innerHTML = `<span class="pill teal">Guest</span><button class="btn ghost small" onclick="logout()">Exit</button>`;
   }
 }
 function enterTeacherView(){
@@ -1282,6 +1290,23 @@ async function deleteSong(id, title){
   await loadSongsFromFirestore();
   if(isTeacher) renderTeacherSongList(); else renderLibrary();
   showToast('🗑️ Song deleted.');
+}
+
+// Logs a practice attempt for named (logged-in) students only — guests
+// aren't tracked since there's no identity to attach the record to.
+async function logAttempt(stage, song, scorePct, correct, total){
+  if(!currentStudent) return;
+  try{
+    await db.collection(ATTEMPTS_COLLECTION).add({
+      studentId: currentStudent.id,
+      studentName: currentStudent.name,
+      songId: song.id,
+      songTitle: songDisplayName(song),
+      stage: STAGE_META[stage] ? STAGE_META[stage].label : stage,
+      scorePct, correct, total,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ console.error('Could not log attempt', e); }
 }
 
 const LANGUAGES = ['All','English','Tamil','Telugu','Kannada','Hindi','Malayalam','Other'];
@@ -1358,15 +1383,9 @@ function startPendingSkillForSong(songId){
 }
 function setLibFilter(l){ libraryLangFilter = l; renderLibrary(); }
 function backToLibrary(){
-  if(isTeacher){ backToTeacherSongs(); return; }
   hideAllViews();
   document.getElementById('view-library').classList.remove('hidden');
   renderLibrary();
-}
-function backToTeacherSongs(){
-  hideAllViews();
-  document.getElementById('teacher-view').classList.remove('hidden');
-  renderTeacherSongList();
 }
 
 function openHub(id){
@@ -1375,36 +1394,18 @@ function openHub(id){
   if(!s) return;
   document.getElementById('hubTranslit').textContent = songTitleTranslit(s);
   document.getElementById('hubNative').textContent = songTitleNative(s);
-  document.getElementById('hubBackBtn').textContent = isTeacher ? '← Your Songs' : '← All songs';
   hideAllViews();
   document.getElementById('view-hub').classList.remove('hidden');
 }
 
 /* ---------- TEACHER SONG LIST ---------- */
 let teacherLangFilter = 'All';
-let teacherSearchQuery = '';
-function setTeacherSearch(v){ teacherSearchQuery = v; renderTeacherSongList(); }
-function songMatchesSearch(s, q){
-  if(!q) return true;
-  const hay = [
-    s.titleNative||'', s.titleTranslit||'', s.title||'', s.language||'',
-    ...(s.lines||[]).map(l=>l.segments||[]).flat().map(sg=>(sg.native||'')+' '+(sg.translit||''))
-  ].join(' ').toLowerCase();
-  return hay.includes(q);
-}
 function renderTeacherSongList(){
   const filterEl = document.getElementById('teacherFilters');
   filterEl.innerHTML = LANGUAGES.map(l=>`<button class="filter-chip ${teacherLangFilter===l?'active':''}" onclick="setTeacherFilter('${l}')">${l}</button>`).join('');
   const listEl = document.getElementById('teacherSongList');
-  let list = teacherLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===teacherLangFilter);
-  const q = teacherSearchQuery.trim().toLowerCase();
-  if(q) list = list.filter(s=>songMatchesSearch(s, q));
-  if(!list.length){
-    listEl.innerHTML = q
-      ? `<div class="empty-state">No songs match "${escapeHtml(teacherSearchQuery.trim())}".</div>`
-      : `<div class="empty-state">No songs yet. Click "+ New Song" to build your first one.</div>`;
-    return;
-  }
+  const list = teacherLangFilter==='All' ? allSongs : allSongs.filter(s=>(s.language||'Other')===teacherLangFilter);
+  if(!list.length){ listEl.innerHTML = `<div class="empty-state">No songs yet. Click "+ New Song" to build your first one.</div>`; return; }
   listEl.innerHTML = list.map(s=>{
     const lineCount = (s.lines||[]).length;
     const sylCount = (s.lines||[]).reduce((a,l)=>a+(l.segments||[]).length,0);
@@ -1428,6 +1429,165 @@ function renderTeacherSongList(){
   }).join('');
 }
 function setTeacherFilter(l){ teacherLangFilter = l; renderTeacherSongList(); }
+
+/* ============================================================================
+   TEACHER — SONGS / STUDENTS panel toggle
+============================================================================ */
+let teacherPanel = 'songs';
+function switchTeacherPanel(panel){
+  teacherPanel = panel;
+  document.querySelectorAll('#teacherPanelTabs .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.panel===panel));
+  document.getElementById('teacher-songs-panel').classList.toggle('hidden', panel!=='songs');
+  document.getElementById('teacher-students-panel').classList.toggle('hidden', panel!=='students');
+  if(panel==='students'){
+    loadStudentsFromFirestore().then(()=>renderTeacherStudentList());
+  }
+}
+
+/* ============================================================================
+   STUDENT DATABASE — full CRUD (teacher-only) + practice records
+   NOTE: this is a lightweight classroom roster, not a secure account system —
+   name/password are stored as plain fields in Firestore, matching the same
+   openness as the song library (both currently allow public read). Fine for
+   low-stakes classroom use; don't have students reuse sensitive passwords.
+============================================================================ */
+async function loadStudentsFromFirestore(){
+  try{
+    const snap = await db.collection(STUDENTS_COLLECTION).orderBy('name').get();
+    allStudents = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){
+    console.error('Could not load students', e);
+    allStudents = [];
+  }
+  return allStudents;
+}
+function renderTeacherStudentList(){
+  const el = document.getElementById('teacherStudentList');
+  if(!allStudents.length){ el.innerHTML = `<div class="empty-state">No students yet. Click "+ Add Student" to add your first one.</div>`; return; }
+  el.innerHTML = allStudents.map(s=>`
+    <div class="song-card" style="margin-bottom:12px;">
+      <div class="rail"></div>
+      <div class="native" style="margin-top:10px;">${escapeHtml(s.name)}</div>
+      <div class="meta-row">
+        ${s.batch?`<span>${escapeHtml(s.batch)}</span>`:''}
+        ${s.mobile?`<span>${escapeHtml(s.mobile)}</span>`:''}
+        ${s.age?`<span>Age ${escapeHtml(String(s.age))}</span>`:''}
+        ${s.gender?`<span>${escapeHtml(s.gender)}</span>`:''}
+        ${s.place?`<span>${escapeHtml(s.place)}</span>`:''}
+        ${s.occupation?`<span>${escapeHtml(s.occupation)}</span>`:''}
+      </div>
+      <div class="song-card-actions">
+        <button class="btn outline small" onclick="viewStudentRecords('${s.id}')">📊 Records</button>
+        <button class="btn outline small" onclick="editStudent('${s.id}')">Edit</button>
+        <button class="btn danger small" onclick="deleteStudent('${s.id}','${escapeAttr(s.name)}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+let currentStudentEditId = null;
+function newStudent(){
+  currentStudentEditId = null;
+  document.getElementById('stEditorTitle').textContent = 'Add Student';
+  ['st-name','st-password','st-batch','st-mobile','st-age','st-place','st-occupation'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('st-gender').value = '';
+  document.getElementById('student-editor-modal').classList.add('show');
+}
+function editStudent(id){
+  const s = allStudents.find(x=>x.id===id);
+  if(!s) return;
+  currentStudentEditId = id;
+  document.getElementById('stEditorTitle').textContent = 'Edit Student';
+  document.getElementById('st-name').value = s.name||'';
+  document.getElementById('st-password').value = s.password||'';
+  document.getElementById('st-batch').value = s.batch||'';
+  document.getElementById('st-mobile').value = s.mobile||'';
+  document.getElementById('st-age').value = s.age||'';
+  document.getElementById('st-gender').value = s.gender||'';
+  document.getElementById('st-place').value = s.place||'';
+  document.getElementById('st-occupation').value = s.occupation||'';
+  document.getElementById('student-editor-modal').classList.add('show');
+}
+function closeStudentEditor(){ document.getElementById('student-editor-modal').classList.remove('show'); }
+async function saveStudent(){
+  const name = document.getElementById('st-name').value.trim();
+  const password = document.getElementById('st-password').value.trim();
+  if(!name || !password){ alert('Please enter both a name and a password.'); return; }
+  const data = {
+    name, password,
+    batch: document.getElementById('st-batch').value.trim(),
+    mobile: document.getElementById('st-mobile').value.trim(),
+    age: document.getElementById('st-age').value ? parseInt(document.getElementById('st-age').value,10) : null,
+    gender: document.getElementById('st-gender').value,
+    place: document.getElementById('st-place').value.trim(),
+    occupation: document.getElementById('st-occupation').value.trim()
+  };
+  const btn = document.getElementById('saveStudentBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    if(currentStudentEditId){
+      await db.collection(STUDENTS_COLLECTION).doc(currentStudentEditId).update(data);
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection(STUDENTS_COLLECTION).add(data);
+    }
+    showToast('✅ Student saved.');
+    closeStudentEditor();
+    await loadStudentsFromFirestore();
+    renderTeacherStudentList();
+  }catch(e){
+    console.error('Save student failed', e);
+    alert('Could not save this student. ' + (e.message||'Check your Firebase config and Firestore rules.'));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Student';
+  }
+}
+async function deleteStudent(id, name){
+  if(!confirm(`Delete "${name}"? This removes their login and cannot be undone. Their past attempt records are kept for your history.`)) return;
+  try{
+    await db.collection(STUDENTS_COLLECTION).doc(id).delete();
+    await loadStudentsFromFirestore();
+    renderTeacherStudentList();
+    showToast('🗑️ Student deleted.');
+  }catch(e){
+    console.error('Delete student failed', e);
+    alert('Could not delete this student. ' + (e.message||''));
+  }
+}
+async function viewStudentRecords(id){
+  const s = allStudents.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('srTitle').textContent = `${s.name}'s Records`;
+  document.getElementById('srSummary').textContent = 'Loading…';
+  document.getElementById('srList').innerHTML = '';
+  document.getElementById('student-records-modal').classList.add('show');
+  try{
+    const snap = await db.collection(ATTEMPTS_COLLECTION).where('studentId','==',id).get();
+    const attempts = snap.docs.map(d=>d.data()).sort((a,b)=>{
+      const at = a.timestamp && a.timestamp.toMillis ? a.timestamp.toMillis() : 0;
+      const bt = b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0;
+      return bt-at;
+    });
+    document.getElementById('srSummary').textContent = `${attempts.length} attempt${attempts.length===1?'':'s'} recorded.`;
+    if(!attempts.length){
+      document.getElementById('srList').innerHTML = '<p class="muted" style="font-size:13px;">No attempts yet.</p>';
+      return;
+    }
+    document.getElementById('srList').innerHTML = attempts.map(a=>{
+      const when = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().toLocaleString() : '';
+      const good = a.scorePct>=70;
+      return `<div class="line-block" style="margin-bottom:8px;padding:12px;">
+        <div class="spread">
+          <span style="font-family:var(--font-display);font-size:14px;">${escapeHtml(a.songTitle||'')}</span>
+          <span class="pill" style="color:${good?'var(--correct)':'var(--incorrect)'};border-color:${good?'var(--correct)':'var(--incorrect)'};background:${good?'var(--correct-bg)':'var(--incorrect-bg)'};">${a.scorePct}%</span>
+        </div>
+        <div class="muted" style="font-size:11.5px;margin-top:4px;">${escapeHtml(a.stage||'')} &middot; ${a.correct}/${a.total} correct &middot; ${when}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    console.error('Could not load records', e);
+    document.getElementById('srSummary').textContent = 'Could not load records.';
+  }
+}
+function closeStudentRecords(){ document.getElementById('student-records-modal').classList.remove('show'); }
 
 function populateRootScaleSelects(){
   const rootSel = document.getElementById('song-rootnote');
@@ -1488,7 +1648,7 @@ function newSong(){
   document.getElementById('chord-keyroot').value = 'C';
   document.getElementById('chord-difficulty').value = 'beginner';
   document.getElementById('beatEditAudio').src = '';
-  rebuildLinesDOM(); renderPaletteChips();
+  renderLines(); renderPaletteChips();
   document.getElementById('teacher-songs-panel').classList.add('hidden');
   document.getElementById('editor-view').classList.remove('hidden');
 }
@@ -1532,7 +1692,7 @@ function editSong(id){
   document.getElementById('chord-keyroot').value = s.chordKeyRoot || 'C';
   document.getElementById('chord-difficulty').value = s.chordDifficulty || 'beginner';
   document.getElementById('beatEditAudio').src = s.audioUrl || '';
-  rebuildLinesDOM(); renderPaletteChips();
+  renderLines(); renderPaletteChips();
   document.getElementById('teacher-songs-panel').classList.add('hidden');
   document.getElementById('editor-view').classList.remove('hidden');
 }
@@ -1637,193 +1797,25 @@ function syncAllSegmentsFromDOM(){
     });
   });
 }
-// Copies this line's measure:beat pattern down to the next line, shifting
-// the measure number by +1 and keeping every beat value identical — e.g.
-// 1:1 1:2 1:2.5 1:3 1:4  ->  2:1 2:2 2:2.5 2:3 2:4
-// Matches syllable-by-syllable by position, so it works best when both
-// lines have the same number of syllables (typical for repeated melodic
-// patterns like verse lines).
-/* ---------------------------------------------------------------------------
-   UNDO — Ctrl+Z (Cmd+Z on Mac) steps back through structural line edits:
-   add/remove/move/merge/split/copy-paste a line, add/remove a syllable,
-   toggle a paragraph break, or copy a beat pattern forward. A snapshot of
-   currentLines is pushed right before each such change (after pulling in
-   any just-typed text, so undo never throws away pending typing along
-   with the structural change). Plain text edits inside a single field use
-   the browser's own native undo, which this does not interfere with.
---------------------------------------------------------------------------- */
-let undoStack = [];
-const UNDO_LIMIT = 50;
-function pushUndoSnapshot(){
-  undoStack.push(JSON.stringify(currentLines));
-  if(undoStack.length > UNDO_LIMIT) undoStack.shift();
-}
-function undoLastChange(){
-  if(!undoStack.length){ showToast('Nothing to undo.'); return; }
-  currentLines = JSON.parse(undoStack.pop());
-  quickAddState = {};
-  rebuildLinesDOM();
-  showToast('Undid last change.');
-}
-document.addEventListener('keydown', (e)=>{
-  const key = e.key.toLowerCase();
-  if((e.ctrlKey||e.metaKey) && key==='z' && !e.shiftKey){
-    const editorVisible = document.getElementById('editor-view') && !document.getElementById('editor-view').classList.contains('hidden');
-    if(!editorVisible) return;
-    const tag = (document.activeElement && document.activeElement.tagName) || '';
-    if(tag==='INPUT' || tag==='TEXTAREA') return; // let the browser's native per-field undo handle it
-    e.preventDefault();
-    undoLastChange();
-  }
-});
-
-// Copies this line's measure:beat pattern down to the next line, preserving
-// each syllable's relative beat position but shifting every measure number
-// forward by however many measures THIS line actually spans — not a flat
-// +1. A line can now hold multiple measures (e.g. 5:1..5:4, 6:1..6:4), so
-// "next line continues right after" means shifting by that whole span
-// (2 measures here), not by 1, or the copy would land back on top of this
-// line's own later measures instead of continuing past them.
-function copyBeatPatternToNextLine(li){
-  syncAllSegmentsFromDOM();
-  if(li >= currentLines.length-1){ showToast('This is the last line — add or insert a line below first.'); return; }
-  const src = currentLines[li].segments;
-  const dst = currentLines[li+1].segments;
-  if(!src.length){ showToast('This line has no beat pattern to copy yet.'); return; }
-  const measures = src.map(s=>s.measure).filter(m=>m!=null);
-  if(!measures.length){ showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
-  const span = Math.max(...measures) - Math.min(...measures) + 1; // measures this line spans
-  pushUndoSnapshot();
-  const n = Math.min(src.length, dst.length);
-  let copied = 0;
-  for(let i=0;i<n;i++){
-    if(src[i].measure==null || src[i].beat==null) continue;
-    dst[i].measure = src[i].measure + span;
-    dst[i].beat = src[i].beat;
-    copied++;
-  }
-  if(!copied){ undoStack.pop(); showToast('This line has no beat numbers set yet — fill in measure:beat here first.'); return; }
-  const shiftLabel = `measure +${span}`;
-  if(dst.length > n) showToast(`Copied ${copied} beat${copied===1?'':'s'} to Line ${li+2} (${shiftLabel}) — it has more syllables, so fill the rest manually.`);
-  else if(src.length > dst.length) showToast(`Copied first ${copied} beat${copied===1?'':'s'} to Line ${li+2} (${shiftLabel}) — this line has more syllables than the next.`);
-  else showToast(`Copied beat pattern to Line ${li+2} (${shiftLabel}).`);
-  rebuildLinesDOM();
-}
 
 /* ---------------------------------------------------------------------------
    TAB 2 · SYLLABLE SPLIT builder (lines / segments / quick-add)
 --------------------------------------------------------------------------- */
-let copiedLine = null;           // deep-cloned {segments, paragraphBreak} — chords, lyrics, lead notes, beats, all of it
-let copiedLineLabel = '';
-function addLine(){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.push(blankLine()); quickAddState={}; rebuildLinesDOM(); }
-function insertLineAfter(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; rebuildLinesDOM(); }
-function removeLine(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines.splice(li,1); quickAddState={}; rebuildLinesDOM(); }
-function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; rebuildLinesDOM(); }
-function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); pushUndoSnapshot(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; rebuildLinesDOM(); }
-// Copies the WHOLE line — every syllable's chord, native/translit lyric,
-// lead note, and measure:beat — so it can be pasted as an exact duplicate
-// anywhere: right below any other line, or at the very top.
-function copyLine(li){
-  syncAllSegmentsFromDOM();
-  copiedLine = JSON.parse(JSON.stringify(currentLines[li]));
-  copiedLineLabel = `Line ${li+1}`;
-  showToast(`Copied ${copiedLineLabel} — click "Paste" on any line (or "Paste at Top") to insert the duplicate there.`);
-  rebuildLinesDOM();
-}
-function pasteLineAfter(li){
-  if(!copiedLine) return;
-  syncAllSegmentsFromDOM();
-  pushUndoSnapshot();
-  currentLines.splice(li+1, 0, JSON.parse(JSON.stringify(copiedLine)));
-  quickAddState={};
-  rebuildLinesDOM();
-  showToast(`Pasted ${copiedLineLabel} below Line ${li+1}.`);
-}
-function pasteLineAtTop(){
-  if(!copiedLine) return;
-  syncAllSegmentsFromDOM();
-  pushUndoSnapshot();
-  currentLines.splice(0, 0, JSON.parse(JSON.stringify(copiedLine)));
-  quickAddState={};
-  rebuildLinesDOM();
-  showToast(`Pasted ${copiedLineLabel} at the top.`);
-}
-// Combines this line with the next one — all syllables from both end up
-// in a single editor row (e.g. two 1-measure lines become one 2-measure
-// line). The practice stages will still show them as separate measure
-// lines to students as long as the beat numbers are filled in.
-function mergeLineWithNext(li){
-  syncAllSegmentsFromDOM();
-  if(li >= currentLines.length-1) return;
-  pushUndoSnapshot();
-  const a = currentLines[li], b = currentLines[li+1];
-  a.segments = [...a.segments, ...b.segments];
-  currentLines.splice(li+1, 1);
-  quickAddState = {};
-  rebuildLinesDOM();
-  showToast(`Merged Line ${li+2} into Line ${li+1}.`);
-}
-// Splits this line back into one line per measure, using each syllable's
-// measure number — the reverse of merging. Requires measure:beat to
-// already be filled in on this line's syllables.
-function splitLineByMeasure(li){
-  syncAllSegmentsFromDOM();
-  const line = currentLines[li];
-  const segs = line.segments||[];
-  if(!segs.length) return;
-  const groups = [];
-  let cur = null;
-  segs.forEach(seg=>{
-    const m = seg.measure;
-    const startNew = !cur || (cur.measure!=null && m!=null && m!==cur.measure);
-    if(startNew){ cur = {measure:m, segs:[]}; groups.push(cur); }
-    else if(cur.measure==null && m!=null){ cur.measure = m; }
-    cur.segs.push(seg);
-  });
-  if(groups.length<2){
-    showToast('This line only spans one measure (or measure numbers are not filled in yet) — nothing to split.');
-    return;
-  }
-  pushUndoSnapshot();
-  const newLines = groups.map((g,gi)=>({segments:g.segs, paragraphBreak: gi===0 ? !!line.paragraphBreak : false}));
-  currentLines.splice(li, 1, ...newLines);
-  quickAddState = {};
-  rebuildLinesDOM();
-  showToast(`Split Line ${li+1} into ${newLines.length} lines by measure.`);
-}
-// Manual split at any syllable position, regardless of measure numbers —
-// useful before beats are filled in, or to split somewhere other than a
-// measure boundary.
-function splitLineAtSyllable(li){
-  syncAllSegmentsFromDOM();
-  const input = document.getElementById(`split-at-${li}`);
-  const n = parseInt(input.value, 10);
-  const line = currentLines[li];
-  const segs = line.segments||[];
-  if(!n || n<1 || n>=segs.length){
-    showToast(`Enter a syllable number between 1 and ${segs.length-1} to split after.`);
-    return;
-  }
-  pushUndoSnapshot();
-  const newLines = [
-    {segments:segs.slice(0,n), paragraphBreak: !!line.paragraphBreak},
-    {segments:segs.slice(n), paragraphBreak:false}
-  ];
-  currentLines.splice(li, 1, ...newLines);
-  quickAddState = {};
-  rebuildLinesDOM();
-  showToast(`Split Line ${li+1} after syllable ${n}.`);
-}
-function toggleParagraphBreak(li){ pushUndoSnapshot(); currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
-function addSegment(li){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.push(blankSegment()); rebuildLinesDOM(); }
-function removeSegment(li,si){ syncAllSegmentsFromDOM(); pushUndoSnapshot(); currentLines[li].segments.splice(si,1); rebuildLinesDOM(); }
+function addLine(){ syncAllSegmentsFromDOM(); currentLines.push(blankLine()); quickAddState={}; renderLines(); }
+function insertLineAfter(li){ syncAllSegmentsFromDOM(); currentLines.splice(li+1,0,blankLine()); quickAddState={}; renderLines(); }
+function removeLine(li){ syncAllSegmentsFromDOM(); currentLines.splice(li,1); quickAddState={}; renderLines(); }
+function moveLineUp(li){ if(li===0) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li-1,0,l); quickAddState={}; renderLines(); }
+function moveLineDown(li){ if(li===currentLines.length-1) return; syncAllSegmentsFromDOM(); const [l]=currentLines.splice(li,1); currentLines.splice(li+1,0,l); quickAddState={}; renderLines(); }
+function toggleParagraphBreak(li){ currentLines[li].paragraphBreak = !currentLines[li].paragraphBreak; renderLines(); }
+function addSegment(li){ syncAllSegmentsFromDOM(); currentLines[li].segments.push(blankSegment()); renderLines(); }
+function removeSegment(li,si){ syncAllSegmentsFromDOM(); currentLines[li].segments.splice(si,1); renderLines(); }
 
 function toggleQuickAdd(li){ syncAllSegmentsFromDOM(); const st=qaGet(li); st.open=!st.open; renderLines(); }
 function cancelQuickAdd(li){ delete quickAddState[li]; renderLines(); }
 function startTapSplit(li){
   const st = qaGet(li);
-  st.nativeText = normalizePastedText(document.getElementById('qa-native-'+li).value);
-  st.translitText = normalizePastedText(document.getElementById('qa-translit-'+li).value);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
   if(!st.nativeText.trim() && !st.translitText.trim()){ alert('Paste at least one line (native script or transliteration) first.'); return; }
   st.started = true; st.nativeGaps = new Set(); st.translitGaps = new Set();
   renderLines();
@@ -1841,7 +1833,6 @@ function chunksFromGaps(units, gapsSet){
   return chunks;
 }
 function applyQuickSegments(li, nativeChunks, translitChunks){
-  syncAllSegmentsFromDOM();
   const hasNative=!!nativeChunks, hasTranslit=!!translitChunks;
   if(hasNative && hasTranslit && nativeChunks.length!==translitChunks.length){
     alert(`Split counts don't match — native has ${nativeChunks.length} syllables, transliteration has ${translitChunks.length}.`);
@@ -1866,18 +1857,18 @@ function convertQuickAdd(li){
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
   const nativeChunks = hasNative ? chunksFromGaps(graphemes(st.nativeText), st.nativeGaps) : null;
   const translitChunks = hasTranslit ? chunksFromGaps(graphemes(st.translitText), st.translitGaps) : null;
-  if(applyQuickSegments(li, nativeChunks, translitChunks)) rebuildLinesDOM();
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
 }
 function quickDelimiterSplit(li){
   const st = qaGet(li);
-  st.nativeText = normalizePastedText(document.getElementById('qa-native-'+li).value);
-  st.translitText = normalizePastedText(document.getElementById('qa-translit-'+li).value);
+  st.nativeText = document.getElementById('qa-native-'+li).value;
+  st.translitText = document.getElementById('qa-translit-'+li).value;
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
   if(!hasNative && !hasTranslit){ alert('Paste at least one line first.'); return; }
   const splitFn = txt => txt.split(/[-\s]+/).map(s=>s.trim()).filter(Boolean);
   const nativeChunks = hasNative ? splitFn(st.nativeText) : null;
   const translitChunks = hasTranslit ? splitFn(st.translitText) : null;
-  if(applyQuickSegments(li, nativeChunks, translitChunks)) rebuildLinesDOM();
+  if(applyQuickSegments(li, nativeChunks, translitChunks)) renderLines();
 }
 function qaTapRowsHtml(li, st){
   const hasNative = st.nativeText.trim().length>0, hasTranslit = st.translitText.trim().length>0;
@@ -1907,28 +1898,9 @@ function qaTapRowsHtml(li, st){
   html += '</div>';
   return html;
 }
-// renderLines() = sync current DOM values into currentLines, THEN rebuild.
-// Only safe to call when the DOM still matches currentLines' shape (i.e.
-// no structural change has happened since the last render) — otherwise
-// the sync reads stale DOM left over from the OLD structure into the NEW
-// (just-mutated) currentLines and corrupts it. Any function that already
-// calls syncAllSegmentsFromDOM() itself BEFORE mutating currentLines (or
-// replaces currentLines wholesale, e.g. loading a song or undoing) must
-// call rebuildLinesDOM() directly instead, skipping this redundant sync.
 function renderLines(){
   syncAllSegmentsFromDOM();
-  rebuildLinesDOM();
-}
-function rebuildLinesDOM(){
   document.getElementById('beatEditAudio').src = document.getElementById('song-audio').value.trim();
-  const dupBox = document.getElementById('dup-scan-results');
-  if(dupBox) dupBox.innerHTML = '';
-  const rawBox = document.getElementById('raw-data-panel');
-  if(rawBox) rawBox.innerHTML = '';
-  const pasteTopBar = document.getElementById('paste-top-bar');
-  pasteTopBar.innerHTML = copiedLine
-    ? `<button class="btn outline small" type="button" onclick="pasteLineAtTop()">&#128203; Paste ${copiedLineLabel} at Top</button><span class="muted" style="font-size:12px;align-self:center;">Copied ${copiedLineLabel} &mdash; use "Paste Below" on any line to insert it there too.</span>`
-    : '';
   const container = document.getElementById('lines-container');
   container.innerHTML = '';
   currentLines.forEach((line, li)=>{
@@ -1940,7 +1912,6 @@ function rebuildLinesDOM(){
     }
     const block = document.createElement('div');
     block.className = 'line-block';
-    block.id = `line-block-${li}`;
 
     // ---- lead-sheet grid: gutter labels + one scrollable column per syllable ----
     let colsHtml = '';
@@ -1982,8 +1953,6 @@ function rebuildLinesDOM(){
         <div class="row" style="gap:8px;"><strong style="font-size:13px;color:var(--gold-bright);">Line ${li+1}</strong>
           <button class="btn ghost small" type="button" title="Move up" ${isFirst?'disabled':''} onclick="moveLineUp(${li})">&uarr;</button>
           <button class="btn ghost small" type="button" title="Move down" ${isLast?'disabled':''} onclick="moveLineDown(${li})">&darr;</button>
-          <button class="btn ghost small" type="button" title="Copy this whole line — chords, lyrics, lead notes, and beats" onclick="copyLine(${li})">&#128203; Copy Line</button>
-          <button class="btn outline small" type="button" title="${isLast ? 'No line below to merge with' : 'Combine this line with the next one into a single row'}" ${isLast?'disabled':''} onclick="mergeLineWithNext(${li})">&#8595; Merge with Next Line</button>
         </div>
         <div class="row" style="gap:14px;">${paraLabel}<button class="btn danger small" type="button" onclick="removeLine(${li})">Remove Line</button></div>
       </div>
@@ -2001,135 +1970,12 @@ function rebuildLinesDOM(){
       <div class="row" style="margin-top:10px;">
         <button class="btn ghost small" type="button" onclick="addSegment(${li})">+ Add Syllable</button>
         <button class="btn outline small" type="button" onclick="insertLineAfter(${li})">&crarr; Insert Line Below</button>
-        <button class="btn outline small" type="button" title="${copiedLine ? 'Insert a duplicate of '+copiedLineLabel+' right after this line' : 'Copy a line first, then paste it here'}" ${copiedLine?'':'disabled'} onclick="pasteLineAfter(${li})">&#128203; Paste ${copiedLine ? copiedLineLabel : 'Line'} Below</button>
-        <button class="btn outline small" type="button" title="Copy this line's measure:beat pattern to the next line, shifted forward by however many measures this line spans" ${isLast?'disabled':''} onclick="copyBeatPatternToNextLine(${li})">&#10697; Copy Beats to Next Line</button>
-        <button class="btn outline small" type="button" title="Split this line into one line per measure, using each syllable's measure number" onclick="splitLineByMeasure(${li})">&#9986; Split into Measures</button>
-        <span class="row" style="gap:4px;">
-          <input type="number" min="1" id="split-at-${li}" placeholder="#" style="width:52px;padding:6px 8px;font-size:12px;" title="Syllable number to split after">
-          <button class="btn outline small" type="button" title="Split this line right after that syllable number" onclick="splitLineAtSyllable(${li})">&#9986; Split Here</button>
-        </span>
         <button class="btn outline small" type="button" onclick="toggleQuickAdd(${li})">&#9889; ${st.open?'Hide Quick Add':'Quick Add from Pasted Line'}</button>
       </div>`;
     container.appendChild(block);
   });
   if(!currentLines.length){
     container.innerHTML = '<p class="muted" style="font-size:13px;">Click "+ Add Lyric Line" to begin.</p>';
-  }
-  renderLineJumpRail();
-}
-// A vertical strip of small clickable dashes on the right edge — one per
-// lyric line — so a song with many lines can be jumped to instantly
-// instead of scrolling through the whole editor.
-function renderLineJumpRail(){
-  const rail = document.getElementById('line-jump-rail');
-  if(!rail) return;
-  rail.innerHTML = currentLines.map((line,li)=>
-    `<button type="button" class="line-jump-dash" id="line-jump-dash-${li}" title="Jump to Line ${li+1}" onclick="jumpToLine(${li})"></button>`
-  ).join('');
-}
-function jumpToLine(li){
-  const block = document.getElementById(`line-block-${li}`);
-  if(!block) return;
-  block.scrollIntoView({behavior:'smooth', block:'start'});
-  document.querySelectorAll('.line-jump-dash').forEach(d=>d.classList.remove('active'));
-  const dash = document.getElementById(`line-jump-dash-${li}`);
-  if(dash) dash.classList.add('active');
-}
-// Scans every pair of lines for (a) two lines that are exact full
-// duplicates of each other, and (b) two lines that merely SHARE a run of
-// 3+ consecutive matching syllables somewhere inside them — the pattern
-// that shows up when a line got copy-pasted and only partly edited
-// afterward (e.g. the chord changed but the lyrics/beats were never
-// updated on one copy). Matching is on native text (falling back to
-// transliteration), trimmed and case-insensitive.
-const DUP_MIN_OVERLAP = 3;
-function findDuplicateLines(){
-  const seqs = currentLines.map(line =>
-    (line.segments||[]).map(s => (s.native||s.translit||'').trim().toLowerCase()).filter(Boolean)
-  );
-  const results = [];
-  for(let i=0;i<seqs.length;i++){
-    for(let j=i+1;j<seqs.length;j++){
-      const A = seqs[i], B = seqs[j];
-      if(!A.length || !B.length) continue;
-      if(A.length===B.length && A.every((v,k)=>v===B[k])){
-        results.push({type:'exact', a:i, b:j, detail:A.join(' ')});
-        continue;
-      }
-      let best=0, bestSeq=[];
-      for(let x=0;x<A.length;x++){
-        for(let y=0;y<B.length;y++){
-          let len=0;
-          while(x+len<A.length && y+len<B.length && A[x+len]===B[y+len]) len++;
-          if(len>best){ best=len; bestSeq=A.slice(x,x+len); }
-        }
-      }
-      if(best>=DUP_MIN_OVERLAP){
-        results.push({type:'overlap', a:i, b:j, detail:bestSeq.join(' '), count:best});
-      }
-    }
-  }
-  return results;
-}
-function runDuplicateScan(){
-  syncAllSegmentsFromDOM();
-  const results = findDuplicateLines();
-  const box = document.getElementById('dup-scan-results');
-  if(!results.length){
-    box.innerHTML = `<div class="dup-scan-clean">&#10003; No duplicate or overlapping lines found.</div>`;
-    return;
-  }
-  box.innerHTML = results.map(r=>{
-    const label = r.type==='exact'
-      ? `Line ${r.a+1} and Line ${r.b+1} are exact duplicates of each other`
-      : `Line ${r.a+1} and Line ${r.b+1} share ${r.count} repeated syllables in a row`;
-    return `<div class="dup-scan-item">
-      <div>${escapeHtml(label)}</div>
-      <div class="dup-detail">"${escapeHtml(r.detail)}"</div>
-      <div class="row">
-        <button class="btn ghost small" type="button" onclick="jumpToLine(${r.a})">Jump to Line ${r.a+1}</button>
-        <button class="btn ghost small" type="button" onclick="jumpToLine(${r.b})">Jump to Line ${r.b+1}</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-// Dumps the exact underlying data for every line/syllable/chord/note/beat
-// as plain text — for pasting into a bug report when a screenshot alone
-// is ambiguous (e.g. a row scrolled to different positions across shots).
-function showRawSongData(){
-  syncAllSegmentsFromDOM();
-  const compact = currentLines.map((line,li)=>({
-    line: li+1,
-    paragraphBreak: !!line.paragraphBreak,
-    segments: (line.segments||[]).map(s=>({
-      native:s.native||'', translit:s.translit||'', note:s.note||'',
-      measure:s.measure, beat:s.beat,
-      chord: (s.correctChords&&s.correctChords[0]&&s.correctChords[0].chord) || null
-    }))
-  }));
-  const json = JSON.stringify(compact, null, 2);
-  const panel = document.getElementById('raw-data-panel');
-  panel.innerHTML = `
-    <div class="dup-scan-clean" style="color:var(--text);border-color:var(--line);background:var(--surface-2);">
-      <p class="muted" style="font-size:12px;margin-bottom:8px;">Tap the box to select all, copy it, and paste it in chat — this is the exact line/syllable/chord/beat data for this song, so it can be checked precisely instead of from a screenshot.</p>
-      <textarea readonly id="raw-data-textarea" style="width:100%;min-height:240px;font-family:var(--font-mono);font-size:11px;" onclick="this.select()">${escapeHtml(json)}</textarea>
-      <div class="row" style="margin-top:8px;">
-        <button class="btn outline small" type="button" onclick="copyRawSongData()">Copy to Clipboard</button>
-        <button class="btn ghost small" type="button" onclick="document.getElementById('raw-data-panel').innerHTML=''">Close</button>
-      </div>
-    </div>`;
-  const ta = document.getElementById('raw-data-textarea');
-  ta.focus();
-  ta.select();
-}
-function copyRawSongData(){
-  const ta = document.getElementById('raw-data-textarea');
-  ta.select();
-  const done = ()=>showToast('Copied — paste it in chat.');
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ document.execCommand('copy'); done(); });
-  } else {
-    document.execCommand('copy'); done();
   }
 }
 function onAudioPathChange(){
@@ -2279,7 +2125,6 @@ function updateBeatTapPreview(){
   el.textContent = `${prev}  \u25b6 ${cur} \u25c0  ${next}`;
 }
 function doBeatTap(){
-  syncAllSegmentsFromDOM();
   refreshBeatTapFlat();
   if(!beatTapFlat.length || beatTapIndex>=beatTapFlat.length) return;
   const song = {bpm:parseFloat(document.getElementById('song-bpm').value)||100, timeSigTop:parseInt(document.getElementById('song-timesig').value)||4, startOffset:parseFloat(document.getElementById('song-offset').value)||0};
@@ -2289,7 +2134,7 @@ function doBeatTap(){
   f.seg.beat = Math.round(beat*2)/2; // snap to nearest half-beat
   beatTapIndex++;
   updateBeatTapPreview();
-  rebuildLinesDOM();
+  renderLines();
 }
 document.getElementById('beatTapBtn').onclick = doBeatTap;
 document.addEventListener('keydown', (e)=>{
@@ -2388,7 +2233,7 @@ function flowFooterHtml(){
       <button class="btn ghost" onclick="renderCurrentStage()">↺ Try Again</button>
       ${continueBtn}
       <button class="btn outline" onclick="exitFlow()">🏠 This Song's Menu</button>
-      <button class="btn outline" onclick="backToLibraryFromFlow()">${isTeacher ? '📚 Back to Your Songs' : '📚 Choose Another Song'}</button>
+      <button class="btn outline" onclick="backToLibraryFromFlow()">📚 Choose Another Song</button>
     </div>
   </div>`;
 }
@@ -2501,18 +2346,13 @@ function sp1Check(){
     <div class="muted" style="margin-top:6px;font-size:13px;">${totalCorrect} of ${totalAnswer} syllable splits correct${totalStudent>totalCorrect?` · ${totalStudent-totalCorrect} extra/incorrect taps`:''}</div></div>`;
   document.getElementById('sp1-check-btn').classList.add('hidden');
   document.getElementById('sp1-footer').innerHTML = flowFooterHtml();
+  logAttempt('syllable', sp1Song, pct, totalCorrect, totalAnswer);
 }
 
 /* ---------------------------------------------------------------------------
    STAGE 2 · BEAT & MEASURE — listen & follow, then a placement quiz
 --------------------------------------------------------------------------- */
-let sp2Song=null, sp2Flat=[], sp2Groups=[], sp2FlatGroupIndex=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0, sp2LastActiveLine=-1;
-/* Loop points are checked once per animation frame (~16ms), and the audio
-   keeps playing between checks — so a plain ">= loopEnd" check always lets
-   a small sliver of the next measure bleed through before the seek lands.
-   Triggering the reset this far *before* the exact boundary absorbs that
-   rAF + seek latency so the loop sounds clean. */
-const LOOP_LOOKAHEAD = 0.05;
+let sp2Song=null, sp2Flat=[], sp2HalfBeat=false, sp2Raf=null, sp2LoopOn=false, sp2LoopStart=0, sp2LoopEnd=0;
 function measureRangeToTime(song, startM, endM){
   const startTime = measureBeatToTime(startM, 1, song);
   const endTime = measureBeatToTime(endM+1, 1, song);
@@ -2521,7 +2361,6 @@ function measureRangeToTime(song, startM, endM){
 function stageRenderBeat(panel, song){
   sp2Song = song;
   sp2Flat = flattenSegments(song);
-  sp2Groups = explodeToMeasureLines(song);
   const a = document.getElementById('flowAudio');
   const hasAudio = !!(song.audioUrl && song.audioUrl.trim());
   let html = '';
@@ -2572,16 +2411,16 @@ function stageRenderBeat(panel, song){
 
   // quiz grid
   const quizEl = document.getElementById('sp2-quiz');
-  quizEl.innerHTML = sp2Groups.map(g=>{
-    const items = g.items.map(f=>{
-      const label = f.seg.native || f.seg.translit || '—';
-      return `<div class="beatquiz-item" id="sp2-item-${f.li}-${f.si}">
+  quizEl.innerHTML = (song.lines||[]).map((line,li)=>{
+    const items = (line.segments||[]).map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      return `<div class="beatquiz-item" id="sp2-item-${li}-${si}">
         <div class="txt">${escapeHtml(label)}</div>
         <div class="mb-row">
-          <input type="number" min="1" id="sp2-m-${f.li}-${f.si}" placeholder="m">
-          <input type="number" step="0.5" min="1" id="sp2-b-${f.li}-${f.si}" placeholder="beat">
+          <input type="number" min="1" id="sp2-m-${li}-${si}" placeholder="m">
+          <input type="number" step="0.5" min="1" id="sp2-b-${li}-${si}" placeholder="beat">
         </div>
-        <div class="answer-lbl" id="sp2-a-${f.li}-${f.si}"></div>
+        <div class="answer-lbl" id="sp2-a-${li}-${si}"></div>
       </div>`;
     }).join('');
     return `<div class="beatquiz-line">${items}</div>`;
@@ -2630,26 +2469,19 @@ function sp2RenderRail(){
 function sp2RenderLyricStage(){
   const stage = document.getElementById('sp2-stage');
   if(!sp2Flat.length){ stage.innerHTML = '<div class="lyric-line">No lyrics yet.</div>'; return; }
-  let html = '';
-  sp2FlatGroupIndex = new Array(sp2Flat.length);
-  let flatI = 0;
-  sp2Groups.forEach((g,gi)=>{
-    html += `<div class="lyric-line" data-gi="${gi}">`;
-    g.items.forEach(f=>{
-      const label = f.seg.native || f.seg.translit || '·';
-      html += ` <span class="syll upcoming" data-i="${flatI}">${escapeHtml(label)}</span>`;
-      sp2FlatGroupIndex[flatI] = gi;
-      flatI++;
-    });
-    html += '</div>';
+  let html = '<div class="lyric-line current-line">';
+  let lastLi = 0;
+  sp2Flat.forEach((f,i)=>{
+    if(f.li !== lastLi && f.si===0){ html += '</div><div class="lyric-line">'; lastLi = f.li; }
+    const label = f.seg.native || f.seg.translit || '·';
+    html += ` <span class="syll upcoming" data-i="${i}">${escapeHtml(label)}</span>`;
   });
+  html += '</div>';
   stage.innerHTML = html;
-  stage.scrollTop = 0;
-  sp2LastActiveLine = -1;
 }
 function sp2Loop(){
   const a = document.getElementById('flowAudio');
-  if(sp2LoopOn && a.currentTime>=sp2LoopEnd-LOOP_LOOKAHEAD){ a.currentTime = sp2LoopStart; }
+  if(sp2LoopOn && a.currentTime>=sp2LoopEnd){ a.currentTime = sp2LoopStart; }
   const t = a.currentTime;
   document.getElementById('sp2-cur').textContent = fmtTime(t);
   const bar = document.getElementById('sp2-seek');
@@ -2675,14 +2507,6 @@ function sp2Loop(){
     el.classList.remove('sung','active','upcoming');
     if(i<activeIdx) el.classList.add('sung'); else if(i===activeIdx) el.classList.add('active'); else el.classList.add('upcoming');
   });
-  if(activeIdx>=0){
-    const activeGi = sp2FlatGroupIndex[activeIdx];
-    if(activeGi !== sp2LastActiveLine){
-      sp2LastActiveLine = activeGi;
-      const lineEl = document.querySelector(`#sp2-stage .lyric-line[data-gi="${activeGi}"]`);
-      if(lineEl) lineEl.scrollIntoView({behavior:'smooth', block:'center'});
-    }
-  }
   sp2Raf = requestAnimationFrame(sp2Loop);
 }
 function sp2Check(){
@@ -2706,6 +2530,7 @@ function sp2Check(){
     <div class="muted" style="margin-top:6px;font-size:13px;">${correct} of ${total} syllables placed correctly</div></div>`;
   document.getElementById('sp2-check-btn').classList.add('hidden');
   document.getElementById('sp2-footer').innerHTML = flowFooterHtml();
+  logAttempt('beat', sp2Song, pct, correct, total);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2819,7 +2644,7 @@ function sp3StartLoop(){
   cancelAnimationFrame(sp3Raf);
   const step=()=>{
     const a = document.getElementById('flowAudio');
-    if(sp3LoopOn && a.currentTime>=sp3LoopEnd-LOOP_LOOKAHEAD){ a.currentTime = sp3LoopStart; }
+    if(sp3LoopOn && a.currentTime>=sp3LoopEnd){ a.currentTime = sp3LoopStart; }
     document.getElementById('sp3-cur').textContent = fmtTime(a.currentTime);
     const bar = document.getElementById('sp3-seek');
     if(!bar.matches(':active')) bar.value = a.currentTime;
@@ -2863,43 +2688,15 @@ function sp3RenderRootStep(el){
 function sp3PickRoot(v){ sp3Root=v; document.querySelectorAll('#sp3-notewheel .note-btn').forEach(b=>b.classList.toggle('sel', b.dataset.v===v)); }
 function sp3CheckRoot(){
   const ok = sp3Root===sp3Song.rootNote;
-  const banner = document.getElementById('sp3-root-banner');
-  if(ok){
-    const rootLabel = (ROOT_NOTES.find(r=>r.value===sp3Song.rootNote)||{}).label || sp3Song.rootNote;
-    banner.innerHTML = `
-      <div class="score-banner good" style="margin-top:16px;">
-        <div class="big">✓ Correct</div>
-        <div class="muted" style="margin-top:6px;font-size:13px;">Root note: ${escapeHtml(rootLabel)}</div>
-      </div>
-      <div class="row"><button class="btn gold" onclick="sp3GoStep('majorminor')">Next: Major or Minor →</button></div>`;
-    document.getElementById('sp3-root-check-btn').classList.add('hidden');
-  } else {
-    banner.innerHTML = `
-      <div class="score-banner bad" style="margin-top:16px;">
-        <div class="big">✗ Wrong note</div>
-        <div class="muted" style="margin-top:6px;font-size:13px;">Listen again and try once more, or reveal the answer.</div>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn outline" onclick="sp3RetryRoot()">Try Again</button>
-        <button class="btn ghost" onclick="sp3RevealRoot()">Show Answer</button>
-      </div>`;
-    document.getElementById('sp3-root-check-btn').classList.add('hidden');
-  }
-}
-function sp3RetryRoot(){
-  sp3Root = null;
-  document.querySelectorAll('#sp3-notewheel .note-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('sp3-root-banner').innerHTML = '';
-  document.getElementById('sp3-root-check-btn').classList.remove('hidden');
-}
-function sp3RevealRoot(){
   const rootLabel = (ROOT_NOTES.find(r=>r.value===sp3Song.rootNote)||{}).label || sp3Song.rootNote;
   document.getElementById('sp3-root-banner').innerHTML = `
-    <div class="score-banner bad" style="margin-top:16px;">
-      <div class="big">✗ Wrong note</div>
+    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
+      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
       <div class="muted" style="margin-top:6px;font-size:13px;">Root note: ${escapeHtml(rootLabel)}</div>
     </div>
     <div class="row"><button class="btn gold" onclick="sp3GoStep('majorminor')">Next: Major or Minor →</button></div>`;
+  document.getElementById('sp3-root-check-btn').classList.add('hidden');
+  logAttempt('Root & Scale — Root Note', sp3Song, ok?100:0, ok?1:0, 1);
 }
 function sp3RenderMajorMinorStep(el){
   el.innerHTML = `
@@ -2917,42 +2714,14 @@ function sp3PickMajorMinor(v){ sp3MajorMinor=v; document.querySelectorAll('#sp3-
 function sp3CheckMajorMinor(){
   const answer = majorMinorAnswer(sp3Song.scaleType);
   const ok = sp3MajorMinor===answer;
-  const banner = document.getElementById('sp3-mm-banner');
-  if(ok){
-    banner.innerHTML = `
-      <div class="score-banner good" style="margin-top:16px;">
-        <div class="big">✓ Correct</div>
-        <div class="muted" style="margin-top:6px;font-size:13px;">${answer} &middot; exact scale: ${escapeHtml(sp3Song.scaleType)}${sp3Song.keySig?' &middot; '+escapeHtml(sp3Song.keySig):''}</div>
-      </div>
-      <div class="row"><button class="btn gold" onclick="sp3GoStep('notes')">Next: Apply Notes to Every Syllable →</button></div>`;
-    document.getElementById('sp3-mm-check-btn').classList.add('hidden');
-  } else {
-    banner.innerHTML = `
-      <div class="score-banner bad" style="margin-top:16px;">
-        <div class="big">✗ Wrong note</div>
-        <div class="muted" style="margin-top:6px;font-size:13px;">Listen again and try once more, or reveal the answer.</div>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn outline" onclick="sp3RetryMajorMinor()">Try Again</button>
-        <button class="btn ghost" onclick="sp3RevealMajorMinor()">Show Answer</button>
-      </div>`;
-    document.getElementById('sp3-mm-check-btn').classList.add('hidden');
-  }
-}
-function sp3RetryMajorMinor(){
-  sp3MajorMinor = null;
-  document.querySelectorAll('#sp3-mmlist .scale-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('sp3-mm-banner').innerHTML = '';
-  document.getElementById('sp3-mm-check-btn').classList.remove('hidden');
-}
-function sp3RevealMajorMinor(){
-  const answer = majorMinorAnswer(sp3Song.scaleType);
   document.getElementById('sp3-mm-banner').innerHTML = `
-    <div class="score-banner bad" style="margin-top:16px;">
-      <div class="big">✗ Wrong note</div>
+    <div class="score-banner ${ok?'good':'bad'}" style="margin-top:16px;">
+      <div class="big">${ok?'✓ Correct':'✗ Not quite'}</div>
       <div class="muted" style="margin-top:6px;font-size:13px;">${answer} &middot; exact scale: ${escapeHtml(sp3Song.scaleType)}${sp3Song.keySig?' &middot; '+escapeHtml(sp3Song.keySig):''}</div>
     </div>
     <div class="row"><button class="btn gold" onclick="sp3GoStep('notes')">Next: Apply Notes to Every Syllable →</button></div>`;
+  document.getElementById('sp3-mm-check-btn').classList.add('hidden');
+  logAttempt('Root & Scale — Major/Minor', sp3Song, ok?100:0, ok?1:0, 1);
 }
 function sp3GoStep(step){ sp3Step = step; sp3RenderStepArea(); window.scrollTo({top:document.getElementById('sp3-stepArea').offsetTop-20, behavior:'smooth'}); }
 function sp3RenderNotesStep(el){
@@ -2962,16 +2731,16 @@ function sp3RenderNotesStep(el){
       <div class="empty-state">No lead notes set for this song's syllables yet — ask your teacher.</div>${flowFooterHtml()}`;
     return;
   }
-  const sp3Groups = explodeToMeasureLines(sp3Song);
-  const gridHtml = sp3Groups.map(g=>{
-    const items = g.items.map((f,idx)=>{
-      const label = f.seg.native || f.seg.translit || '—';
-      const isLastInGroup = idx===g.items.length-1;
-      const displayLabel = escapeHtml(label) + (isLastInGroup ? '' : '-');
-      return `<div class="beatquiz-item syl-note-item" id="sp3n-item-${f.li}-${f.si}">
-        <input type="text" id="sp3n-note-${f.li}-${f.si}" placeholder="·" class="mono syl-note-input">
+  const gridHtml = (sp3Song.lines||[]).map((line,li)=>{
+    const segs = line.segments||[];
+    const items = segs.map((seg,si)=>{
+      const label = seg.native || seg.translit || '—';
+      const isLast = si===segs.length-1;
+      const displayLabel = escapeHtml(label) + (isLast ? '' : '-');
+      return `<div class="beatquiz-item syl-note-item" id="sp3n-item-${li}-${si}">
+        <input type="text" id="sp3n-note-${li}-${si}" placeholder="·" class="mono syl-note-input">
         <div class="txt syl-note-txt">${displayLabel}</div>
-        <div class="answer-lbl" id="sp3n-a-${f.li}-${f.si}"></div>
+        <div class="answer-lbl" id="sp3n-a-${li}-${si}"></div>
       </div>`;
     }).join('');
     return `<div class="beatquiz-line syl-notes-line">${items}</div>`;
@@ -3008,39 +2777,26 @@ function sp3CheckNotes(){
   document.getElementById('sp3n-banner').innerHTML = `<div class="score-banner ${good?'good':'bad'}" style="margin-top:16px;"><div class="big">${pct}%</div>
     <div class="muted" style="margin-top:6px;font-size:13px;">${correct} of ${total} notes correct</div></div>${leadBlock}${flowFooterHtml()}`;
   document.getElementById('sp3n-check-btn').classList.add('hidden');
+  logAttempt('Root & Scale — Notes', sp3Song, pct, correct, total);
 }
 
 
 /* ---------------------------------------------------------------------------
    STAGE 4 · CHORD APPLICATION
 --------------------------------------------------------------------------- */
-let sp4Song=null, sp4Groups=[], sp4Checked=false, sp4ShowTranslit=false, sp4Answers={}, sp4Difficulty='beginner';
+let sp4Song=null, sp4Checked=false, sp4ShowTranslit=false, sp4Answers={};
 function sp4ChordOptionsFor(seg){
-  // Beginner: only the 3 major chords + their 3 relative minors in this
-  // song's key (I, IV, V and their relative minors ii, iii, vi — the vii°
-  // is left out on purpose since it's not one of the 6 requested).
-  // Pro: the full root+quality chord chart is offered via the picker's
-  // grid instead of a fixed list — but we still fold in anything the
-  // teacher explicitly marked correct/acceptable/wrong for this slot as
-  // quick-pick chips, so grading never references an unreachable chord.
-  const base = sp4Difficulty==='pro' ? [] : generateBeginnerPalette(sp4Song.chordKeyRoot || 'C');
-  const set = new Set(base);
+  const set = new Set(sp4Song.chordPalette||[]);
   (seg.correctChords||[]).forEach(c=>set.add(c.chord));
   (seg.acceptableChords||[]).forEach(c=>set.add(c.chord));
   (seg.wrongChords||[]).forEach(c=>set.add(c.chord));
   return Array.from(set);
 }
-function sp4SetDifficulty(d){
-  if(sp4Difficulty===d) return;
-  sp4Difficulty = d;
-  stageRenderChord(document.getElementById('stagePanel'), sp4Song);
-}
 function stageRenderChord(panel, song){
   const isNewSong = !sp4Song || sp4Song.id!==song.id;
   sp4Song = song; sp4Checked=false;
-  if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; sp4Difficulty='beginner'; }
+  if(isNewSong){ sp4ShowTranslit=false; sp4Answers={}; }
   const flat = flattenSegments(song);
-  sp4Groups = explodeToMeasureLines(song);
   const hasSlots = flat.some(f=>f.seg.isChordSlot);
   if(!hasSlots){
     panel.innerHTML = `<div class="empty-state">No chord slots set for this song yet — ask your teacher to mark chord points in Step 5.</div><div id="sp4-footer">${flowFooterHtml()}</div>`;
@@ -3050,17 +2806,10 @@ function stageRenderChord(panel, song){
     <div class="row" style="margin-bottom:14px;">
       <button class="btn outline small" id="sp4-toggle-lyric" onclick="sp4ToggleLyric()">${sp4ShowTranslit?'Show native script':'Show transliteration'}</button>
     </div>
-    <div class="row" style="margin-bottom:10px;">
-      <span class="muted" style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;align-self:center;">Chords:</span>
-      <button class="btn ${sp4Difficulty==='beginner'?'gold':'outline'} small" onclick="sp4SetDifficulty('beginner')">Beginner</button>
-      <button class="btn ${sp4Difficulty==='pro'?'gold':'outline'} small" onclick="sp4SetDifficulty('pro')">Pro</button>
-    </div>
-    <p class="muted" style="font-size:11.5px;margin-bottom:14px;">${sp4Difficulty==='pro' ? 'Pro: pick any root and any chord quality — maj, min, sus, 6th, 7th, dim, aug and more.' : 'Beginner: the 3 major chords and their 3 relative minors in the current key.'}</p>
     <p class="muted" style="font-size:12.5px;margin-bottom:14px;">The lead note for each syllable is shown above it — pick the chord that fits.</p>`;
-  sp4Groups.forEach((g, gi)=>{
+  (song.lines||[]).forEach((line, li)=>{
     let chordCells='', noteCells='', lyricCells='', beatCells='';
-    g.items.forEach(f=>{
-      const seg = f.seg, li = f.li, si = f.si;
+    (line.segments||[]).forEach((seg,si)=>{
       const label = sp4ShowTranslit ? (seg.translit||seg.native||'·') : (seg.native||seg.translit||'·');
       const mLabel = (seg.measure!=null) ? seg.measure : '';
       noteCells += `<div class="cell">${seg.note?escapeHtml(seg.note):''}</div>`;
@@ -3080,7 +2829,7 @@ function stageRenderChord(panel, song){
       <div class="note-row">${noteCells}</div>
       <div class="lyric-row">${lyricCells}</div>
       <div class="beatlbl-row">${beatCells}</div>
-      <div id="sp4-reveal-${gi}"></div>
+      <div id="sp4-reveal-${li}"></div>
     </div>`;
   });
   html += `
@@ -3097,42 +2846,17 @@ function stageRenderChord(panel, song){
 function sp4ToggleLyric(){ sp4ShowTranslit=!sp4ShowTranslit; stageRenderChord(document.getElementById('stagePanel'), sp4Song); }
 
 /* ---- chord palette picker: click a chord-slot button to choose freely from the chart ---- */
-let cpState = {li:null, si:null, proRoot:null};
+let cpState = {li:null, si:null};
 function sp4OpenPicker(li, si){
   if(sp4Checked) return;
-  cpState = {li, si, proRoot:null};
-  renderChordPickerModal();
-  document.getElementById('chord-picker-modal').classList.add('show');
-}
-function renderChordPickerModal(){
-  const seg = sp4Song.lines[cpState.li].segments[cpState.si];
+  cpState = {li, si};
+  const seg = sp4Song.lines[li].segments[si];
+  const opts = sp4ChordOptionsFor(seg);
   const chartEl = document.getElementById('cp-chart-chips');
-  const hintEl = document.getElementById('cp-hint');
-  const extras = sp4ChordOptionsFor(seg);
-  if(sp4Difficulty==='pro'){
-    hintEl.textContent = 'Pick a root, then a quality — or use a quick pick below.';
-    const rootRow = CHROMATIC_ROOTS.map(r=>`<button type="button" class="palette-chip ${cpState.proRoot===r?'sel':''}" onclick="cpPickProRoot('${r}')">${r}</button>`).join('');
-    const qualRow = PRO_CHORD_QUALITIES.map(q=>`<button type="button" class="palette-chip" ${cpState.proRoot?'':'disabled'} onclick="cpPickProQuality('${q.suffix}')">${q.label}</button>`).join('');
-    const extrasHtml = extras.length
-      ? `<div class="cp-section-label">Quick pick</div><div class="chip-row">${extras.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')}</div>`
-      : '';
-    chartEl.innerHTML = `
-      <div class="cp-section-label">1. Root</div>
-      <div class="chip-row">${rootRow}</div>
-      <div class="cp-section-label">2. Quality</div>
-      <div class="chip-row">${qualRow}</div>
-      ${extrasHtml}`;
-  } else {
-    hintEl.textContent = 'Tap a chord from the chart to place it here.';
-    chartEl.innerHTML = extras.length
-      ? extras.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')
-      : '<span class="muted" style="font-size:12.5px;">No chords available for this song yet — ask your teacher.</span>';
-  }
-}
-function cpPickProRoot(r){ cpState.proRoot = r; renderChordPickerModal(); }
-function cpPickProQuality(suffix){
-  if(!cpState.proRoot) return;
-  cpChoose(cpState.proRoot + suffix);
+  chartEl.innerHTML = opts.length
+    ? opts.map(o=>`<button type="button" class="palette-chip" onclick="cpChoose('${escapeAttr(o)}')">${escapeHtml(o)}</button>`).join('')
+    : '<span class="muted" style="font-size:12.5px;">No chords available for this song yet — ask your teacher.</span>';
+  document.getElementById('chord-picker-modal').classList.add('show');
 }
 function closeChordPicker(){ document.getElementById('chord-picker-modal').classList.remove('show'); }
 function cpChoose(chord){
@@ -3155,10 +2879,9 @@ function sp4Check(){
   sp4Checked = true;
   const flat = flattenSegments(sp4Song);
   let correct=0, total=0;
-  sp4Groups.forEach((g, gi)=>{
+  (sp4Song.lines||[]).forEach((line, li)=>{
     let revealHtml = '';
-    g.items.forEach(f=>{
-      const seg = f.seg, li = f.li, si = f.si;
+    (line.segments||[]).forEach((seg,si)=>{
       if(!seg.isChordSlot) return;
       total++;
       const key = li+'-'+si;
@@ -3179,7 +2902,7 @@ function sp4Check(){
         revealHtml += `<div class="chord-reveal">${escapeHtml(explanation)} <b>Correct: ${escapeHtml(rightList)}</b></div>`;
       }
     });
-    document.getElementById(`sp4-reveal-${gi}`).innerHTML = revealHtml;
+    document.getElementById(`sp4-reveal-${li}`).innerHTML = revealHtml;
   });
   const pct = total ? Math.round((correct/total)*100) : 100;
   const good = pct>=70;
@@ -3187,6 +2910,7 @@ function sp4Check(){
     <div class="muted" style="margin-top:6px;font-size:13px;">${Math.round(correct*10)/10} of ${total} chord slots correct</div></div>`;
   document.getElementById('sp4-check-btn').classList.add('hidden');
   document.getElementById('sp4-footer').innerHTML = flowFooterHtml();
+  logAttempt('chord', sp4Song, pct, correct, total);
 }
 </script>
 </body>
