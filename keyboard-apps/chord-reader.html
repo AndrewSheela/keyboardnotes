@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chord Reader - JGeneration</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a0f;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;letter-spacing:.12em;font-size:13px;color:#a5a5b8}
+.logo b{color:#fff}
+#pill{font-size:12px;padding:6px 12px;border-radius:999px;background:#22222e;border:1px solid #333344;font-weight:700}
+#pill.ok{background:#123324;border-color:#1f7a4a;color:#7dffb0}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px 10px;text-align:center;min-height:58vh}
+#hint{color:#8b8ba0;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+#chord{font-size:clamp(72px,22vw,128px);font-weight:950;line-height:.95;letter-spacing:-.04em;transition:transform .12s}
+#chord.pop{transform:scale(1.04)}
+#inv{margin-top:10px;color:#b9b9cc;font-size:16px;min-height:22px}
+#notesLabel{margin-top:28px;color:#8b8ba0;font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+#notes{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px;min-height:76px}
+.note{background:#1c1c28;border:1px solid #34344a;border-radius:18px;min-width:72px;padding:14px 10px 10px}
+.note b{display:block;font-size:30px;line-height:1}
+.note span{font-size:12px;color:#9a9ab0}
+#notesText{margin-top:16px;font-size:18px;color:#d6d6e2;min-height:24px}
+#history{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 16px 10px;min-height:36px}
+#history button{background:#1a1a26;border:1px solid #2e2e42;color:#ddd;padding:8px 12px;border-radius:999px;font-size:14px;font-weight:700}
+.controls{padding:14px 16px 18px;display:flex;flex-direction:column;gap:10px}
+.btn{border:0;border-radius:16px;padding:16px;font-size:17px;font-weight:900;cursor:pointer}
+.btn-primary{background:#fff;color:#000}
+.btn-row{display:flex;gap:10px}
+.btn-row button{flex:1;background:#1c1c28;color:#fff;border:1px solid #33334a;padding:14px;border-radius:14px;font-size:15px;font-weight:800}
+.btn-row button.active{background:#fff;color:#000}
+#msg{background:#181824;border:1px solid #2a2a3d;border-radius:14px;margin:0 16px 12px;padding:12px 14px;font-size:13px;line-height:1.5;color:#c9c9da;display:none}
+details{margin:0 16px 18px;color:#9a9ab0;font-size:13px;line-height:1.6}
+details summary{cursor:pointer;color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+<header><div class="logo">YAMAHA • <b>CHORD READER</b></div><div id="pill">● Not Connected</div></header>
+<main>
+<div id="hint">Now Playing</div>
+<div id="chord">—</div>
+<div id="inv">Play a chord on your keyboard</div>
+<div id="notesLabel">Notes in this chord</div>
+<div id="notes"></div>
+<div id="notesText"></div>
+</main>
+<div id="history"></div>
+<div id="msg"></div>
+<div id="debug" style="margin:0 16px 12px;background:#10101c;border:1px solid #2a2a3d;border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.6;color:#b9b9d0;display:none"></div>
+<div class="controls">
+<button class="btn btn-primary" id="connectBtn">Connect MIDI — Tap Here</button>
+<div class="btn-row"><button id="holdBtn">Hold: OFF</button><button id="clearBtn">Clear</button><button id="demoBtn">Demo</button><button id="diagBtn">Diagnose</button></div>
+</div>
+<details><summary>How to connect</summary><br>1. Cable: USB-C to USB-B into <b style="color:#fff">USB TO HOST</b> (NOT TO DEVICE). I455: TO HOST is square port. If phone shows Transfer files, you are in TO DEVICE.<br>1b. I455: FUNCTION > MIDI > Keyboard Out=ON, Style Out=OFF, Song Out=OFF.<br>2. Turn ON keyboard.<br>3. Open <b style="color:#fff">https://jgeneration.org/chord-reader.html</b> in <b style="color:#fff">Chrome on Android</b> (top-level page, NOT inside Meta AI / NOT in an iframe). Tap Connect MIDI > Allow.<br>iPhone Safari does NOT support Web MIDI.</details>
+<script>
+let pressed=new Set(), hold=false, history=[];
+const chordEl=document.getElementById('chord'), invEl=document.getElementById('inv'), notesEl=document.getElementById('notes'), notesText=document.getElementById('notesText'), pill=document.getElementById('pill'), msg=document.getElementById('msg');
+const NAMES_SHARP=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NAMES_FLAT=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const FLAT_ROOTS=new Set([1,3,6,8,10]); // Db Eb Gb Ab Bb prefer flats
+function nameFor(pc, rootPc){ return (FLAT_ROOTS.has(rootPc)?NAMES_FLAT:NAMES_SHARP)[pc]; }
+function noteName(midi, rootPc){ const pc=((midi%12)+12)%12; const oct=Math.floor(midi/12)-1; return {name:nameFor(pc,rootPc), oct, pc}; }
+const PATTERNS=[
+ {suf:' Maj', intervals:[0,4,7]}, {suf:' min', intervals:[0,3,7]},
+ {suf:' Maj7', intervals:[0,4,7,11]}, {suf:' min7', intervals:[0,3,7,10]},
+ {suf:' 7', intervals:[0,4,7,10]}, {suf:' minMaj7', intervals:[0,3,7,11]},
+ {suf:' dim', intervals:[0,3,6]}, {suf:' aug', intervals:[0,4,8]},
+ {suf:' sus2', intervals:[0,2,7]}, {suf:' sus4', intervals:[0,5,7]},
+ {suf:' add9', intervals:[0,4,7,2]}, {suf:' Maj6', intervals:[0,4,7,9]},
+ {suf:' min6', intervals:[0,3,7,9]}, {suf:' dim7', intervals:[0,3,6,9]},
+ {suf:' m7b5', intervals:[0,3,6,10]},
+];
+function detect(){
+ if(pressed.size===0){ chordEl.textContent='—'; invEl.textContent='Play a chord on your keyboard'; notesEl.innerHTML=''; notesText.textContent=''; return; }
+ const midis=[...pressed].sort((a,b)=>a-b);
+ const bassPc=((midis[0]%12)+12)%12;
+ const pcs=[...new Set(midis.map(m=>((m%12)+12)%12))];
+ let best=null;
+ for(let root=0; root<12; root++){
+   for(const p of PATTERNS){
+     const set=new Set(p.intervals.map(i=>(root+i)%12));
+     if(pcs.length===set.size && pcs.every(pc=>set.has(pc))){ best={root, pattern:p}; break; }
+   }
+   if(best) break;
+ }
+ // Fallback: try subset match if extra notes, else custom
+ let rootPc, chordName, invText, chordNotesPcs;
+ if(best){
+   rootPc=best.root;
+   chordName=nameFor(rootPc,rootPc)+best.suf;
+   chordNotesPcs=best.pattern.intervals.map(i=>(rootPc+i)%12);
+   if(bassPc!==rootPc){ chordName+='/'+nameFor(bassPc,rootPc); invText='Inversion • Bass: '+nameFor(bassPc,rootPc); }
+   else invText='Root Position';
+ } else {
+   // show pressed notes as chord notes
+   rootPc=bassPc;
+   if(pcs.length<3){ chordName='—'; invText='Keep playing... need 3+ notes for a chord'; }
+   else { chordName='Custom'; invText='Notes played'; }
+   chordNotesPcs=pcs;
+ }
+ chordEl.textContent=chordName;
+ chordEl.classList.remove('pop'); void chordEl.offsetWidth; chordEl.classList.add('pop');
+ invEl.textContent=invText;
+ // Render notes in chord order (root first), using actual octaves if available else 4
+ const ordered = chordNotesPcs.map(pc=>{
+   const found=midis.find(m=>((m%12)+12)%12===pc);
+   return found!==undefined? noteName(found, rootPc) : {name:nameFor(pc,rootPc), oct:4, pc};
+ });
+ notesEl.innerHTML=ordered.map(n=>`<div class="note"><b>${n.name}</b><span>Oct ${n.oct}</span></div>`).join('');
+ notesText.textContent='Notes: '+ordered.map(n=>n.name).join('  •  ');
+ if(best && chordName!=='—' && history[0]!==chordName){ history.unshift(chordName); history=history.slice(0,6); renderHistory(); }
+}
+function renderHistory(){
+ document.getElementById('history').innerHTML=history.map(h=>`<button onclick="document.getElementById('chord').textContent=this.textContent">${h}</button>`).join('');
+}
+function onMidi(e){
+ const raw=document.getElementById('rawMidi'); if(raw) raw.textContent='status '+e.data[0]+' note '+e.data[1]+' vel '+e.data[2]+' - WORKING!';
+ const [status, note, vel]=e.data;
+ if(status===0x90 && vel>0) pressed.add(note);
+ else if(status===0x80 || (status===0x90 && vel===0)) pressed.delete(note);
+ if(!hold) detect();
+}
+let midiAccess=null;
+async function connect(){
+ try{
+   if(window.top!==window.self){ msg.style.display='block'; msg.textContent='BLOCKED: This page is inside an iframe. MIDI is disabled in iframes unless allow="midi". Open this page directly: https://jgeneration.org/chord-reader.html - not embedded.'; diagnose(); return; }
+   if(location.protocol==='content:'){ msg.style.display='block'; msg.textContent='Opened as content: from Files app - MIDI blocked. Open via https://jgeneration.org/chord-reader.html in Chrome.'; return; }
+   if(!navigator.requestMIDIAccess){ msg.style.display='block'; msg.textContent='Web MIDI not supported. Use Chrome on Android.'; return; }
+   midiAccess=await navigator.requestMIDIAccess();
+   const inputs=[...midiAccess.inputs.values()];
+   if(!inputs.length){ msg.style.display='block'; msg.textContent='No MIDI device. Cable in USB TO HOST (not TO DEVICE). Keyboard ON. Unplug + replug + Connect.'; diagnose(); return; }
+   let chosen=inputs.find(i=>/yamaha|psr|i455|sx600/i.test(i.name))||inputs[0];
+   inputs.forEach(inp=>{ inp.onmidimessage=onMidi; });
+   pill.textContent='● Connected: '+chosen.name; pill.classList.add('ok');
+   document.getElementById('connectBtn').textContent='Connected - Play Now';
+   msg.style.display='block'; msg.textContent='Connected to '+chosen.name+'. Play chords.'; diagnose();
+ }catch(err){
+   let extra=''; if(String(err.message).includes('permissions policy')) extra=' This page is inside an iframe or has Permissions-Policy blocking MIDI. Open directly, not embedded.';
+   msg.style.display='block'; msg.textContent='MIDI failed: '+err.message+extra; diagnose();
+ }
+}
+async function diagnose(){
+ const dbg=document.getElementById('debug'); if(!dbg) return; dbg.style.display='block';
+ let h='<b>DIAGNOSIS</b><br>Opened as: '+location.protocol+' | Host: '+location.hostname+' | In iframe: '+(window.top!==window.self?'YES - BLOCKED':'NO - OK')+'<br>';
+ if(!midiAccess){ try{ midiAccess=await navigator.requestMIDIAccess(); }catch(e){ h+='MIDI access failed: '+e.message+'<br>'; dbg.innerHTML=h; return; } }
+ const inputs=[...midiAccess.inputs.values()]; h+='MIDI devices: '+inputs.length+'<br>';
+ inputs.forEach(inp=>{ h+='• '+(inp.name||'(no name)')+' - '+inp.state+'<br>'; });
+ if(!inputs.length) h+='No device = cable in WRONG port. I455/SX600: USB TO HOST. I455: FUNCTION > MIDI > Keyboard Out=ON, Style Out=OFF, Song Out=OFF.';
+ h+='<br>Last raw MIDI: <span id="rawMidi">none yet - press a key</span>'; dbg.innerHTML=h;
+}
+document.getElementById('connectBtn').onclick=connect;
+document.getElementById('diagBtn').onclick=()=>diagnose();
+document.getElementById('clearBtn').onclick=()=>{ pressed.clear(); history=[]; renderHistory(); detect(); };
+document.getElementById('holdBtn').onclick=(e)=>{ hold=!hold; e.target.textContent='Hold: '+(hold?'ON':'OFF'); e.target.classList.toggle('active',hold); };
+let demoIdx=0; const demos=[[60,64,67],[55,59,62,65],[57,60,64],[53,57,60]];
+document.getElementById('demoBtn').onclick=()=>{ pressed=new Set(demos[demoIdx%demos.length]); demoIdx++; detect(); };
+</script>
+</body>
+</html>
